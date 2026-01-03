@@ -394,6 +394,109 @@
                 margin-bottom: 1rem;
             }
 
+            /* Garbage Indicator */
+            .garbage-indicator {
+                position: absolute;
+                left: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 20px;
+                height: 200px;
+                background: var(--bg-card);
+                border-radius: 4px;
+                display: none;
+                flex-direction: column-reverse;
+                align-items: center;
+                padding: 2px;
+                z-index: 10;
+            }
+
+            .garbage-indicator.active {
+                display: flex;
+            }
+
+            .garbage-bar {
+                width: 100%;
+                background: linear-gradient(to top, #f43f5e, #fb7185);
+                border-radius: 2px;
+                transition: height 0.3s ease;
+            }
+
+            .garbage-count {
+                position: absolute;
+                bottom: -20px;
+                font-size: 0.75rem;
+                color: #f43f5e;
+                font-weight: 700;
+            }
+
+            /* Emoji Panel */
+            .emoji-panel {
+                display: flex;
+                gap: 4px;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 100px;
+            }
+
+            .emoji-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 8px;
+                background: var(--bg-card);
+                border: 1px solid var(--bg-secondary);
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition:
+                    transform 0.15s,
+                    background 0.15s;
+            }
+
+            .emoji-btn:hover {
+                background: var(--bg-secondary);
+                transform: scale(1.1);
+            }
+
+            .emoji-btn:active {
+                transform: scale(0.95);
+            }
+
+            /* Floating emoji animation */
+            .floating-emoji {
+                position: fixed;
+                font-size: 2rem;
+                pointer-events: none;
+                animation: floatUp 1.5s ease-out forwards;
+                z-index: 1000;
+            }
+
+            @keyframes floatUp {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(-100px) scale(1.5);
+                }
+            }
+
+            /* Rematch section */
+            .mp-rematch-section {
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+
+            .rematch-status {
+                margin-top: 0.5rem;
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+            }
+
+            .rematch-status.waiting {
+                color: #facc15;
+            }
+
             /* Multiplayer Results Overlay */
             #mp-results-overlay {
                 display: none;
@@ -827,8 +930,33 @@
                 }
 
                 .game-container {
-                    flex-direction: column;
-                    align-items: center;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    align-items: flex-start;
+                    justify-content: center;
+                    gap: 10px;
+                }
+
+                /* Opponent board on mobile - smaller and beside main board */
+                .opponent-container {
+                    order: 2;
+                }
+
+                .opponent-container.active {
+                    display: flex;
+                }
+
+                #opponent-board {
+                    width: 90px;
+                    height: 150px;
+                }
+
+                .opponent-name {
+                    font-size: 0.75rem;
+                }
+
+                .opponent-score {
+                    font-size: 0.9rem;
                 }
 
                 .panel {
@@ -847,6 +975,95 @@
 
                 .panel.open {
                     display: block;
+                }
+
+                /* Multiplayer lobby responsive */
+                .multiplayer-options {
+                    max-width: 100%;
+                    padding: 0 1rem;
+                }
+
+                .join-room {
+                    flex-direction: column;
+                }
+
+                /* Waiting room responsive */
+                .room-code-display {
+                    font-size: 2rem;
+                    letter-spacing: 0.3em;
+                }
+
+                .players-list {
+                    min-width: 100%;
+                    padding: 0 1rem;
+                }
+
+                /* Multiplayer results responsive */
+                .mp-results-content {
+                    max-width: 100%;
+                    padding: 0 1rem;
+                }
+
+                /* Garbage indicator mobile */
+                .garbage-indicator {
+                    left: 2px;
+                    width: 16px;
+                    height: 150px;
+                }
+
+                .garbage-count {
+                    font-size: 0.65rem;
+                }
+
+                /* Emoji panel mobile */
+                .emoji-panel {
+                    max-width: 80px;
+                }
+
+                .emoji-btn {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 1rem;
+                }
+
+                .mp-result-banner .result-icon {
+                    font-size: 3rem;
+                }
+
+                .mp-result-banner h2 {
+                    font-size: 1.5rem;
+                }
+
+                .mp-player-result {
+                    padding: 0.75rem;
+                }
+
+                .mp-player-rank {
+                    font-size: 1.2rem;
+                    min-width: 40px;
+                }
+
+                .mp-player-name {
+                    font-size: 1rem;
+                }
+
+                .mp-player-score {
+                    font-size: 1.1rem;
+                }
+
+                .mp-results-stats {
+                    padding: 0.75rem;
+                }
+
+                /* Overlay content responsive */
+                .overlay-content {
+                    max-width: 100%;
+                    padding: 1.5rem;
+                    margin: 0 1rem;
+                }
+
+                .gameover-content {
+                    max-width: 100%;
                 }
 
                 .panel-close {
@@ -1007,6 +1224,11 @@
 
             <div class="panel-overlay" id="panelOverlay"></div>
             <div class="game-container">
+                <!-- Garbage indicator -->
+                <div class="garbage-indicator" id="garbageIndicator">
+                    <div class="garbage-bar" id="garbageBar"></div>
+                    <span class="garbage-count" id="garbageCount">0</span>
+                </div>
                 <canvas id="game" width="300" height="500"></canvas>
                 <div class="opponent-container" id="opponentContainer">
                     <span class="opponent-name" id="opponentName"
@@ -1018,6 +1240,13 @@
                         width="150"
                         height="250"
                     ></canvas>
+                    <!-- Emoji panel for multiplayer -->
+                    <div class="emoji-panel" id="emojiPanel">
+                        <button class="emoji-btn" data-emoji="👍">👍</button>
+                        <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                        <button class="emoji-btn" data-emoji="😀">😀</button>
+                        <button class="emoji-btn" data-emoji="💀">💀</button>
+                    </div>
                 </div>
                 <div class="panel" id="sidePanel">
                     <button
@@ -1253,7 +1482,13 @@
                         <span id="mpFinalLines">0</span>
                     </div>
                 </div>
-                <button class="btn" id="mpPlayAgainBtn">Play Again</button>
+                <div class="mp-rematch-section" id="mpRematchSection">
+                    <button class="btn" id="mpRematchBtn">🔄 Rematch</button>
+                    <p class="rematch-status" id="rematchStatus"></p>
+                </div>
+                <button class="btn secondary" id="mpPlayAgainBtn">
+                    New Opponent
+                </button>
                 <button class="btn secondary" id="mpMenuBtn">Main Menu</button>
             </div>
         </div>

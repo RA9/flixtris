@@ -74,6 +74,8 @@
     dropInterval: null,
     lastDrop: 0,
     lastMultiplayerUpdate: 0,
+    // Multiplayer garbage
+    pendingGarbage: 0,
     // Line clear stats
     singles: 0,
     doubles: 0,
@@ -327,6 +329,12 @@
       // Level advances every 10 lines
       state.level = Math.floor(state.lines / 10) + 1;
       window.Flixtris.api.ui.updateStats();
+
+      // Send garbage to opponent in multiplayer
+      const mp = window.Flixtris.api.multiplayer;
+      if (mp && mp.isConnected()) {
+        mp.sendGarbage(linesCleared);
+      }
     }
   }
 
@@ -562,6 +570,7 @@
     state.paused = false;
     state.lastDrop = 0;
     state.lastMultiplayerUpdate = 0;
+    state.pendingGarbage = 0;
     state.singles = 0;
     state.doubles = 0;
     state.triples = 0;
@@ -593,6 +602,7 @@
     state.paused = false;
     state.lastDrop = 0;
     state.lastMultiplayerUpdate = 0;
+    state.pendingGarbage = 0;
     state.singles = 0;
     state.doubles = 0;
     state.triples = 0;
@@ -651,5 +661,55 @@
     render,
     getBoardSnapshot,
     sendMultiplayerUpdate,
+    addGarbageLines,
+    getPendingGarbage: () => state.pendingGarbage,
+    setPendingGarbage: (n) => {
+      state.pendingGarbage = n;
+    },
   };
+
+  // Add garbage lines to the bottom of the board
+  function addGarbageLines(count) {
+    if (count <= 0 || !state.running) return;
+
+    const garbageColor = "#6b7280"; // Gray color for garbage
+
+    for (let i = 0; i < count; i++) {
+      // Remove top row
+      state.board.shift();
+
+      // Create garbage row with one random gap
+      const garbageRow = new Array(COLS).fill(garbageColor);
+      const gapIndex = Math.floor(state.rng() * COLS);
+      garbageRow[gapIndex] = null;
+
+      // Add to bottom
+      state.board.push(garbageRow);
+    }
+
+    // Check if current piece now collides
+    if (
+      state.current &&
+      collides(state.current.shape, state.posX, state.posY)
+    ) {
+      // Try to push piece up
+      while (
+        state.posY > 0 &&
+        collides(state.current.shape, state.posX, state.posY)
+      ) {
+        state.posY--;
+      }
+      // If still colliding, game over
+      if (collides(state.current.shape, state.posX, state.posY)) {
+        gameOver();
+      }
+    }
+
+    // Play warning sound
+    if (window.Flixtris.api.sound && window.Flixtris.api.sound.move) {
+      window.Flixtris.api.sound.move();
+    }
+
+    render();
+  }
 })();

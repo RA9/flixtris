@@ -76,6 +76,21 @@ Challenge friends to real-time 1v1 battles!
 6. See your opponent's board in real-time as you play
 7. Highest score wins!
 
+**Multiplayer Features:**
+
+- 🎯 **Garbage Lines** - Clear multiple lines to send garbage to your opponent!
+  - Double: 1 garbage line
+  - Triple: 2 garbage lines
+  - Tetris: 4 garbage lines
+
+- 😀 **Quick Emojis** - Send reactions during the game (👍 🔥 😀 💀 and more)
+
+- 🔄 **Rematch** - Quick rematch button to play again with the same opponent
+
+- 🔌 **Reconnection** - Disconnect? No problem! Auto-reconnect keeps your game alive
+
+- 💾 **Server Persistence** - Server saves state, survives restarts
+
 ## Installation
 
 ### Client (Static Files)
@@ -107,10 +122,18 @@ npm start
 
 The server runs on port 3001 by default. Set the `PORT` environment variable to change it.
 
+**Server Features:**
+- State persistence to JSON file (survives restarts)
+- Graceful shutdown with player notification
+- Auto room cleanup after 30 minutes
+- Reconnection tokens (valid for 30 minutes)
+- Exponential backoff for client reconnection
+
 **Production deployment:**
 - The server uses `ws` (WebSocket) library
 - For production, deploy behind a reverse proxy with SSL (wss://)
-- Rooms automatically expire after 30 minutes of inactivity
+- Set appropriate CORS headers if needed
+- Consider using Redis for multi-instance scaling
 
 ## Project Structure
 
@@ -126,7 +149,8 @@ flixtris/
 │   └── ui.js           # UI and screen management
 ├── server/
 │   ├── index.js        # WebSocket multiplayer server
-│   └── package.json    # Server dependencies
+│   ├── package.json    # Server dependencies
+│   └── .gitignore      # Ignore state file and node_modules
 └── icons/
     ├── icon.svg
     ├── icon-192.png
@@ -142,8 +166,32 @@ flixtris/
 - CSS Variables & Flexbox
 - PWA (manifest + icons)
 - WebSocket (multiplayer)
+- Node.js (server)
 
 No frameworks. No build tools. Minimal dependencies (only `ws` for the server).
+
+## Multiplayer Protocol
+
+The multiplayer system uses a simple JSON message protocol:
+
+**Room Management:**
+- `create_room` / `room_created`
+- `join_room` / `room_joined`
+- `ready` / `player_ready`
+- `leave_room` / `player_left`
+
+**Game Updates:**
+- `game_update` / `opponent_update`
+- `game_over` / `player_game_over`
+
+**Battle Features:**
+- `send_garbage` / `incoming_garbage`
+- `send_emoji` / `emoji_received`
+- `request_rematch` / `rematch_starting`
+
+**Connection:**
+- `reconnect` / `reconnected`
+- `server_shutdown`
 
 ## License
 

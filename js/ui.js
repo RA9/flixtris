@@ -22,6 +22,9 @@
   let myReadyState = false;
   let opponentReadyState = false;
   let opponentName = null;
+  let pendingGarbage = 0;
+  let rematchRequested = false;
+  let opponentWantsRematch = false;
 
   // Opponent board constants (half size of main board)
   const OPPONENT_COLS = 10;
@@ -484,6 +487,158 @@
 
   setupMobileControls();
 
+  // ========================
+  // GARBAGE INDICATOR
+  // ========================
+
+  const garbageIndicator = document.getElementById("garbageIndicator");
+  const garbageBar = document.getElementById("garbageBar");
+  const garbageCount = document.getElementById("garbageCount");
+
+  function showGarbageIndicator(show) {
+    if (garbageIndicator) {
+      if (show) {
+        garbageIndicator.classList.add("active");
+      } else {
+        garbageIndicator.classList.remove("active");
+      }
+    }
+  }
+
+  function updateGarbageIndicator(lines) {
+    pendingGarbage = lines;
+    if (garbageBar) {
+      // Max height is 100%, each line is 5%
+      const height = Math.min(lines * 5, 100);
+      garbageBar.style.height = height + "%";
+    }
+    if (garbageCount) {
+      garbageCount.textContent = lines > 0 ? lines : "";
+    }
+    showGarbageIndicator(lines > 0);
+  }
+
+  function addPendingGarbage(lines) {
+    updateGarbageIndicator(pendingGarbage + lines);
+  }
+
+  function applyPendingGarbage() {
+    if (pendingGarbage > 0 && api.game && api.game.addGarbageLines) {
+      api.game.addGarbageLines(pendingGarbage);
+      updateGarbageIndicator(0);
+    }
+  }
+
+  // ========================
+  // EMOJI PANEL
+  // ========================
+
+  const emojiPanel = document.getElementById("emojiPanel");
+
+  function setupEmojiPanel() {
+    if (!emojiPanel) return;
+
+    const emojiButtons = emojiPanel.querySelectorAll(".emoji-btn");
+    emojiButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const emoji = btn.dataset.emoji;
+        if (api.multiplayer && api.multiplayer.isConnected()) {
+          api.multiplayer.sendEmoji(emoji);
+          showFloatingEmoji(emoji, btn);
+        }
+      });
+    });
+  }
+
+  function showFloatingEmoji(emoji, sourceElement) {
+    const floater = document.createElement("div");
+    floater.className = "floating-emoji";
+    floater.textContent = emoji;
+
+    // Position near the source or center of screen
+    if (sourceElement) {
+      const rect = sourceElement.getBoundingClientRect();
+      floater.style.left = rect.left + rect.width / 2 + "px";
+      floater.style.top = rect.top + "px";
+    } else {
+      floater.style.left = "50%";
+      floater.style.top = "50%";
+    }
+
+    document.body.appendChild(floater);
+
+    // Remove after animation
+    setTimeout(() => {
+      floater.remove();
+    }, 1500);
+  }
+
+  function showOpponentEmoji(emoji) {
+    // Show emoji floating from opponent's board
+    const opponentBoard = document.getElementById("opponent-board");
+    if (opponentBoard) {
+      const rect = opponentBoard.getBoundingClientRect();
+      const floater = document.createElement("div");
+      floater.className = "floating-emoji";
+      floater.textContent = emoji;
+      floater.style.left = rect.left + rect.width / 2 + "px";
+      floater.style.top = rect.top + rect.height / 2 + "px";
+      document.body.appendChild(floater);
+      setTimeout(() => {
+        floater.remove();
+      }, 1500);
+    }
+  }
+
+  setupEmojiPanel();
+
+  // ========================
+  // REMATCH FUNCTIONALITY
+  // ========================
+
+  const mpRematchBtn = document.getElementById("mpRematchBtn");
+  const rematchStatus = document.getElementById("rematchStatus");
+
+  function resetRematchState() {
+    rematchRequested = false;
+    opponentWantsRematch = false;
+    if (rematchStatus) {
+      rematchStatus.textContent = "";
+      rematchStatus.className = "rematch-status";
+    }
+    if (mpRematchBtn) {
+      mpRematchBtn.disabled = false;
+      mpRematchBtn.textContent = "🔄 Rematch";
+    }
+  }
+
+  function updateRematchStatus() {
+    if (!rematchStatus) return;
+
+    if (rematchRequested && opponentWantsRematch) {
+      rematchStatus.textContent = "Starting rematch...";
+      rematchStatus.className = "rematch-status";
+    } else if (rematchRequested) {
+      rematchStatus.textContent = "Waiting for opponent...";
+      rematchStatus.className = "rematch-status waiting";
+    } else if (opponentWantsRematch) {
+      rematchStatus.textContent = "Opponent wants a rematch!";
+      rematchStatus.className = "rematch-status waiting";
+    }
+  }
+
+  if (mpRematchBtn) {
+    mpRematchBtn.addEventListener("click", () => {
+      if (api.multiplayer && api.multiplayer.isConnected()) {
+        api.multiplayer.requestRematch();
+        rematchRequested = true;
+        mpRematchBtn.disabled = true;
+        mpRematchBtn.textContent = "Rematch Requested";
+        updateRematchStatus();
+      }
+    });
+  }
+
   // Multiplayer results overlay buttons
   const mpPlayAgainBtn = document.getElementById("mpPlayAgainBtn");
   const mpMenuBtn = document.getElementById("mpMenuBtn");
@@ -491,11 +646,13 @@
   if (mpPlayAgainBtn) {
     mpPlayAgainBtn.addEventListener("click", () => {
       showMpResultsOverlay(false);
+      resetRematchState();
       if (api.multiplayer) {
         api.multiplayer.disconnect();
       }
       isMultiplayerGame = false;
       hideOpponentBoard();
+      updateGarbageIndicator(0);
       showScreen("multiplayer");
     });
   }
@@ -503,11 +660,13 @@
   if (mpMenuBtn) {
     mpMenuBtn.addEventListener("click", () => {
       showMpResultsOverlay(false);
+      resetRematchState();
       if (api.multiplayer) {
         api.multiplayer.disconnect();
       }
       isMultiplayerGame = false;
       hideOpponentBoard();
+      updateGarbageIndicator(0);
       showScreen("menu");
     });
   }
@@ -882,6 +1041,83 @@
       renderOpponentBoard(data.board);
     });
 
+    // Incoming garbage lines
+    mp.on("onIncomingGarbage", (data) => {
+      console.log("Incoming garbage:", data.lines);
+      addPendingGarbage(data.lines);
+
+      // Apply garbage after a short delay (on next piece lock)
+      // For now, apply immediately with visual warning
+      setTimeout(() => {
+        applyPendingGarbage();
+      }, 500);
+    });
+
+    // Garbage sent confirmation
+    mp.on("onGarbageSent", (data) => {
+      console.log("Garbage sent:", data.lines);
+      // Could show a visual indicator here
+    });
+
+    // Emoji received
+    mp.on("onEmojiReceived", (data) => {
+      showOpponentEmoji(data.emoji);
+    });
+
+    // Rematch requested by opponent
+    mp.on("onRematchRequested", (playerId) => {
+      console.log("Opponent requested rematch");
+      opponentWantsRematch = true;
+      updateRematchStatus();
+    });
+
+    // Rematch declined
+    mp.on("onRematchDeclined", (playerId) => {
+      console.log("Opponent declined rematch");
+      if (rematchStatus) {
+        rematchStatus.textContent = "Opponent declined";
+        rematchStatus.className = "rematch-status";
+      }
+    });
+
+    // Rematch starting
+    mp.on("onRematchStarting", (seed) => {
+      console.log("Rematch starting with seed:", seed);
+      showMpResultsOverlay(false);
+      resetRematchState();
+      updateGarbageIndicator(0);
+
+      showScreen("game");
+      startCountdown(3, () => {
+        api.game.startGameWithSeed(seed);
+      });
+    });
+
+    // Player disconnected (can reconnect)
+    mp.on("onPlayerDisconnected", (data) => {
+      console.log("Player disconnected:", data);
+      if (isMultiplayerGame && data.canReconnect) {
+        // Show reconnecting message instead of immediately ending
+        if (waitingText) {
+          waitingText.textContent =
+            "Opponent disconnected. Waiting for reconnect...";
+        }
+      }
+    });
+
+    // Player reconnected
+    mp.on("onPlayerReconnected", (playerId) => {
+      console.log("Player reconnected:", playerId);
+      if (waitingText) {
+        waitingText.textContent = "Opponent reconnected!";
+      }
+    });
+
+    // Server shutdown warning
+    mp.on("onServerShutdown", (message) => {
+      alert("Server notice: " + message);
+    });
+
     // Player game over
     mp.on("onPlayerGameOver", (data) => {
       console.log("Player game over:", data);
@@ -1049,5 +1285,12 @@
     hideOpponentBoard,
     renderOpponentBoard,
     updateOpponentScore,
+    // Garbage lines
+    updateGarbageIndicator,
+    addPendingGarbage,
+    applyPendingGarbage,
+    // Emojis
+    showFloatingEmoji,
+    showOpponentEmoji,
   };
 })();

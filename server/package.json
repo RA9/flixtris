@@ -1,7 +1,7 @@
 {
   "name": "flixtris-server",
-  "version": "1.0.0",
-  "description": "Flixtris Multiplayer WebSocket Server",
+  "version": "2.0.0",
+  "description": "Flixtris Multiplayer WebSocket Server - Features: Garbage lines, Reconnection, Rematch, Emojis, State persistence",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -11,11 +11,23 @@
     "flixtris",
     "tetris",
     "multiplayer",
-    "websocket"
+    "websocket",
+    "game-server"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "index.js",
+    "package.json"
+  ],
+  "notes": {
+    "state_file": "rooms-state.json is auto-generated for persistence and should be in .gitignore",
+    "port": "Default port is 3001, override with PORT environment variable"
   }
 }
