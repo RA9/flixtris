@@ -107,9 +107,16 @@ Open in browser and optionally install as a PWA.
 
 ### Multiplayer Server
 
-The multiplayer feature requires running the WebSocket server:
+The multiplayer feature requires running the WebSocket server with Redis:
+
+**Prerequisites:**
+- Node.js 16+
+- Redis server (local or cloud-hosted like Redis Cloud, Upstash, etc.)
 
 ```bash
+# Start Redis (if running locally)
+redis-server
+
 # Navigate to server directory
 cd server
 
@@ -120,20 +127,48 @@ npm install
 npm start
 ```
 
-The server runs on port 3001 by default. Set the `PORT` environment variable to change it.
+**Environment Variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | WebSocket server port |
+| `REDIS_URL` | `redis://localhost:6379` | Redis connection URL |
+
+```bash
+# Example with custom configuration
+PORT=8080 REDIS_URL=redis://user:pass@host:6379 npm start
+```
+
+**Health Check:**
+```bash
+curl http://localhost:3001/health
+# Returns: {"status":"ok","redis":"connected","rooms":0,"uptime":123.45}
+```
 
 **Server Features:**
-- State persistence to JSON file (survives restarts)
-- Graceful shutdown with player notification
-- Auto room cleanup after 30 minutes
-- Reconnection tokens (valid for 30 minutes)
-- Exponential backoff for client reconnection
+- 🗄️ **Redis persistence** - Rooms survive server restarts
+- ⚡ **Automatic TTL** - Rooms expire after 30 minutes in Redis
+- 🔌 **Graceful degradation** - Works in memory-only mode if Redis unavailable
+- 🔄 **Reconnection tokens** - Valid for 30 minutes, stored in Redis
+- 📡 **Health endpoint** - Monitor server and Redis status
+- 🛡️ **Graceful shutdown** - Notifies players, closes connections cleanly
 
-**Production deployment:**
-- The server uses `ws` (WebSocket) library
-- For production, deploy behind a reverse proxy with SSL (wss://)
-- Set appropriate CORS headers if needed
-- Consider using Redis for multi-instance scaling
+**Production Deployment:**
+
+```bash
+# Using Docker with Redis
+docker run -d --name redis redis:alpine
+docker run -d --name flixtris-server \
+  -e REDIS_URL=redis://redis:6379 \
+  -e PORT=3001 \
+  -p 3001:3001 \
+  --link redis \
+  node:18-alpine sh -c "cd /app && npm start"
+```
+
+- Deploy behind a reverse proxy (nginx, Caddy) with SSL for `wss://`
+- Use Redis Cloud, Upstash, or AWS ElastiCache for managed Redis
+- Scale horizontally - multiple server instances can share the same Redis
 
 ## Project Structure
 
@@ -148,9 +183,9 @@ flixtris/
 │   ├── multiplayer.js  # WebSocket multiplayer client
 │   └── ui.js           # UI and screen management
 ├── server/
-│   ├── index.js        # WebSocket multiplayer server
-│   ├── package.json    # Server dependencies
-│   └── .gitignore      # Ignore state file and node_modules
+│   ├── index.js        # WebSocket multiplayer server (Redis-backed)
+│   ├── package.json    # Server dependencies (ws, redis)
+│   └── .gitignore      # Ignore node_modules and env files
 └── icons/
     ├── icon.svg
     ├── icon-192.png
@@ -167,8 +202,9 @@ flixtris/
 - PWA (manifest + icons)
 - WebSocket (multiplayer)
 - Node.js (server)
+- Redis (persistence)
 
-No frameworks. No build tools. Minimal dependencies (only `ws` for the server).
+No frameworks. No build tools. Minimal dependencies (`ws` and `redis` for the server).
 
 ## Multiplayer Protocol
 
@@ -192,6 +228,19 @@ The multiplayer system uses a simple JSON message protocol:
 **Connection:**
 - `reconnect` / `reconnected`
 - `server_shutdown`
+
+## Redis Data Structure
+
+The server uses the following Redis keys:
+
+| Key Pattern | Type | Description |
+|-------------|------|-------------|
+| `flixtris:room:{code}` | String (JSON) | Room metadata (code, seed, started, createdAt) |
+| `flixtris:room:{code}:players` | String (JSON) | Player data array |
+| `flixtris:reconnect:{token}` | String (JSON) | Reconnection token data |
+| `flixtris:rooms:active` | Set | Set of active room codes |
+
+All keys have a 30-minute TTL for automatic cleanup.
 
 ## License
 

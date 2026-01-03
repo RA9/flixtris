@@ -1,133 +1,230 @@
-// Flixtris Multiplayer Server
+// Flixtris Multiplayer Server v2.1
 // Run with: node server/index.js
+// Features: Redis persistence, Garbage lines, Reconnection, Rematch, Emojis
 
 const http = require("http");
-const fs = require("fs");
-const path = require("path");
 const { WebSocketServer } = require("ws");
+const redis = require("redis");
 
 const PORT = process.env.PORT || 3001;
-const STATE_FILE = path.join(__dirname, "rooms-state.json");
-const SAVE_INTERVAL = 10000; // Save state every 10 seconds
+const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const ROOM_TTL = 30 * 60; // 30 minutes in seconds
+const RECONNECT_TTL = 30 * 60; // 30 minutes in seconds
+
+// ========================
+// REDIS CLIENT SETUP
+// ========================
+
+let redisClient = null;
+let redisConnected = false;
+
+async function initRedis() {
+  try {
+    redisClient = redis.createClient({
+      url: REDIS_URL,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > 10) {
+            console.error("Redis: Max reconnection attempts reached");
+            return new Error("Max reconnection attempts reached");
+          }
+          return Math.min(retries * 100, 3000);
+        },
+      },
+    });
+
+    redisClient.on("error", (err) => {
+      console.error("Redis error:", err.message);
+      redisConnected = false;
+    });
+
+    redisClient.on("connect", () => {
+      console.log("Redis: Connected");
+      redisConnected = true;
+    });
+
+    redisClient.on("reconnecting", () => {
+      console.log("Redis: Reconnecting...");
+    });
+
+    await redisClient.connect();
+    console.log(`Redis: Connected to ${REDIS_URL}`);
+    return true;
+  } catch (err) {
+    console.error("Redis: Failed to connect:", err.message);
+    console.log("Redis: Running in memory-only mode (no persistence)");
+    return false;
+  }
+}
+
+// ========================
+// REDIS KEYS
+// ========================
+
+const KEYS = {
+  room: (code) => `flixtris:room:${code}`,
+  roomPlayers: (code) => `flixtris:room:${code}:players`,
+  reconnectToken: (token) => `flixtris:reconnect:${token}`,
+  activeRooms: "flixtris:rooms:active",
+};
+
+// ========================
+// REDIS OPERATIONS
+// ========================
+
+async function saveRoom(room) {
+  if (!redisConnected) return;
+
+  try {
+    const roomData = {
+      code: room.code,
+      seed: room.seed,
+      started: room.started,
+      createdAt: room.createdAt,
+    };
+
+    const playersData = room.players.map((p) => ({
+      id: p.id,
+      name: p.name,
+      score: p.score,
+      level: p.level,
+      lines: p.lines,
+      ready: p.ready,
+      gameOver: p.gameOver,
+      reconnectToken: p.reconnectToken,
+      wantsRematch: p.wantsRematch || false,
+    }));
+
+    await redisClient
+      .multi()
+      .set(KEYS.room(room.code), JSON.stringify(roomData), { EX: ROOM_TTL })
+      .set(KEYS.roomPlayers(room.code), JSON.stringify(playersData), {
+        EX: ROOM_TTL,
+      })
+      .sAdd(KEYS.activeRooms, room.code)
+      .exec();
+  } catch (err) {
+    console.error("Redis: Failed to save room:", err.message);
+  }
+}
+
+async function loadRoom(code) {
+  if (!redisConnected) return null;
+
+  try {
+    const [roomData, playersData] = await Promise.all([
+      redisClient.get(KEYS.room(code)),
+      redisClient.get(KEYS.roomPlayers(code)),
+    ]);
+
+    if (!roomData) return null;
+
+    const room = JSON.parse(roomData);
+    const players = playersData ? JSON.parse(playersData) : [];
+
+    return {
+      ...room,
+      players: players.map((p) => ({
+        ...p,
+        ws: null,
+        board: null,
+        disconnectedAt: Date.now(),
+      })),
+      pendingGarbage: new Map(),
+    };
+  } catch (err) {
+    console.error("Redis: Failed to load room:", err.message);
+    return null;
+  }
+}
+
+async function deleteRoom(code) {
+  if (!redisConnected) return;
+
+  try {
+    await redisClient
+      .multi()
+      .del(KEYS.room(code))
+      .del(KEYS.roomPlayers(code))
+      .sRem(KEYS.activeRooms, code)
+      .exec();
+  } catch (err) {
+    console.error("Redis: Failed to delete room:", err.message);
+  }
+}
+
+async function saveReconnectToken(token, data) {
+  if (!redisConnected) return;
+
+  try {
+    await redisClient.set(KEYS.reconnectToken(token), JSON.stringify(data), {
+      EX: RECONNECT_TTL,
+    });
+  } catch (err) {
+    console.error("Redis: Failed to save reconnect token:", err.message);
+  }
+}
+
+async function loadReconnectToken(token) {
+  if (!redisConnected) return null;
+
+  try {
+    const data = await redisClient.get(KEYS.reconnectToken(token));
+    return data ? JSON.parse(data) : null;
+  } catch (err) {
+    console.error("Redis: Failed to load reconnect token:", err.message);
+    return null;
+  }
+}
+
+async function deleteReconnectToken(token) {
+  if (!redisConnected) return;
+
+  try {
+    await redisClient.del(KEYS.reconnectToken(token));
+  } catch (err) {
+    console.error("Redis: Failed to delete reconnect token:", err.message);
+  }
+}
+
+async function getAllActiveRoomCodes() {
+  if (!redisConnected) return [];
+
+  try {
+    return await redisClient.sMembers(KEYS.activeRooms);
+  } catch (err) {
+    console.error("Redis: Failed to get active rooms:", err.message);
+    return [];
+  }
+}
+
+// ========================
+// HTTP & WEBSOCKET SERVER
+// ========================
 
 const server = http.createServer((req, res) => {
+  // Health check endpoint
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        status: "ok",
+        redis: redisConnected ? "connected" : "disconnected",
+        rooms: rooms.size,
+        uptime: process.uptime(),
+      }),
+    );
+    return;
+  }
+
   res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Flixtris Multiplayer Server v2.0");
+  res.end("Flixtris Multiplayer Server v2.1 (Redis)");
 });
 
 const wss = new WebSocketServer({ server });
 
-// Game rooms storage
-let rooms = new Map();
-
-// Player reconnection tokens
-const reconnectTokens = new Map();
-
-// ========================
-// STATE PERSISTENCE
-// ========================
-
-function saveState() {
-  try {
-    const state = {
-      rooms: [],
-      reconnectTokens: [],
-      savedAt: Date.now(),
-    };
-
-    rooms.forEach((room, code) => {
-      // Don't save rooms with no players or expired rooms
-      if (room.players.length === 0) return;
-
-      state.rooms.push({
-        code: room.code,
-        seed: room.seed,
-        started: room.started,
-        createdAt: room.createdAt,
-        players: room.players.map((p) => ({
-          id: p.id,
-          name: p.name,
-          score: p.score,
-          level: p.level,
-          lines: p.lines,
-          ready: p.ready,
-          gameOver: p.gameOver,
-          reconnectToken: p.reconnectToken,
-          // Don't save ws or board (too large)
-        })),
-      });
-    });
-
-    reconnectTokens.forEach((data, token) => {
-      state.reconnectTokens.push({
-        token,
-        roomCode: data.roomCode,
-        playerId: data.playerId,
-        playerName: data.playerName,
-        expiresAt: data.expiresAt,
-      });
-    });
-
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
-    console.log(`State saved: ${state.rooms.length} rooms`);
-  } catch (err) {
-    console.error("Failed to save state:", err);
-  }
-}
-
-function loadState() {
-  try {
-    if (!fs.existsSync(STATE_FILE)) {
-      console.log("No saved state found");
-      return;
-    }
-
-    const data = fs.readFileSync(STATE_FILE, "utf8");
-    const state = JSON.parse(data);
-
-    // Check if state is too old (more than 1 hour)
-    if (Date.now() - state.savedAt > 60 * 60 * 1000) {
-      console.log("Saved state is too old, ignoring");
-      fs.unlinkSync(STATE_FILE);
-      return;
-    }
-
-    // Restore rooms
-    state.rooms.forEach((roomData) => {
-      rooms.set(roomData.code, {
-        code: roomData.code,
-        seed: roomData.seed,
-        started: roomData.started,
-        createdAt: roomData.createdAt,
-        players: roomData.players.map((p) => ({
-          ...p,
-          ws: null, // No WebSocket connection yet
-          board: null,
-          disconnectedAt: Date.now(), // Mark as disconnected
-        })),
-        pendingGarbage: new Map(), // Reset garbage queues
-      });
-    });
-
-    // Restore reconnect tokens
-    state.reconnectTokens.forEach((tokenData) => {
-      if (tokenData.expiresAt > Date.now()) {
-        reconnectTokens.set(tokenData.token, {
-          roomCode: tokenData.roomCode,
-          playerId: tokenData.playerId,
-          playerName: tokenData.playerName,
-          expiresAt: tokenData.expiresAt,
-        });
-      }
-    });
-
-    console.log(
-      `State restored: ${rooms.size} rooms, ${reconnectTokens.size} reconnect tokens`,
-    );
-  } catch (err) {
-    console.error("Failed to load state:", err);
-  }
-}
+// In-memory room storage (Redis is for persistence, not real-time)
+const rooms = new Map();
 
 // ========================
 // UTILITY FUNCTIONS
@@ -139,7 +236,6 @@ function generateRoomCode() {
   for (let i = 0; i < 4; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
-  // Ensure unique
   if (rooms.has(code)) {
     return generateRoomCode();
   }
@@ -154,13 +250,7 @@ function generateReconnectToken() {
   return `RT-${Date.now()}-${Math.random().toString(36).substr(2, 12)}`;
 }
 
-// Calculate garbage lines to send based on lines cleared
 function calculateGarbage(linesCleared) {
-  // Standard garbage rules:
-  // 1 line = 0 garbage (single)
-  // 2 lines = 1 garbage (double)
-  // 3 lines = 2 garbage (triple)
-  // 4 lines = 4 garbage (tetris)
   const garbageTable = [0, 0, 1, 2, 4];
   return garbageTable[Math.min(linesCleared, 4)];
 }
@@ -184,6 +274,160 @@ function sendToPlayer(player, message) {
 }
 
 // ========================
+// ROOM MANAGEMENT
+// ========================
+
+async function getOrLoadRoom(code) {
+  // Check memory first
+  if (rooms.has(code)) {
+    return rooms.get(code);
+  }
+
+  // Try to load from Redis
+  const room = await loadRoom(code);
+  if (room) {
+    rooms.set(code, room);
+    return room;
+  }
+
+  return null;
+}
+
+async function createRoom(playerName, ws) {
+  const roomCode = generateRoomCode();
+  const seed = generateGameSeed();
+  const reconnectToken = generateReconnectToken();
+  const playerId = "player1";
+
+  const room = {
+    code: roomCode,
+    seed: seed,
+    players: [
+      {
+        id: playerId,
+        name: playerName || "Player 1",
+        ws: ws,
+        score: 0,
+        level: 1,
+        lines: 0,
+        board: null,
+        ready: false,
+        gameOver: false,
+        reconnectToken: reconnectToken,
+      },
+    ],
+    started: false,
+    createdAt: Date.now(),
+    pendingGarbage: new Map(),
+  };
+
+  rooms.set(roomCode, room);
+
+  // Save to Redis
+  await saveRoom(room);
+  await saveReconnectToken(reconnectToken, {
+    roomCode: roomCode,
+    playerId: playerId,
+    playerName: playerName || "Player 1",
+  });
+
+  return { room, playerId, reconnectToken };
+}
+
+async function joinRoom(roomCode, playerName, ws) {
+  const room = await getOrLoadRoom(roomCode);
+
+  if (!room) {
+    return { error: "Room not found" };
+  }
+
+  if (room.players.length >= 2) {
+    return { error: "Room is full" };
+  }
+
+  if (room.started) {
+    return { error: "Game already started" };
+  }
+
+  const reconnectToken = generateReconnectToken();
+  const playerId = "player2";
+
+  room.players.push({
+    id: playerId,
+    name: playerName || "Player 2",
+    ws: ws,
+    score: 0,
+    level: 1,
+    lines: 0,
+    board: null,
+    ready: false,
+    gameOver: false,
+    reconnectToken: reconnectToken,
+  });
+
+  // Save to Redis
+  await saveRoom(room);
+  await saveReconnectToken(reconnectToken, {
+    roomCode: roomCode,
+    playerId: playerId,
+    playerName: playerName || "Player 2",
+  });
+
+  return { room, playerId, reconnectToken };
+}
+
+async function reconnectPlayer(token, ws) {
+  const tokenData = await loadReconnectToken(token);
+
+  if (!tokenData) {
+    return { error: "Invalid or expired reconnect token" };
+  }
+
+  const room = await getOrLoadRoom(tokenData.roomCode);
+
+  if (!room) {
+    await deleteReconnectToken(token);
+    return { error: "Room no longer exists" };
+  }
+
+  const player = room.players.find((p) => p.id === tokenData.playerId);
+
+  if (!player) {
+    await deleteReconnectToken(token);
+    return { error: "Player not found in room" };
+  }
+
+  // Reconnect the player
+  player.ws = ws;
+  delete player.disconnectedAt;
+
+  // Save to Redis
+  await saveRoom(room);
+
+  return { room, player, tokenData };
+}
+
+async function removePlayerFromRoom(roomCode, playerId) {
+  const room = rooms.get(roomCode);
+  if (!room) return;
+
+  const player = room.players.find((p) => p.id === playerId);
+  if (player && player.reconnectToken) {
+    await deleteReconnectToken(player.reconnectToken);
+  }
+
+  room.players = room.players.filter((p) => p.id !== playerId);
+
+  if (room.players.length === 0) {
+    rooms.delete(roomCode);
+    await deleteRoom(roomCode);
+    console.log(`Room ${roomCode} deleted (empty)`);
+  } else {
+    await saveRoom(room);
+  }
+}
+
+// ========================
 // WEBSOCKET HANDLING
 // ========================
 
@@ -191,7 +435,7 @@ wss.on("connection", (ws) => {
   let currentRoom = null;
   let playerId = null;
 
-  ws.on("message", (data) => {
+  ws.on("message", async (data) => {
     let message;
     try {
       message = JSON.parse(data);
@@ -204,46 +448,19 @@ wss.on("connection", (ws) => {
       // RECONNECTION
       // ========================
       case "reconnect": {
-        const tokenData = reconnectTokens.get(message.token);
-        if (!tokenData || tokenData.expiresAt < Date.now()) {
-          ws.send(
-            JSON.stringify({
-              type: "error",
-              message: "Invalid or expired reconnect token",
-            }),
-          );
+        const result = await reconnectPlayer(message.token, ws);
+
+        if (result.error) {
+          ws.send(JSON.stringify({ type: "error", message: result.error }));
           return;
         }
 
-        const room = rooms.get(tokenData.roomCode);
-        if (!room) {
-          ws.send(
-            JSON.stringify({ type: "error", message: "Room no longer exists" }),
-          );
-          reconnectTokens.delete(message.token);
-          return;
-        }
+        const { room, player, tokenData } = result;
+        currentRoom = room.code;
+        playerId = player.id;
 
-        const player = room.players.find((p) => p.id === tokenData.playerId);
-        if (!player) {
-          ws.send(
-            JSON.stringify({
-              type: "error",
-              message: "Player not found in room",
-            }),
-          );
-          reconnectTokens.delete(message.token);
-          return;
-        }
-
-        // Reconnect the player
-        player.ws = ws;
-        delete player.disconnectedAt;
-        currentRoom = tokenData.roomCode;
-        playerId = tokenData.playerId;
-
-        // Send reconnection success with current game state
         const opponent = room.players.find((p) => p.id !== playerId);
+
         ws.send(
           JSON.stringify({
             type: "reconnected",
@@ -263,7 +480,6 @@ wss.on("connection", (ws) => {
           }),
         );
 
-        // Notify opponent
         broadcastToRoom(
           currentRoom,
           {
@@ -281,55 +497,24 @@ wss.on("connection", (ws) => {
       // ROOM CREATION
       // ========================
       case "create_room": {
-        const roomCode = generateRoomCode();
-        const seed = generateGameSeed();
-        const reconnectToken = generateReconnectToken();
-        playerId = "player1";
+        const result = await createRoom(message.name, ws);
+        const { room, playerId: newPlayerId, reconnectToken } = result;
 
-        rooms.set(roomCode, {
-          code: roomCode,
-          seed: seed,
-          players: [
-            {
-              id: playerId,
-              name: message.name || "Player 1",
-              ws: ws,
-              score: 0,
-              level: 1,
-              lines: 0,
-              board: null,
-              ready: false,
-              gameOver: false,
-              reconnectToken: reconnectToken,
-            },
-          ],
-          started: false,
-          createdAt: Date.now(),
-          pendingGarbage: new Map(),
-        });
-
-        currentRoom = roomCode;
-
-        // Store reconnect token
-        reconnectTokens.set(reconnectToken, {
-          roomCode: roomCode,
-          playerId: playerId,
-          playerName: message.name || "Player 1",
-          expiresAt: Date.now() + 30 * 60 * 1000, // 30 minutes
-        });
+        currentRoom = room.code;
+        playerId = newPlayerId;
 
         ws.send(
           JSON.stringify({
             type: "room_created",
-            roomCode: roomCode,
+            roomCode: room.code,
             playerId: playerId,
-            seed: seed,
+            seed: room.seed,
             reconnectToken: reconnectToken,
           }),
         );
 
         console.log(
-          `Room ${roomCode} created by ${message.name || "Player 1"}`,
+          `Room ${room.code} created by ${message.name || "Player 1"}`,
         );
         break;
       }
@@ -338,51 +523,17 @@ wss.on("connection", (ws) => {
       // ROOM JOINING
       // ========================
       case "join_room": {
-        const room = rooms.get(message.roomCode);
+        const result = await joinRoom(message.roomCode, message.name, ws);
 
-        if (!room) {
-          ws.send(JSON.stringify({ type: "error", message: "Room not found" }));
+        if (result.error) {
+          ws.send(JSON.stringify({ type: "error", message: result.error }));
           return;
         }
 
-        if (room.players.length >= 2) {
-          ws.send(JSON.stringify({ type: "error", message: "Room is full" }));
-          return;
-        }
+        const { room, playerId: newPlayerId, reconnectToken } = result;
+        currentRoom = room.code;
+        playerId = newPlayerId;
 
-        if (room.started) {
-          ws.send(
-            JSON.stringify({ type: "error", message: "Game already started" }),
-          );
-          return;
-        }
-
-        const reconnectToken = generateReconnectToken();
-        playerId = "player2";
-        currentRoom = message.roomCode;
-
-        room.players.push({
-          id: playerId,
-          name: message.name || "Player 2",
-          ws: ws,
-          score: 0,
-          level: 1,
-          lines: 0,
-          board: null,
-          ready: false,
-          gameOver: false,
-          reconnectToken: reconnectToken,
-        });
-
-        // Store reconnect token
-        reconnectTokens.set(reconnectToken, {
-          roomCode: currentRoom,
-          playerId: playerId,
-          playerName: message.name || "Player 2",
-          expiresAt: Date.now() + 30 * 60 * 1000,
-        });
-
-        // Notify joiner
         ws.send(
           JSON.stringify({
             type: "room_joined",
@@ -397,7 +548,6 @@ wss.on("connection", (ws) => {
           }),
         );
 
-        // Notify host
         broadcastToRoom(
           currentRoom,
           {
@@ -426,10 +576,11 @@ wss.on("connection", (ws) => {
           player.ready = true;
         }
 
-        // Check if both players are ready
         if (room.players.length === 2 && room.players.every((p) => p.ready)) {
           room.started = true;
           room.pendingGarbage = new Map();
+
+          await saveRoom(room);
 
           broadcastToRoom(currentRoom, {
             type: "game_start",
@@ -439,6 +590,8 @@ wss.on("connection", (ws) => {
 
           console.log(`Game started in room ${currentRoom}`);
         } else {
+          await saveRoom(room);
+
           broadcastToRoom(currentRoom, {
             type: "player_ready",
             playerId: playerId,
@@ -462,7 +615,8 @@ wss.on("connection", (ws) => {
           player.board = message.board;
         }
 
-        // Send update to opponent
+        // Don't save board to Redis (too large/frequent)
+        // Only broadcast to opponent
         broadcastToRoom(
           currentRoom,
           {
@@ -479,7 +633,7 @@ wss.on("connection", (ws) => {
       }
 
       // ========================
-      // GARBAGE ATTACK (new!)
+      // GARBAGE ATTACK
       // ========================
       case "send_garbage": {
         const room = rooms.get(currentRoom);
@@ -489,17 +643,14 @@ wss.on("connection", (ws) => {
         const garbage = calculateGarbage(linesCleared);
 
         if (garbage > 0) {
-          // Find opponent
           const opponent = room.players.find((p) => p.id !== playerId);
           if (opponent && !opponent.gameOver) {
-            // Send garbage to opponent
             sendToPlayer(opponent, {
               type: "incoming_garbage",
               lines: garbage,
               fromPlayer: playerId,
             });
 
-            // Notify sender that garbage was sent
             ws.send(
               JSON.stringify({
                 type: "garbage_sent",
@@ -531,8 +682,9 @@ wss.on("connection", (ws) => {
           player.lines = message.lines;
         }
 
-        // Check if both players are done
         const allDone = room.players.every((p) => p.gameOver);
+
+        await saveRoom(room);
 
         broadcastToRoom(currentRoom, {
           type: "player_game_over",
@@ -562,7 +714,7 @@ wss.on("connection", (ws) => {
       }
 
       // ========================
-      // REMATCH REQUEST (new!)
+      // REMATCH REQUEST
       // ========================
       case "request_rematch": {
         const room = rooms.get(currentRoom);
@@ -573,12 +725,10 @@ wss.on("connection", (ws) => {
           player.wantsRematch = true;
         }
 
-        // Check if both players want rematch
         if (
           room.players.length === 2 &&
           room.players.every((p) => p.wantsRematch)
         ) {
-          // Reset game state for rematch
           const newSeed = generateGameSeed();
           room.seed = newSeed;
           room.started = false;
@@ -594,6 +744,8 @@ wss.on("connection", (ws) => {
             p.wantsRematch = false;
           });
 
+          await saveRoom(room);
+
           broadcastToRoom(currentRoom, {
             type: "rematch_starting",
             seed: newSeed,
@@ -601,7 +753,8 @@ wss.on("connection", (ws) => {
 
           console.log(`Rematch starting in room ${currentRoom}`);
         } else {
-          // Notify opponent that rematch was requested
+          await saveRoom(room);
+
           broadcastToRoom(
             currentRoom,
             {
@@ -615,7 +768,7 @@ wss.on("connection", (ws) => {
       }
 
       // ========================
-      // DECLINE REMATCH (new!)
+      // DECLINE REMATCH
       // ========================
       case "decline_rematch": {
         const room = rooms.get(currentRoom);
@@ -633,7 +786,7 @@ wss.on("connection", (ws) => {
       }
 
       // ========================
-      // EMOJI/REACTION (new!)
+      // EMOJI/REACTION
       // ========================
       case "send_emoji": {
         const room = rooms.get(currentRoom);
@@ -659,27 +812,16 @@ wss.on("connection", (ws) => {
       // ========================
       case "leave_room": {
         if (currentRoom) {
-          const room = rooms.get(currentRoom);
-          if (room) {
-            const player = room.players.find((p) => p.id === playerId);
-            if (player && player.reconnectToken) {
-              reconnectTokens.delete(player.reconnectToken);
-            }
+          broadcastToRoom(
+            currentRoom,
+            {
+              type: "player_left",
+              playerId: playerId,
+            },
+            ws,
+          );
 
-            broadcastToRoom(
-              currentRoom,
-              {
-                type: "player_left",
-                playerId: playerId,
-              },
-              ws,
-            );
-            room.players = room.players.filter((p) => p.id !== playerId);
-            if (room.players.length === 0) {
-              rooms.delete(currentRoom);
-              console.log(`Room ${currentRoom} deleted (empty)`);
-            }
-          }
+          await removePlayerFromRoom(currentRoom, playerId);
           currentRoom = null;
         }
         break;
@@ -687,13 +829,12 @@ wss.on("connection", (ws) => {
     }
   });
 
-  ws.on("close", () => {
+  ws.on("close", async () => {
     if (currentRoom) {
       const room = rooms.get(currentRoom);
       if (room) {
         const player = room.players.find((p) => p.id === playerId);
         if (player) {
-          // Mark as disconnected but keep in room for reconnection
           player.ws = null;
           player.disconnectedAt = Date.now();
 
@@ -712,26 +853,20 @@ wss.on("connection", (ws) => {
           );
 
           // Set timeout to remove player if they don't reconnect
-          setTimeout(() => {
-            const room = rooms.get(currentRoom);
-            if (room) {
-              const player = room.players.find((p) => p.id === playerId);
-              if (player && player.disconnectedAt) {
-                // Player didn't reconnect, remove them
-                if (player.reconnectToken) {
-                  reconnectTokens.delete(player.reconnectToken);
-                }
-                room.players = room.players.filter((p) => p.id !== playerId);
+          const roomCode = currentRoom;
+          const pId = playerId;
 
-                broadcastToRoom(currentRoom, {
+          setTimeout(async () => {
+            const room = rooms.get(roomCode);
+            if (room) {
+              const player = room.players.find((p) => p.id === pId);
+              if (player && player.disconnectedAt) {
+                broadcastToRoom(roomCode, {
                   type: "player_left",
-                  playerId: playerId,
+                  playerId: pId,
                 });
 
-                if (room.players.length === 0) {
-                  rooms.delete(currentRoom);
-                  console.log(`Room ${currentRoom} deleted (timeout)`);
-                }
+                await removePlayerFromRoom(roomCode, pId);
               }
             }
           }, 60000); // 1 minute to reconnect
@@ -741,22 +876,19 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("error", (err) => {
-    console.error("WebSocket error:", err);
+    console.error("WebSocket error:", err.message);
   });
 });
 
 // ========================
-// PERIODIC TASKS
+// PERIODIC CLEANUP
 // ========================
 
-// Save state periodically
-setInterval(saveState, SAVE_INTERVAL);
-
-// Cleanup old rooms
-setInterval(() => {
+setInterval(async () => {
   const now = Date.now();
   const maxAge = 30 * 60 * 1000; // 30 minutes
 
+  // Cleanup expired rooms from memory
   rooms.forEach((room, code) => {
     if (now - room.createdAt > maxAge) {
       room.players.forEach((p) => {
@@ -764,28 +896,33 @@ setInterval(() => {
           p.ws.send(JSON.stringify({ type: "room_expired" }));
           p.ws.close();
         }
-        if (p.reconnectToken) {
-          reconnectTokens.delete(p.reconnectToken);
-        }
       });
       rooms.delete(code);
-      console.log(`Room ${code} expired`);
+      console.log(`Room ${code} expired (memory)`);
     }
   });
 
-  // Cleanup expired reconnect tokens
-  reconnectTokens.forEach((data, token) => {
-    if (data.expiresAt < now) {
-      reconnectTokens.delete(token);
+  // Cleanup Redis (handled by TTL, but also sync activeRooms set)
+  if (redisConnected) {
+    try {
+      const activeRooms = await getAllActiveRoomCodes();
+      for (const code of activeRooms) {
+        const exists = await redisClient.exists(KEYS.room(code));
+        if (!exists) {
+          await redisClient.sRem(KEYS.activeRooms, code);
+        }
+      }
+    } catch (err) {
+      console.error("Redis cleanup error:", err.message);
     }
-  });
+  }
 }, 60000);
 
 // ========================
 // GRACEFUL SHUTDOWN
 // ========================
 
-function shutdown() {
+async function shutdown() {
   console.log("Shutting down...");
 
   // Notify all players
@@ -802,10 +939,17 @@ function shutdown() {
     });
   });
 
-  // Save state before exit
-  saveState();
+  // Close Redis connection
+  if (redisClient) {
+    try {
+      await redisClient.quit();
+      console.log("Redis: Disconnected");
+    } catch (err) {
+      console.error("Redis: Error closing connection:", err.message);
+    }
+  }
 
-  // Close server
+  // Close WebSocket server
   wss.close(() => {
     server.close(() => {
       console.log("Server closed");
@@ -826,12 +970,33 @@ process.on("SIGINT", shutdown);
 // STARTUP
 // ========================
 
-// Load any saved state
-loadState();
+async function start() {
+  // Initialize Redis
+  await initRedis();
 
-server.listen(PORT, () => {
-  console.log(`Flixtris Multiplayer Server v2.0 running on port ${PORT}`);
-  console.log(
-    `Features: Garbage lines, Reconnection, Rematch, Emojis, State persistence`,
-  );
-});
+  // Load any persisted rooms from Redis
+  if (redisConnected) {
+    try {
+      const activeRoomCodes = await getAllActiveRoomCodes();
+      console.log(`Redis: Found ${activeRoomCodes.length} persisted rooms`);
+
+      // We don't preload all rooms - they'll be loaded on demand
+    } catch (err) {
+      console.error("Redis: Failed to check persisted rooms:", err.message);
+    }
+  }
+
+  // Start HTTP server
+  server.listen(PORT, () => {
+    console.log(`Flixtris Multiplayer Server v2.1 running on port ${PORT}`);
+    console.log(
+      `Redis: ${redisConnected ? "Connected" : "Not connected (memory-only mode)"}`,
+    );
+    console.log(
+      `Features: Garbage lines, Reconnection, Rematch, Emojis, Redis persistence`,
+    );
+    console.log(`Health check: http://localhost:${PORT}/health`);
+  });
+}
+
+start();

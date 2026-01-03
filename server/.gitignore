@@ -1,9 +1,6 @@
 # Dependencies
 node_modules/
 
-# State persistence file (auto-generated)
-rooms-state.json
-
 # Logs
 *.log
 npm-debug.log*
@@ -19,3 +16,7 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+.env.*.local
+
+# Redis dump (if running Redis locally)
+dump.rdb
