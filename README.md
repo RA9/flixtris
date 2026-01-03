@@ -1,110 +1,105 @@
 # Flixtris
 
-Flixtris is fully responsive across **mobile, tablet, and desktop**:
+A modern, offline-first Tetris game built with pure JavaScript. No frameworks, no build tools.
 
-- Uses **CSS Grid + Flexbox**
-- Canvas scales proportionally (no stretching)
-- Touch controls auto-enable on mobile
-- Side panel collapses into bottom drawer on small screens
-
-### Responsive Rules
-- `max-width: 480px` → Mobile layout
-- `481px–900px` → Tablet layout
-- `>900px` → Desktop layout
-
-No JS media queries required — layout handled purely in CSS.
-
----
-
-## 🌍 Daily Seed Sharing (Implemented)
-
-### What is Daily Seed Sharing?
-
-A **Daily Seed** ensures:
-- Every player gets the **same piece order** on the same day
-- Scores are directly comparable
-- Works **offline**
-
-### How It Works
-- Seed format: `FLX-YYYY-MM-DD`
-- Deterministic RNG guarantees identical gameplay
-- Saved with score in IndexedDB
-
-### Share Flow
-- Daily results display the seed
-- Players can share:
-  > "I scored 12,430 on FLX-2026-01-02"
-
-Future upgrade-ready for URL sharing.
-
----
-
-## 👻 Ghost Piece & Speed Curve
-
-- Ghost piece enabled in **Classic & Daily**
-- Disabled in **Hardcore**
-
-### Speed Formula
-```js
-speed = Math.max(80, 800 - (level - 1) * 70)
-```
-
-- Level 1–3: forgiving
-- Level 4+: aggressively faster
-- Infinite scaling
-
----
-
-## 🏆 Local Leaderboard
-
-- Stored in IndexedDB
-- Sorted by score
-- Includes:
-  - Mode
-  - Level
-  - Daily Seed (if applicable)
-
-Offline-first, zero sync required.
-
----
-
-## 📖 README.md
-
-```md
-# 🎮 Flixtris
-
-Flixtris is a **pure JavaScript, offline-first PWA Tetris-style game** with infinite levels, daily challenges, and hardcore modes.
+**Created by [Carlos S. Nah](https://github.com/ra9)**
 
 ## Features
-- Offline-first PWA
-- Infinite difficulty scaling
-- Daily seed challenge
-- Hardcore mode
-- Touch + keyboard support
-- Local leaderboard
+
+- **Three Game Modes**
+  - **Classic** - Endless mode with increasing difficulty
+  - **Daily Challenge** - Same piece sequence for everyone, compare scores
+  - **Hardcore** - No pause, no ghost piece, no mercy
+
+- **Play Custom Seeds** - Enter a shared seed code to challenge friends
+
+- **NES-Style Scoring**
+  - Single: 40 pts
+  - Double: 100 pts
+  - Triple: 300 pts
+  - Tetris: 1200 pts
+  - All multiplied by (Level + 1)
+
+- **Retro Sound Effects** - 8-bit style sounds generated with Web Audio API
+
+- **Mobile Responsive** - Touch controls, hamburger menu, works on any device
+
+- **PWA Support** - Install as an app, works offline
+
+- **Local Leaderboard** - Game history stored in IndexedDB
 
 ## Controls
-- ← → : Move
-- ↑ : Rotate
-- ↓ : Soft drop
-- Space : Hard drop
-- P : Pause
-- H : Help
 
-## Install
+### Keyboard
+| Key | Action |
+|-----|--------|
+| ← → | Move left/right |
+| ↑ | Rotate |
+| ↓ | Soft drop |
+| Space | Hard drop |
+| P | Pause (not in Hardcore) |
+| H | Help |
+
+### Mobile
+Touch control buttons appear below the game canvas on mobile devices.
+
+## Daily Seed Sharing
+
+In Daily mode, everyone gets the same piece sequence based on the date.
+
+**Seed format:** `FLX-YYYY-MM-DD`
+
+Share your score with friends:
+```
+Flixtris Daily Challenge
+FLX-2026-1-3
+Score: 12430 | Level: 8 | Lines: 72
+
+Can you beat my score?
+```
+
+Friends can enter the seed via "Play Seed" to get the exact same game.
+
+## Installation
+
 Serve with any static server:
 
 ```bash
 npx serve .
+# or
+python -m http.server 8000
 ```
 
-Then install from your browser.
+Open in browser and optionally install as a PWA.
 
-## Tech
-- Vanilla JS
+## Project Structure
+
+```
+flixtris/
+├── index.html      # Main HTML with embedded CSS
+├── manifest.json   # PWA manifest
+├── js/
+│   ├── db.js       # IndexedDB storage
+│   ├── sound.js    # Web Audio sound effects
+│   ├── game.js     # Game logic and rendering
+│   └── ui.js       # UI and screen management
+└── icons/
+    ├── icon.svg
+    ├── icon-192.png
+    └── icon-512.png
+```
+
+## Tech Stack
+
+- Vanilla JavaScript (ES6+)
+- HTML5 Canvas
+- Web Audio API
 - IndexedDB
-- Canvas
-- Service Workers
+- CSS Variables & Flexbox
+- PWA (manifest + icons)
 
-No frameworks. No build tools.
-```
+No frameworks. No build tools. No dependencies.
+
+## License
+
+MIT
