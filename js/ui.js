@@ -114,6 +114,10 @@
 
   // Splash screen - any key or click advances
   function handleSplashInteraction() {
+    // Resume audio context on first user interaction
+    if (api.sound && api.sound.resumeContext) {
+      api.sound.resumeContext();
+    }
     showScreen("menu");
   }
 
@@ -129,6 +133,7 @@
   // Mode selection
   document.querySelectorAll(".mode-card").forEach((card) => {
     card.addEventListener("click", () => {
+      if (api.sound) api.sound.menuSelect();
       const mode = card.dataset.mode;
       lastMode = mode;
       showScreen("game");
@@ -152,6 +157,16 @@
   document
     .getElementById("closeHelp")
     .addEventListener("click", () => showOverlay(false));
+
+  // Sound toggle
+  const soundBtn = document.getElementById("soundBtn");
+  soundBtn.addEventListener("click", () => {
+    if (api.sound) {
+      const enabled = !api.sound.isEnabled();
+      api.sound.setEnabled(enabled);
+      soundBtn.textContent = enabled ? "Sound: On" : "Sound: Off";
+    }
+  });
 
   // Main menu button during game
   document.getElementById("mainMenuBtn").addEventListener("click", () => {

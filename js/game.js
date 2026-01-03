@@ -189,6 +189,7 @@
       if (!collides(rotated, state.posX + kick, state.posY)) {
         state.current.shape = rotated;
         state.posX += kick;
+        window.Flixtris.api.sound.rotate();
         return true;
       }
     }
@@ -199,6 +200,7 @@
     if (!state.current) return false;
     if (!collides(state.current.shape, state.posX - 1, state.posY)) {
       state.posX--;
+      window.Flixtris.api.sound.move();
       return true;
     }
     return false;
@@ -208,6 +210,7 @@
     if (!state.current) return false;
     if (!collides(state.current.shape, state.posX + 1, state.posY)) {
       state.posX++;
+      window.Flixtris.api.sound.move();
       return true;
     }
     return false;
@@ -217,6 +220,7 @@
     if (!state.current) return false;
     if (!collides(state.current.shape, state.posX, state.posY + 1)) {
       state.posY++;
+      window.Flixtris.api.sound.softDrop();
       return true;
     }
     return false;
@@ -227,6 +231,7 @@
     while (!collides(state.current.shape, state.posX, state.posY + 1)) {
       state.posY++;
     }
+    window.Flixtris.api.sound.hardDrop();
     lockPiece();
   }
 
@@ -265,6 +270,13 @@
       else if (linesCleared === 2) state.doubles++;
       else if (linesCleared === 3) state.triples++;
       else if (linesCleared === 4) state.tetrises++;
+
+      // Play sound
+      if (linesCleared === 4) {
+        window.Flixtris.api.sound.tetris();
+      } else {
+        window.Flixtris.api.sound.lineClear();
+      }
 
       // NES-style scoring: base points * (level + 1)
       // Single: 40, Double: 100, Triple: 300, Tetris: 1200
@@ -466,6 +478,7 @@
     if (e.key === "p" || e.key === "P") {
       if (state.mode !== "hardcore") {
         state.paused = !state.paused;
+        window.Flixtris.api.sound.pause();
         render();
       }
       return;
@@ -553,6 +566,7 @@
 
   function gameOver() {
     state.running = false;
+    window.Flixtris.api.sound.gameOver();
 
     window.Flixtris.api.db.addGame({
       score: state.score,
