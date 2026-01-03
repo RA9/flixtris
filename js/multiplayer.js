@@ -16,10 +16,37 @@
   let maxReconnectAttempts = 3;
   let reconnectTimeout = null;
 
-  const SERVER_URL =
-    window.location.hostname === "localhost"
-      ? "ws://localhost:3001"
-      : `wss://${window.location.hostname}:3001`;
+  // Server URL configuration
+  // Can be overridden by setting window.FLIXTRIS_SERVER_URL before this script loads
+  function getServerUrl() {
+    // Allow manual override
+    if (window.FLIXTRIS_SERVER_URL) {
+      return window.FLIXTRIS_SERVER_URL;
+    }
+
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    // Handle file:// protocol or empty hostname (local file)
+    if (!hostname || protocol === "file:") {
+      return "ws://localhost:3001";
+    }
+
+    // Handle localhost and 127.0.0.1
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "ws://localhost:3001";
+    }
+
+    // Handle local network IPs (192.168.x.x, 10.x.x.x, etc.)
+    if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(hostname)) {
+      return `ws://${hostname}:3001`;
+    }
+
+    // Production: use secure WebSocket
+    return `wss://${hostname}:3001`;
+  }
+
+  const SERVER_URL = getServerUrl();
 
   // ========================
   // CONNECTION MANAGEMENT
@@ -28,10 +55,11 @@
   function connect() {
     return new Promise((resolve, reject) => {
       try {
+        console.log("Connecting to multiplayer server:", SERVER_URL);
         ws = new WebSocket(SERVER_URL);
 
         ws.onopen = () => {
-          console.log("Connected to multiplayer server");
+          console.log("Connected to multiplayer server:", SERVER_URL);
           reconnectAttempts = 0;
           resolve();
         };
