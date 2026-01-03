@@ -6,6 +6,7 @@
 
   // Screen management
   const screens = {
+    audio: document.getElementById("screen-audio"),
     splash: document.getElementById("screen-splash"),
     menu: document.getElementById("screen-menu"),
     game: document.getElementById("screen-game"),
@@ -112,25 +113,31 @@
     });
   }
 
-  // Splash screen - any key or click advances
-  let splashMusicStarted = false;
-
-  function startSplashMusic() {
-    if (splashMusicStarted) return;
+  // Audio enable screen - first interaction enables audio
+  function handleAudioEnable() {
     if (api.sound && api.sound.resumeContext) {
       api.sound.resumeContext();
     }
+    showScreen("splash");
+    // Start splash music after showing splash screen
     if (api.sound && api.sound.playSplashMusic) {
       api.sound.playSplashMusic();
-      splashMusicStarted = true;
-      // Update prompt
-      const prompt = document.getElementById("splash-prompt");
-      if (prompt) {
-        prompt.textContent = "Tap again or press any key to start";
-      }
     }
   }
 
+  screens.audio.addEventListener("click", handleAudioEnable);
+  screens.audio.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    handleAudioEnable();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (screens.audio.classList.contains("active")) {
+      handleAudioEnable();
+    }
+  });
+
+  // Splash screen - any key or click advances to menu
   function handleSplashInteraction() {
     if (api.sound && api.sound.stopSplashMusic) {
       api.sound.stopSplashMusic();
@@ -138,30 +145,15 @@
     showScreen("menu");
   }
 
-  // Start music on first interaction with splash
-  screens.splash.addEventListener("click", (e) => {
-    if (!splashMusicStarted) {
-      startSplashMusic();
-    } else {
-      handleSplashInteraction();
-    }
-  });
-
+  screens.splash.addEventListener("click", handleSplashInteraction);
   screens.splash.addEventListener("touchstart", (e) => {
-    if (!splashMusicStarted) {
-      startSplashMusic();
-    } else {
-      handleSplashInteraction();
-    }
+    e.preventDefault();
+    handleSplashInteraction();
   });
 
   document.addEventListener("keydown", (e) => {
     if (screens.splash.classList.contains("active")) {
-      if (!splashMusicStarted) {
-        startSplashMusic();
-      } else {
-        handleSplashInteraction();
-      }
+      handleSplashInteraction();
     }
   });
 
