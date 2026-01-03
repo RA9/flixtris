@@ -113,20 +113,55 @@
   }
 
   // Splash screen - any key or click advances
-  function handleSplashInteraction() {
-    // Resume audio context on first user interaction
+  let splashMusicStarted = false;
+
+  function startSplashMusic() {
+    if (splashMusicStarted) return;
     if (api.sound && api.sound.resumeContext) {
       api.sound.resumeContext();
+    }
+    if (api.sound && api.sound.playSplashMusic) {
+      api.sound.playSplashMusic();
+      splashMusicStarted = true;
+      // Update prompt
+      const prompt = document.getElementById("splash-prompt");
+      if (prompt) {
+        prompt.textContent = "Tap again or press any key to start";
+      }
+    }
+  }
+
+  function handleSplashInteraction() {
+    if (api.sound && api.sound.stopSplashMusic) {
+      api.sound.stopSplashMusic();
     }
     showScreen("menu");
   }
 
-  screens.splash.addEventListener("click", handleSplashInteraction);
-  screens.splash.addEventListener("touchstart", handleSplashInteraction);
+  // Start music on first interaction with splash
+  screens.splash.addEventListener("click", (e) => {
+    if (!splashMusicStarted) {
+      startSplashMusic();
+    } else {
+      handleSplashInteraction();
+    }
+  });
+
+  screens.splash.addEventListener("touchstart", (e) => {
+    if (!splashMusicStarted) {
+      startSplashMusic();
+    } else {
+      handleSplashInteraction();
+    }
+  });
 
   document.addEventListener("keydown", (e) => {
     if (screens.splash.classList.contains("active")) {
-      handleSplashInteraction();
+      if (!splashMusicStarted) {
+        startSplashMusic();
+      } else {
+        handleSplashInteraction();
+      }
     }
   });
 

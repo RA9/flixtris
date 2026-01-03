@@ -31,7 +31,10 @@
     oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
 
     gainNode.gain.setValueAtTime(volume, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      ctx.currentTime + duration,
+    );
 
     oscillator.start(ctx.currentTime);
     oscillator.stop(ctx.currentTime + duration);
@@ -62,7 +65,10 @@
     gainNode.connect(ctx.destination);
 
     gainNode.gain.setValueAtTime(volume, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      ctx.currentTime + duration,
+    );
 
     noise.start(ctx.currentTime);
     noise.stop(ctx.currentTime + duration);
@@ -119,7 +125,7 @@
 
     pause() {
       playTone(440, 0.15, "triangle", 0.2);
-    }
+    },
   };
 
   // Enable/disable sounds
@@ -131,10 +137,69 @@
     return enabled;
   }
 
+  // Splash screen music - looping chiptune melody
+  let splashMusicInterval = null;
+  let splashMusicPlaying = false;
+
+  const splashMelody = [
+    { note: 330, duration: 0.15 }, // E4
+    { note: 392, duration: 0.15 }, // G4
+    { note: 523, duration: 0.15 }, // C5
+    { note: 659, duration: 0.15 }, // E5
+    { note: 523, duration: 0.15 }, // C5
+    { note: 392, duration: 0.15 }, // G4
+    { note: 330, duration: 0.3 }, // E4
+    { note: 0, duration: 0.15 }, // Rest
+    { note: 294, duration: 0.15 }, // D4
+    { note: 349, duration: 0.15 }, // F4
+    { note: 440, duration: 0.15 }, // A4
+    { note: 523, duration: 0.15 }, // C5
+    { note: 440, duration: 0.15 }, // A4
+    { note: 349, duration: 0.15 }, // F4
+    { note: 294, duration: 0.3 }, // D4
+    { note: 0, duration: 0.3 }, // Rest
+  ];
+
+  function playSplashMusic() {
+    if (!enabled || splashMusicPlaying) return;
+
+    splashMusicPlaying = true;
+    let noteIndex = 0;
+
+    function playNextNote() {
+      if (!splashMusicPlaying || !enabled) {
+        splashMusicPlaying = false;
+        return;
+      }
+
+      const { note, duration } = splashMelody[noteIndex];
+
+      if (note > 0) {
+        playTone(note, duration * 0.9, "square", 0.15);
+      }
+
+      noteIndex = (noteIndex + 1) % splashMelody.length;
+
+      splashMusicInterval = setTimeout(playNextNote, duration * 1000);
+    }
+
+    playNextNote();
+  }
+
+  function stopSplashMusic() {
+    splashMusicPlaying = false;
+    if (splashMusicInterval) {
+      clearTimeout(splashMusicInterval);
+      splashMusicInterval = null;
+    }
+  }
+
   window.Flixtris.api.sound = {
     ...sounds,
     setEnabled,
     isEnabled,
     resumeContext,
+    playSplashMusic,
+    stopSplashMusic,
   };
 })();
