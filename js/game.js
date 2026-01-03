@@ -547,6 +547,10 @@
     requestAnimationFrame(gameLoop);
   }
 
+  function stop() {
+    state.running = false;
+  }
+
   function gameOver() {
     state.running = false;
 
@@ -574,6 +578,7 @@
     startGame,
     startGameWithSeed,
     gameOver,
+    stop,
     resizeCanvas,
     moveLeft,
     moveRight,

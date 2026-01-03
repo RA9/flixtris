@@ -153,6 +153,13 @@
     .getElementById("closeHelp")
     .addEventListener("click", () => showOverlay(false));
 
+  // Main menu button during game
+  document.getElementById("mainMenuBtn").addEventListener("click", () => {
+    if (api.game.stop) api.game.stop();
+    closePanel();
+    showScreen("menu");
+  });
+
   // Game over overlay buttons
   document.getElementById("playAgainBtn").addEventListener("click", () => {
     showGameOverOverlay(false);
