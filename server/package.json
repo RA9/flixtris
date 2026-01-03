@@ -1,0 +1,21 @@
+{
+  "name": "flixtris-server",
+  "version": "1.0.0",
+  "description": "Flixtris Multiplayer WebSocket Server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "flixtris",
+    "tetris",
+    "multiplayer",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

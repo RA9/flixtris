@@ -73,6 +73,7 @@
     posY: 0,
     dropInterval: null,
     lastDrop: 0,
+    lastMultiplayerUpdate: 0,
     // Line clear stats
     singles: 0,
     doubles: 0,
@@ -251,6 +252,46 @@
     }
     clearLines();
     spawnPiece();
+
+    // Send board update for multiplayer
+    sendMultiplayerUpdate();
+  }
+
+  // Get board snapshot including current piece for multiplayer sync
+  function getBoardSnapshot() {
+    // Create a copy of the board
+    const snapshot = state.board.map((row) => [...row]);
+
+    // Add current piece to snapshot
+    if (state.current) {
+      const shape = state.current.shape;
+      for (let r = 0; r < shape.length; r++) {
+        for (let c = 0; c < shape[r].length; c++) {
+          if (shape[r][c]) {
+            const boardY = state.posY + r;
+            const boardX = state.posX + c;
+            if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
+              snapshot[boardY][boardX] = state.current.color;
+            }
+          }
+        }
+      }
+    }
+
+    return snapshot;
+  }
+
+  // Send update to multiplayer server
+  function sendMultiplayerUpdate() {
+    const mp = window.Flixtris.api.multiplayer;
+    if (mp && mp.isConnected()) {
+      mp.sendGameUpdate(
+        state.score,
+        state.level,
+        state.lines,
+        getBoardSnapshot(),
+      );
+    }
   }
 
   function clearLines() {
@@ -466,6 +507,12 @@
         state.lastDrop = timestamp;
       }
       render();
+
+      // Send multiplayer updates every 100ms for smooth opponent view
+      if (timestamp - state.lastMultiplayerUpdate > 100) {
+        sendMultiplayerUpdate();
+        state.lastMultiplayerUpdate = timestamp;
+      }
     }
 
     requestAnimationFrame(gameLoop);
@@ -514,6 +561,7 @@
     state.running = true;
     state.paused = false;
     state.lastDrop = 0;
+    state.lastMultiplayerUpdate = 0;
     state.singles = 0;
     state.doubles = 0;
     state.triples = 0;
@@ -544,6 +592,7 @@
     state.running = true;
     state.paused = false;
     state.lastDrop = 0;
+    state.lastMultiplayerUpdate = 0;
     state.singles = 0;
     state.doubles = 0;
     state.triples = 0;
@@ -600,5 +649,7 @@
     rotate: tryRotate,
     hardDrop,
     render,
+    getBoardSnapshot,
+    sendMultiplayerUpdate,
   };
 })();
