@@ -1,7 +1,3 @@
-// Flixtris Multiplayer Server v2.1
-// Run with: node server/index.js
-// Features: Redis persistence, Garbage lines, Reconnection, Rematch, Emojis
-
 const http = require("http");
 const { WebSocketServer } = require("ws");
 const redis = require("redis");
