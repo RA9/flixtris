@@ -1,6 +1,8 @@
 # Flixtris
 
-A modern, offline-first Tetris game built with pure JavaScript. No frameworks, no build tools.
+**Stack blocks. Send garbage. Crush your friends.**
+
+The classic puzzle game reimagined for the modern web. Play solo, compete in daily challenges, or battle friends in real-time multiplayer — all in your browser, no downloads required. Pure JavaScript, zero dependencies, instant fun.
 
 **Created by [Carlos S. Nah](https://github.com/ra9)**
 
