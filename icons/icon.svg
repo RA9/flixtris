@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#020617"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="50%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#f472b6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="url(#bg)"/>
+
+  <!-- Tetris pieces forming F -->
+  <!-- Top horizontal of F - I piece (cyan) -->
+  <rect x="140" y="80" width="240" height="60" rx="8" fill="#22d3ee"/>
+  <rect x="140" y="80" width="240" height="8" rx="4" fill="rgba(255,255,255,0.3)"/>
+
+  <!-- Vertical of F - multiple blocks -->
+  <rect x="140" y="80" width="60" height="60" rx="8" fill="#3b82f6"/>
+  <rect x="140" y="140" width="60" height="60" rx="8" fill="#3b82f6"/>
+  <rect x="140" y="200" width="60" height="60" rx="8" fill="#a78bfa"/>
+  <rect x="140" y="260" width="60" height="60" rx="8" fill="#a78bfa"/>
+  <rect x="140" y="320" width="60" height="60" rx="8" fill="#f472b6"/>
+  <rect x="140" y="380" width="60" height="60" rx="8" fill="#f472b6"/>
+
+  <!-- Middle horizontal of F - T piece (purple) -->
+  <rect x="200" y="200" width="140" height="60" rx="8" fill="#a78bfa"/>
+  <rect x="200" y="200" width="140" height="8" rx="4" fill="rgba(255,255,255,0.3)"/>
+
+  <!-- Decorative falling pieces -->
+  <!-- S piece -->
+  <rect x="340" y="300" width="50" height="50" rx="6" fill="#4ade80"/>
+  <rect x="390" y="300" width="50" height="50" rx="6" fill="#4ade80"/>
+  <rect x="290" y="350" width="50" height="50" rx="6" fill="#4ade80"/>
+  <rect x="340" y="350" width="50" height="50" rx="6" fill="#4ade80"/>
+
+  <!-- O piece -->
+  <rect x="320" y="140" width="45" height="45" rx="6" fill="#facc15"/>
+  <rect x="365" y="140" width="45" height="45" rx="6" fill="#facc15"/>
+  <rect x="320" y="185" width="45" height="45" rx="6" fill="#facc15"/>
+  <rect x="365" y="185" width="45" height="45" rx="6" fill="#facc15"/>
+
+  <!-- Highlights on vertical blocks -->
+  <rect x="140" y="140" width="8" height="52" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <rect x="140" y="200" width="8" height="52" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <rect x="140" y="260" width="8" height="52" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <rect x="140" y="320" width="8" height="52" rx="4" fill="rgba(255,255,255,0.2)"/>
+  <rect x="140" y="380" width="8" height="52" rx="4" fill="rgba(255,255,255,0.2)"/>
+</svg>
