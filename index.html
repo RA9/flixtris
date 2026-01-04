@@ -47,6 +47,29 @@
             <h1 class="brand-header">FLIXTRIS</h1>
             <h2 class="menu-title">Select Mode</h2>
             <div class="mode-cards">
+                <button class="mode-card category-card" id="singlePlayerBtn">
+                    <h3>🎮 Single Player</h3>
+                    <p>Play solo. Classic, Daily Challenge, and more.</p>
+                </button>
+                <button class="mode-card category-card" id="multiplayerBtn">
+                    <h3>⚔️ Multiplayer</h3>
+                    <p>Battle others in real-time 1v1 or Battle Royale.</p>
+                </button>
+            </div>
+            <button
+                class="btn secondary"
+                id="leaderboardBtn"
+                style="margin-top: 1.5rem"
+            >
+                Leaderboards
+            </button>
+        </div>
+
+        <!-- Single Player Mode Selection -->
+        <div id="screen-singleplayer" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Single Player</h2>
+            <div class="mode-cards">
                 <button class="mode-card classic" data-mode="classic">
                     <h3>Classic</h3>
                     <p>Endless mode. How far can you go?</p>
@@ -63,6 +86,21 @@
                     <h3>Play Seed</h3>
                     <p>Enter a shared seed code to challenge a friend.</p>
                 </button>
+            </div>
+            <button
+                class="btn secondary"
+                id="singlePlayerBackBtn"
+                style="margin-top: 1.5rem"
+            >
+                Back
+            </button>
+        </div>
+
+        <!-- Multiplayer Mode Selection -->
+        <div id="screen-multiplayer-select" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Multiplayer</h2>
+            <div class="mode-cards">
                 <button class="mode-card multiplayer" data-mode="multiplayer">
                     <h3>1v1 Battle</h3>
                     <p>Real-time 1v1 battle. See your opponent live!</p>
@@ -74,10 +112,10 @@
             </div>
             <button
                 class="btn secondary"
-                id="leaderboardBtn"
+                id="multiplayerBackBtn"
                 style="margin-top: 1.5rem"
             >
-                Leaderboards
+                Back
             </button>
         </div>
 

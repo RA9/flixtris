@@ -15,6 +15,8 @@
     audio: document.getElementById("screen-audio"),
     splash: document.getElementById("screen-splash"),
     menu: document.getElementById("screen-menu"),
+    singleplayer: document.getElementById("screen-singleplayer"),
+    multiplayerSelect: document.getElementById("screen-multiplayer-select"),
     leaderboard: document.getElementById("screen-leaderboard"),
     multiplayer: document.getElementById("screen-multiplayer"),
     waiting: document.getElementById("screen-waiting"),
@@ -596,9 +598,38 @@
     }
   });
 
+  // Main menu category buttons
+  document.getElementById("singlePlayerBtn").addEventListener("click", () => {
+    if (api.sound) api.sound.menuSelect();
+    showScreen("singleplayer");
+  });
+
+  document.getElementById("multiplayerBtn").addEventListener("click", () => {
+    if (api.sound) api.sound.menuSelect();
+    showScreen("multiplayerSelect");
+  });
+
+  // Back buttons for submenu screens
+  document
+    .getElementById("singlePlayerBackBtn")
+    .addEventListener("click", () => {
+      showScreen("menu");
+    });
+
+  document
+    .getElementById("multiplayerBackBtn")
+    .addEventListener("click", () => {
+      showScreen("menu");
+    });
+
   // Mode selection
   document.querySelectorAll(".mode-card").forEach((card) => {
     card.addEventListener("click", () => {
+      // Skip category cards - they have their own handlers
+      if (card.id === "singlePlayerBtn" || card.id === "multiplayerBtn") {
+        return;
+      }
+
       if (api.sound) api.sound.menuSelect();
       const mode = card.dataset.mode;
 
@@ -678,7 +709,7 @@
       }
       isMultiplayerGame = false;
       hideOpponentBoard();
-      showScreen("multiplayer");
+      showScreen("multiplayerSelect");
       return;
     }
 
@@ -1022,7 +1053,7 @@
       isMultiplayerGame = false;
       hideOpponentBoard();
       updateGarbageIndicator(0);
-      showScreen("multiplayer");
+      showScreen("multiplayerSelect");
     });
   }
 
@@ -1301,7 +1332,7 @@
   // Back to menu from multiplayer lobby
   if (mpBackBtn) {
     mpBackBtn.addEventListener("click", () => {
-      showScreen("menu");
+      showScreen("multiplayerSelect");
     });
   }
 
@@ -1325,7 +1356,7 @@
         api.multiplayer.disconnect();
       }
       resetMultiplayerUI();
-      showScreen("multiplayer");
+      showScreen("multiplayerSelect");
     });
   }
 
@@ -1758,7 +1789,7 @@
       console.error("Multiplayer error:", message);
       alert("Error: " + message);
       resetMultiplayerUI();
-      showScreen("multiplayer");
+      showScreen("multiplayerSelect");
     });
 
     // Room expired
