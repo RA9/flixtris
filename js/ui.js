@@ -1119,6 +1119,39 @@
       }
     });
 
+    // We successfully reconnected to an existing game
+    mp.on("onReconnected", (data) => {
+      log("Reconnected to game:", data);
+      isMultiplayerGame = true;
+
+      if (data.opponent) {
+        opponentName = data.opponent.name;
+      }
+
+      if (data.gameStarted) {
+        // Game was in progress - resume it
+        showScreen("game");
+        showOpponentBoard();
+        if (opponentName) {
+          const nameEl = document.getElementById("opponent-name");
+          if (nameEl) nameEl.textContent = opponentName;
+        }
+        // Start game with the same seed
+        api.game.startMultiplayerGame(data.seed || mp.getSeed());
+      } else {
+        // Game hadn't started yet - go to waiting room
+        if (roomCodeDisplay) {
+          roomCodeDisplay.textContent = data.roomCode;
+        }
+        showScreen("waiting");
+        if (waitingText) {
+          waitingText.textContent = data.opponent
+            ? "Opponent found!"
+            : "Waiting for opponent...";
+        }
+      }
+    });
+
     // Server shutdown warning
     mp.on("onServerShutdown", (message) => {
       alert("Server notice: " + message);
@@ -1237,9 +1270,28 @@
   function initMultiplayer() {
     if (api.multiplayer) {
       setupMultiplayerCallbacks();
+      // Try to reconnect to an existing game session
+      tryReconnectToGame();
     } else {
       // Wait for multiplayer module to load
       setTimeout(initMultiplayer, 100);
+    }
+  }
+
+  // Try to reconnect to an existing multiplayer game on page load
+  async function tryReconnectToGame() {
+    const mp = api.multiplayer;
+    if (!mp || !mp.tryReconnect) return;
+
+    try {
+      const reconnected = await mp.tryReconnect();
+      if (reconnected) {
+        log("Reconnecting to existing game session...");
+        isMultiplayerGame = true;
+        // The server will send game state via callbacks
+      }
+    } catch (err) {
+      log("Failed to reconnect:", err);
     }
   }
 

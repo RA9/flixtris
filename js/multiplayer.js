@@ -188,9 +188,11 @@
         playerId = message.playerId;
         gameSeed = message.seed;
         opponent = message.opponent;
+        saveReconnectToken();
         if (callbacks.onReconnected) {
           callbacks.onReconnected({
             roomCode: message.roomCode,
+            seed: message.seed,
             gameStarted: message.gameStarted,
             opponent: message.opponent,
           });

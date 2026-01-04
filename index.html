@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
         <title>Flixtris</title>
         <meta name="theme-color" content="#0f172a" />
         <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
@@ -30,6 +33,11 @@
 
             * {
                 box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            html {
+                touch-action: manipulation;
             }
 
             body {
@@ -929,21 +937,28 @@
             /* Responsive */
             @media (max-width: 600px) {
                 :root {
-                    --canvas-width: min(85vw, 260px);
+                    --canvas-width: min(70vw, 220px);
                     --canvas-height: calc(var(--canvas-width) * 5 / 3);
                 }
 
                 #screen-game {
-                    padding: 10px;
-                    justify-content: flex-start;
+                    padding: 5px;
+                    justify-content: space-between;
+                    height: 100vh;
+                    height: 100dvh;
+                    overflow: hidden;
                 }
 
                 .mobile-header {
                     display: flex;
+                    flex-shrink: 0;
                 }
 
                 .mobile-controls {
                     display: flex;
+                    flex-shrink: 0;
+                    margin-top: auto;
+                    padding: 8px;
                 }
 
                 .game-container {
@@ -952,6 +967,8 @@
                     align-items: flex-start;
                     justify-content: center;
                     gap: 10px;
+                    flex: 1;
+                    overflow: hidden;
                 }
 
                 /* Opponent board on mobile - smaller and beside main board */
