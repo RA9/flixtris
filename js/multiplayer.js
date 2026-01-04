@@ -26,6 +26,7 @@
 
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
+    const port = window.location.port;
 
     // Handle file:// protocol or empty hostname (local file)
     if (!hostname || protocol === "file:") {
@@ -42,8 +43,11 @@
       return `ws://${hostname}:3001`;
     }
 
-    // Production: use secure WebSocket
-    return `wss://${hostname}:3001`;
+    // Production: use secure WebSocket on same host (no port needed)
+    // Works for Railway, Heroku, and other platforms where WS runs on same port
+    const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+    const wsPort = port ? `:${port}` : "";
+    return `${wsProtocol}//${hostname}${wsPort}`;
   }
 
   const SERVER_URL = getServerUrl();

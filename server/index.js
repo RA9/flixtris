@@ -1,8 +1,22 @@
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const { WebSocketServer } = require("ws");
 const redis = require("redis");
 
 const PORT = process.env.PORT || 3001;
+const STATIC_DIR = path.join(__dirname, "../public");
+
+// MIME types for static files
+const MIME_TYPES = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+};
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const ROOM_TTL = 30 * 60; // 30 minutes in seconds
 const RECONNECT_TTL = 30 * 60; // 30 minutes in seconds
@@ -213,8 +227,42 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Flixtris Multiplayer Server v2.1 (Redis)");
+  // Serve static files
+  let filePath = req.url === "/" ? "/index.html" : req.url;
+  filePath = path.join(STATIC_DIR, filePath);
+
+  // Security: prevent directory traversal
+  if (!filePath.startsWith(STATIC_DIR)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
+
+  const ext = path.extname(filePath);
+  const contentType = MIME_TYPES[ext] || "application/octet-stream";
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      if (err.code === "ENOENT") {
+        // For SPA, serve index.html for non-file routes
+        fs.readFile(path.join(STATIC_DIR, "index.html"), (err2, indexData) => {
+          if (err2) {
+            res.writeHead(404);
+            res.end("Not Found");
+            return;
+          }
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(indexData);
+        });
+        return;
+      }
+      res.writeHead(500);
+      res.end("Server Error");
+      return;
+    }
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(data);
+  });
 });
 
 const wss = new WebSocketServer({ server });
