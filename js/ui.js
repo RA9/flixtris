@@ -85,6 +85,13 @@
   function showRoyaleResults(data) {
     const { winner, standings, myPlacement, didWin } = data;
     const myId = api.multiplayer.getPlayerId();
+    const state = getState();
+
+    // Submit score to leaderboard for royale games
+    submitScoreToServer(state.score, state.mode, state.seed);
+
+    // Update local player stats
+    api.db.updatePlayerStats(state.score, didWin);
 
     // Update banner
     const banner = document.getElementById("royaleResultBanner");
@@ -218,6 +225,12 @@
     const state = getState();
     const isWinner = winner === myId;
     const isTie = results.length === 2 && results[0].score === results[1].score;
+
+    // Submit score to leaderboard for multiplayer games
+    submitScoreToServer(state.score, state.mode, state.seed);
+
+    // Update local player stats
+    api.db.updatePlayerStats(state.score, isWinner);
 
     // Sort results by score descending
     const sortedResults = [...results].sort((a, b) => b.score - a.score);
