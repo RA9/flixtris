@@ -1,17 +1,20 @@
-# Frontend Dockerfile - Flixtris
-# Serves static files via nginx
+# Flixtris Multiplayer Server for Railway
+FROM node:20-alpine
 
-FROM nginx:alpine
+WORKDIR /app
 
-# Copy static files to nginx html directory
-COPY index.html /usr/share/nginx/html/
-COPY js/ /usr/share/nginx/html/js/
-COPY icons/ /usr/share/nginx/html/icons/
-COPY manifest.json /usr/share/nginx/html/
+# Copy server files
+COPY server/package.json server/package-lock.json* ./
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Install dependencies
+RUN npm install --production
 
-EXPOSE 80
+# Copy server code
+COPY server/index.js ./
 
-CMD ["nginx", "-g", "daemon off;"]
+# Railway sets PORT automatically
+ENV NODE_ENV=production
+
+EXPOSE 3001
+
+CMD ["node", "index.js"]
