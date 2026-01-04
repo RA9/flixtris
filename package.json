@@ -1,0 +1,16 @@
+{
+  "name": "flixtris",
+  "version": "2.1.0",
+  "description": "A modern Tetris game with multiplayer support",
+  "scripts": {
+    "start": "node server/index.js",
+    "server": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "redis": "^4.6.13",
+    "ws": "^8.16.0"
+  }
+}

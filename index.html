@@ -135,12 +135,29 @@
                 }
             }
 
+            /* Brand Header (shown on menu screens) */
+            .brand-header {
+                font-size: clamp(1.8rem, 6vw, 2.5rem);
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                background: linear-gradient(
+                    135deg,
+                    var(--accent) 0%,
+                    #a78bfa 50%,
+                    #f472b6 100%
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 0.5rem;
+            }
+
             /* Menu Screen */
             .menu-title {
-                font-size: 2rem;
+                font-size: 1.5rem;
                 font-weight: 700;
                 margin-bottom: 2rem;
-                color: var(--accent);
+                color: var(--text-secondary);
             }
 
             .mode-cards {
@@ -1141,6 +1158,7 @@
 
         <!-- Mode Selection Screen -->
         <div id="screen-menu" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
             <h2 class="menu-title">Select Mode</h2>
             <div class="mode-cards">
                 <button class="mode-card classic" data-mode="classic">
@@ -1168,6 +1186,7 @@
 
         <!-- Multiplayer Lobby Screen -->
         <div id="screen-multiplayer" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
             <h2 class="menu-title">Multiplayer</h2>
             <div class="multiplayer-options">
                 <button class="btn" id="createRoomBtn">Create Room</button>
@@ -1191,6 +1210,7 @@
 
         <!-- Multiplayer Waiting Room -->
         <div id="screen-waiting" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
             <h2 class="menu-title">Waiting Room</h2>
             <div class="room-info">
                 <p class="room-code-label">Room Code</p>
