@@ -15,6 +15,7 @@ COPY server/index.js ./
 # Copy frontend static files
 COPY index.html ../public/
 COPY js/ ../public/js/
+COPY css/ ../public/css/
 COPY icons/ ../public/icons/
 COPY manifest.json ../public/
 

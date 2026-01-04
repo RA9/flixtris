@@ -5,8 +5,11 @@ const { WebSocketServer } = require("ws");
 const redis = require("redis");
 
 const PORT = process.env.PORT || 3001;
-const STATIC_DIR = path.join(__dirname, "../public");
 const IS_PROD = process.env.NODE_ENV === "production";
+// In production (Docker), files are in ../public. Locally, they're in the parent dir.
+const STATIC_DIR = IS_PROD
+  ? path.join(__dirname, "../public")
+  : path.join(__dirname, "..");
 
 // Logger that respects environment
 const log = (...args) => {
