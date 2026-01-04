@@ -2,6 +2,12 @@
 // Features: Garbage lines, Reconnection, Rematch, Emojis
 (() => {
   const api = window.Flixtris.api;
+  const IS_PROD =
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
+  const log = (...args) => {
+    if (!IS_PROD) console.log(...args);
+  };
 
   let ws = null;
   let roomCode = null;
@@ -59,11 +65,11 @@
   function connect() {
     return new Promise((resolve, reject) => {
       try {
-        console.log("Connecting to multiplayer server:", SERVER_URL);
+        log("Connecting to multiplayer server:", SERVER_URL);
         ws = new WebSocket(SERVER_URL);
 
         ws.onopen = () => {
-          console.log("Connected to multiplayer server:", SERVER_URL);
+          log("Connected to multiplayer server:", SERVER_URL);
           reconnectAttempts = 0;
           resolve();
         };
@@ -74,7 +80,7 @@
         };
 
         ws.onclose = () => {
-          console.log("Disconnected from server");
+          log("Disconnected from server");
           ws = null;
 
           // Try to reconnect if we have a token
@@ -96,7 +102,7 @@
 
   function attemptReconnect() {
     reconnectAttempts++;
-    console.log(
+    log(
       `Attempting reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`,
     );
 

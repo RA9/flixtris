@@ -6,6 +6,12 @@ const redis = require("redis");
 
 const PORT = process.env.PORT || 3001;
 const STATIC_DIR = path.join(__dirname, "../public");
+const IS_PROD = process.env.NODE_ENV === "production";
+
+// Logger that respects environment
+const log = (...args) => {
+  if (!IS_PROD) console.log(...args);
+};
 
 // MIME types for static files
 const MIME_TYPES = {
@@ -49,20 +55,20 @@ async function initRedis() {
     });
 
     redisClient.on("connect", () => {
-      console.log("Redis: Connected");
+      log("Redis: Connected");
       redisConnected = true;
     });
 
     redisClient.on("reconnecting", () => {
-      console.log("Redis: Reconnecting...");
+      log("Redis: Reconnecting...");
     });
 
     await redisClient.connect();
-    console.log(`Redis: Connected to ${REDIS_URL}`);
+    log(`Redis: Connected to ${REDIS_URL}`);
     return true;
   } catch (err) {
     console.error("Redis: Failed to connect:", err.message);
-    console.log("Redis: Running in memory-only mode (no persistence)");
+    log("Redis: Running in memory-only mode (no persistence)");
     return false;
   }
 }
@@ -472,7 +478,7 @@ async function removePlayerFromRoom(roomCode, playerId) {
   if (room.players.length === 0) {
     rooms.delete(roomCode);
     await deleteRoom(roomCode);
-    console.log(`Room ${roomCode} deleted (empty)`);
+    log(`Room ${roomCode} deleted (empty)`);
   } else {
     await saveRoom(room);
   }
@@ -540,7 +546,7 @@ wss.on("connection", (ws) => {
           ws,
         );
 
-        console.log(`Player ${playerId} reconnected to room ${currentRoom}`);
+        log(`Player ${playerId} reconnected to room ${currentRoom}`);
         break;
       }
 
@@ -564,9 +570,7 @@ wss.on("connection", (ws) => {
           }),
         );
 
-        console.log(
-          `Room ${room.code} created by ${message.name || "Player 1"}`,
-        );
+        log(`Room ${room.code} created by ${message.name || "Player 1"}`);
         break;
       }
 
@@ -611,7 +615,7 @@ wss.on("connection", (ws) => {
           ws,
         );
 
-        console.log(`${message.name || "Player 2"} joined room ${currentRoom}`);
+        log(`${message.name || "Player 2"} joined room ${currentRoom}`);
         break;
       }
 
@@ -639,7 +643,7 @@ wss.on("connection", (ws) => {
             countdown: 3,
           });
 
-          console.log(`Game started in room ${currentRoom}`);
+          log(`Game started in room ${currentRoom}`);
         } else {
           await saveRoom(room);
 
@@ -710,9 +714,7 @@ wss.on("connection", (ws) => {
               }),
             );
 
-            console.log(
-              `${playerId} sent ${garbage} garbage lines to ${opponent.id}`,
-            );
+            log(`${playerId} sent ${garbage} garbage lines to ${opponent.id}`);
           }
         }
         break;
@@ -758,7 +760,7 @@ wss.on("connection", (ws) => {
             : null,
         });
 
-        console.log(
+        log(
           `${playerId} game over in room ${currentRoom} (score: ${message.score})`,
         );
         break;
@@ -802,7 +804,7 @@ wss.on("connection", (ws) => {
             seed: newSeed,
           });
 
-          console.log(`Rematch starting in room ${currentRoom}`);
+          log(`Rematch starting in room ${currentRoom}`);
         } else {
           await saveRoom(room);
 
@@ -899,7 +901,7 @@ wss.on("connection", (ws) => {
             ws,
           );
 
-          console.log(
+          log(
             `${playerId} disconnected from room ${currentRoom} (can reconnect)`,
           );
 
@@ -949,7 +951,7 @@ setInterval(async () => {
         }
       });
       rooms.delete(code);
-      console.log(`Room ${code} expired (memory)`);
+      log(`Room ${code} expired (memory)`);
     }
   });
 
@@ -974,7 +976,7 @@ setInterval(async () => {
 // ========================
 
 async function shutdown() {
-  console.log("Shutting down...");
+  log("Shutting down...");
 
   // Notify all players
   rooms.forEach((room) => {
@@ -994,7 +996,7 @@ async function shutdown() {
   if (redisClient) {
     try {
       await redisClient.quit();
-      console.log("Redis: Disconnected");
+      log("Redis: Disconnected");
     } catch (err) {
       console.error("Redis: Error closing connection:", err.message);
     }
@@ -1003,7 +1005,7 @@ async function shutdown() {
   // Close WebSocket server
   wss.close(() => {
     server.close(() => {
-      console.log("Server closed");
+      log("Server closed");
       process.exit(0);
     });
   });
@@ -1029,7 +1031,7 @@ async function start() {
   if (redisConnected) {
     try {
       const activeRoomCodes = await getAllActiveRoomCodes();
-      console.log(`Redis: Found ${activeRoomCodes.length} persisted rooms`);
+      log(`Redis: Found ${activeRoomCodes.length} persisted rooms`);
 
       // We don't preload all rooms - they'll be loaded on demand
     } catch (err) {
@@ -1039,14 +1041,14 @@ async function start() {
 
   // Start HTTP server
   server.listen(PORT, () => {
-    console.log(`Flixtris Multiplayer Server v2.1 running on port ${PORT}`);
-    console.log(
+    log(`Flixtris Multiplayer Server v2.1 running on port ${PORT}`);
+    log(
       `Redis: ${redisConnected ? "Connected" : "Not connected (memory-only mode)"}`,
     );
-    console.log(
+    log(
       `Features: Garbage lines, Reconnection, Rematch, Emojis, Redis persistence`,
     );
-    console.log(`Health check: http://localhost:${PORT}/health`);
+    log(`Health check: http://localhost:${PORT}/health`);
   });
 }
 

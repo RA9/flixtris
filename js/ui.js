@@ -1,6 +1,12 @@
 // ui.js
 (() => {
   const api = window.Flixtris.api;
+  const IS_PROD =
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
+  const log = (...args) => {
+    if (!IS_PROD) console.log(...args);
+  };
   // Access state via getter to always get current values
   const getState = () => window.Flixtris.state;
 
@@ -299,7 +305,7 @@
     btn.addEventListener("click", () => {
       const theme = btn.dataset.theme;
       // Theme implementation can be added later
-      console.log("Theme selected:", theme);
+      log("Theme selected:", theme);
     });
   });
 
@@ -962,7 +968,7 @@
 
     // Room created - show waiting room
     mp.on("onRoomCreated", (roomCode, seed) => {
-      console.log("Room created:", roomCode);
+      log("Room created:", roomCode);
       resetMultiplayerUI();
 
       if (roomCodeDisplay) {
@@ -978,7 +984,7 @@
 
     // Room joined - show waiting room with opponent
     mp.on("onRoomJoined", (roomCode, seed, opponent) => {
-      console.log("Joined room:", roomCode, "Opponent:", opponent);
+      log("Joined room:", roomCode, "Opponent:", opponent);
       resetMultiplayerUI();
       opponentName = opponent.name;
 
@@ -998,7 +1004,7 @@
 
     // Player joined our room
     mp.on("onPlayerJoined", (player) => {
-      console.log("Player joined:", player);
+      log("Player joined:", player);
       opponentName = player.name;
 
       if (waitingText) {
@@ -1013,7 +1019,7 @@
 
     // Player ready
     mp.on("onPlayerReady", (playerId) => {
-      console.log("Player ready:", playerId);
+      log("Player ready:", playerId);
       // This is triggered when the OTHER player becomes ready
       opponentReadyState = true;
       refreshPlayersList();
@@ -1021,7 +1027,7 @@
 
     // Game start - begin the game with countdown
     mp.on("onGameStart", (seed, countdown) => {
-      console.log("Game starting with seed:", seed, "countdown:", countdown);
+      log("Game starting with seed:", seed, "countdown:", countdown);
       isMultiplayerGame = true;
       lastMode = "multiplayer";
 
@@ -1043,7 +1049,7 @@
 
     // Incoming garbage lines
     mp.on("onIncomingGarbage", (data) => {
-      console.log("Incoming garbage:", data.lines);
+      log("Incoming garbage:", data.lines);
       addPendingGarbage(data.lines);
 
       // Apply garbage after a short delay (on next piece lock)
@@ -1055,7 +1061,7 @@
 
     // Garbage sent confirmation
     mp.on("onGarbageSent", (data) => {
-      console.log("Garbage sent:", data.lines);
+      log("Garbage sent:", data.lines);
       // Could show a visual indicator here
     });
 
@@ -1066,14 +1072,14 @@
 
     // Rematch requested by opponent
     mp.on("onRematchRequested", (playerId) => {
-      console.log("Opponent requested rematch");
+      log("Opponent requested rematch");
       opponentWantsRematch = true;
       updateRematchStatus();
     });
 
     // Rematch declined
     mp.on("onRematchDeclined", (playerId) => {
-      console.log("Opponent declined rematch");
+      log("Opponent declined rematch");
       if (rematchStatus) {
         rematchStatus.textContent = "Opponent declined";
         rematchStatus.className = "rematch-status";
@@ -1082,7 +1088,7 @@
 
     // Rematch starting
     mp.on("onRematchStarting", (seed) => {
-      console.log("Rematch starting with seed:", seed);
+      log("Rematch starting with seed:", seed);
       showMpResultsOverlay(false);
       resetRematchState();
       updateGarbageIndicator(0);
@@ -1095,7 +1101,7 @@
 
     // Player disconnected (can reconnect)
     mp.on("onPlayerDisconnected", (data) => {
-      console.log("Player disconnected:", data);
+      log("Player disconnected:", data);
       if (isMultiplayerGame && data.canReconnect) {
         // Show reconnecting message instead of immediately ending
         if (waitingText) {
@@ -1107,7 +1113,7 @@
 
     // Player reconnected
     mp.on("onPlayerReconnected", (playerId) => {
-      console.log("Player reconnected:", playerId);
+      log("Player reconnected:", playerId);
       if (waitingText) {
         waitingText.textContent = "Opponent reconnected!";
       }
@@ -1120,7 +1126,7 @@
 
     // Player game over
     mp.on("onPlayerGameOver", (data) => {
-      console.log("Player game over:", data);
+      log("Player game over:", data);
 
       if (data.allDone && data.results) {
         // Both players done - show final results
@@ -1135,7 +1141,7 @@
 
     // Player left
     mp.on("onPlayerLeft", (playerId) => {
-      console.log("Player left:", playerId);
+      log("Player left:", playerId);
       if (isMultiplayerGame) {
         alert("Opponent left the game!");
         if (api.game.stop) api.game.stop();
@@ -1163,7 +1169,7 @@
 
     // Disconnected
     mp.on("onDisconnect", () => {
-      console.log("Disconnected from server");
+      log("Disconnected from server");
       if (isMultiplayerGame) {
         alert("Disconnected from server!");
         if (api.game.stop) api.game.stop();
@@ -1184,7 +1190,7 @@
 
     // Room expired
     mp.on("onRoomExpired", () => {
-      console.log("Room expired");
+      log("Room expired");
       alert("Room expired due to inactivity");
       if (api.game.stop) api.game.stop();
       isMultiplayerGame = false;
