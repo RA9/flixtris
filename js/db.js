@@ -1,8 +1,9 @@
 // db.js
 (() => {
   const DB_NAME = "flixtris";
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   let db;
+  let playerCache = null;
 
   function openDB() {
     return new Promise((resolve, reject) => {
@@ -16,6 +17,9 @@
         if (!db.objectStoreNames.contains("settings")) {
           db.createObjectStore("settings", { keyPath: "id" });
         }
+        if (!db.objectStoreNames.contains("player")) {
+          db.createObjectStore("player", { keyPath: "id" });
+        }
       };
 
       req.onsuccess = (e) => {
@@ -25,6 +29,95 @@
 
       req.onerror = () => reject(req.error);
     });
+  }
+
+  // Generate anonymous player name
+  function generatePlayerName() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let suffix = "";
+    for (let i = 0; i < 4; i++) {
+      suffix += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return `Player_${suffix}`;
+  }
+
+  // Get player profile (creates one if doesn't exist)
+  async function getPlayer() {
+    if (playerCache) return playerCache;
+
+    return new Promise((resolve) => {
+      const tx = db.transaction("player", "readonly");
+      const req = tx.objectStore("player").get("profile");
+      req.onsuccess = () => {
+        if (req.result) {
+          playerCache = req.result;
+          resolve(req.result);
+        } else {
+          // Create new player profile
+          const newPlayer = {
+            id: "profile",
+            name: null,
+            generatedName: generatePlayerName(),
+            createdAt: Date.now(),
+            totalGames: 0,
+            totalScore: 0,
+            bestScore: 0,
+          };
+          savePlayer(newPlayer).then(() => {
+            playerCache = newPlayer;
+            resolve(newPlayer);
+          });
+        }
+      };
+    });
+  }
+
+  // Save player profile
+  function savePlayer(player) {
+    return new Promise((resolve) => {
+      const tx = db.transaction("player", "readwrite");
+      tx.objectStore("player").put(player);
+      tx.oncomplete = () => {
+        playerCache = player;
+        resolve();
+      };
+    });
+  }
+
+  // Set player name
+  async function setPlayerName(name) {
+    const player = await getPlayer();
+    player.name = name;
+    await savePlayer(player);
+    return player;
+  }
+
+  // Get display name (custom name or generated)
+  async function getDisplayName() {
+    const player = await getPlayer();
+    return player.name || player.generatedName;
+  }
+
+  // Update player stats after a game
+  async function updatePlayerStats(score, isWin = null) {
+    const player = await getPlayer();
+    player.totalGames++;
+    player.totalScore += score;
+    if (score > player.bestScore) {
+      player.bestScore = score;
+    }
+    if (isWin !== null) {
+      player.wins = (player.wins || 0) + (isWin ? 1 : 0);
+      player.losses = (player.losses || 0) + (isWin ? 0 : 1);
+    }
+    await savePlayer(player);
+    return player;
+  }
+
+  // Check if player has set a custom name
+  async function hasCustomName() {
+    const player = await getPlayer();
+    return player.name !== null;
   }
 
   function addGame(record) {
@@ -71,5 +164,10 @@
     getGames,
     saveSetting,
     getSetting,
+    getPlayer,
+    setPlayerName,
+    getDisplayName,
+    updatePlayerStats,
+    hasCustomName,
   };
 })();

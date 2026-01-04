@@ -80,8 +80,15 @@ async function initRedis() {
 const KEYS = {
   room: (code) => `flixtris:room:${code}`,
   roomPlayers: (code) => `flixtris:room:${code}:players`,
+  roomHistory: (code) => `flixtris:room:${code}:history`,
   reconnectToken: (token) => `flixtris:reconnect:${token}`,
   activeRooms: "flixtris:rooms:active",
+  // Player stats
+  playerStats: (name) => `flixtris:player:${name}:stats`,
+  // Leaderboards
+  leaderboardGlobal: "flixtris:leaderboard:global",
+  leaderboardDaily: (date) => `flixtris:leaderboard:daily:${date}`,
+  leaderboardWeekly: "flixtris:leaderboard:weekly",
 };
 
 // ========================
@@ -97,6 +104,8 @@ async function saveRoom(room) {
       seed: room.seed,
       started: room.started,
       createdAt: room.createdAt,
+      type: room.type || "1v1",
+      maxPlayers: room.maxPlayers || 2,
     };
 
     const playersData = room.players.map((p) => ({
@@ -109,6 +118,9 @@ async function saveRoom(room) {
       gameOver: p.gameOver,
       reconnectToken: p.reconnectToken,
       wantsRematch: p.wantsRematch || false,
+      eliminated: p.eliminated || false,
+      eliminatedAt: p.eliminatedAt || null,
+      placement: p.placement || null,
     }));
 
     await redisClient
@@ -215,26 +227,299 @@ async function getAllActiveRoomCodes() {
 }
 
 // ========================
+// PLAYER STATS & LEADERBOARDS
+// ========================
+
+async function updatePlayerStats(playerName, score, isWin = null) {
+  if (!redisConnected || !playerName) return;
+
+  try {
+    const key = KEYS.playerStats(playerName);
+    await redisClient.hIncrBy(key, "games", 1);
+    await redisClient.hIncrBy(key, "totalScore", score);
+
+    // Update best score if higher
+    const currentBest = await redisClient.hGet(key, "bestScore");
+    if (!currentBest || score > parseInt(currentBest)) {
+      await redisClient.hSet(key, "bestScore", score);
+    }
+
+    if (isWin === true) {
+      await redisClient.hIncrBy(key, "wins", 1);
+    } else if (isWin === false) {
+      await redisClient.hIncrBy(key, "losses", 1);
+    }
+  } catch (err) {
+    console.error("Redis: Failed to update player stats:", err.message);
+  }
+}
+
+async function getPlayerStats(playerName) {
+  if (!redisConnected || !playerName) return null;
+
+  try {
+    const stats = await redisClient.hGetAll(KEYS.playerStats(playerName));
+    if (!stats || Object.keys(stats).length === 0) return null;
+    return {
+      games: parseInt(stats.games) || 0,
+      totalScore: parseInt(stats.totalScore) || 0,
+      bestScore: parseInt(stats.bestScore) || 0,
+      wins: parseInt(stats.wins) || 0,
+      losses: parseInt(stats.losses) || 0,
+    };
+  } catch (err) {
+    console.error("Redis: Failed to get player stats:", err.message);
+    return null;
+  }
+}
+
+function getDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+async function submitScore(playerName, score, mode, seed = null) {
+  if (!redisConnected || !playerName) return false;
+
+  try {
+    const timestamp = Date.now();
+    const scoreData = JSON.stringify({
+      playerName,
+      score,
+      mode,
+      seed,
+      timestamp,
+    });
+
+    // Global leaderboard - use score as the sorted set score
+    await redisClient.zAdd(KEYS.leaderboardGlobal, {
+      score: score,
+      value: `${playerName}:${timestamp}`,
+    });
+
+    // Daily leaderboard (only for daily mode or all modes)
+    const dateKey = getDateKey();
+    await redisClient.zAdd(KEYS.leaderboardDaily(dateKey), {
+      score: score,
+      value: `${playerName}:${timestamp}`,
+    });
+    // Set TTL of 48 hours on daily leaderboard
+    await redisClient.expire(KEYS.leaderboardDaily(dateKey), 48 * 60 * 60);
+
+    // Weekly leaderboard
+    await redisClient.zAdd(KEYS.leaderboardWeekly, {
+      score: score,
+      value: `${playerName}:${timestamp}`,
+    });
+
+    // Update player stats
+    await updatePlayerStats(playerName, score);
+
+    return true;
+  } catch (err) {
+    console.error("Redis: Failed to submit score:", err.message);
+    return false;
+  }
+}
+
+async function getLeaderboard(type = "global", limit = 50, date = null) {
+  if (!redisConnected) return [];
+
+  try {
+    let key;
+    if (type === "daily") {
+      key = KEYS.leaderboardDaily(date || getDateKey());
+    } else if (type === "weekly") {
+      key = KEYS.leaderboardWeekly;
+    } else {
+      key = KEYS.leaderboardGlobal;
+    }
+
+    // Get top scores (highest first)
+    const results = await redisClient.zRangeWithScores(key, 0, limit - 1, {
+      REV: true,
+    });
+
+    return results.map((entry, index) => {
+      const [playerName] = entry.value.split(":");
+      return {
+        rank: index + 1,
+        playerName,
+        score: entry.score,
+      };
+    });
+  } catch (err) {
+    console.error("Redis: Failed to get leaderboard:", err.message);
+    return [];
+  }
+}
+
+async function addRoomHistory(roomCode, matchData) {
+  if (!redisConnected) return;
+
+  try {
+    const key = KEYS.roomHistory(roomCode);
+    await redisClient.lPush(key, JSON.stringify(matchData));
+    await redisClient.lTrim(key, 0, 9); // Keep only last 10 matches
+    await redisClient.expire(key, 24 * 60 * 60); // 24 hour TTL
+  } catch (err) {
+    console.error("Redis: Failed to add room history:", err.message);
+  }
+}
+
+async function getRoomHistory(roomCode) {
+  if (!redisConnected) return [];
+
+  try {
+    const history = await redisClient.lRange(KEYS.roomHistory(roomCode), 0, 9);
+    return history.map((h) => JSON.parse(h));
+  } catch (err) {
+    console.error("Redis: Failed to get room history:", err.message);
+    return [];
+  }
+}
+
+// Reset weekly leaderboard (should be called by cron on Sunday)
+async function resetWeeklyLeaderboard() {
+  if (!redisConnected) return;
+
+  try {
+    await redisClient.del(KEYS.leaderboardWeekly);
+    log("Weekly leaderboard reset");
+  } catch (err) {
+    console.error("Redis: Failed to reset weekly leaderboard:", err.message);
+  }
+}
+
+// ========================
 // HTTP & WEBSOCKET SERVER
 // ========================
 
-const server = http.createServer((req, res) => {
+// Helper to parse JSON body
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (e) {
+        reject(e);
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+// Helper to send JSON response
+function sendJSON(res, data, status = 200) {
+  res.writeHead(status, {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+  });
+  res.end(JSON.stringify(data));
+}
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = url.pathname;
+
+  // CORS preflight
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
   // Health check endpoint
-  if (req.url === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
-        status: "ok",
-        redis: redisConnected ? "connected" : "disconnected",
-        rooms: rooms.size,
-        uptime: process.uptime(),
-      }),
-    );
+  if (pathname === "/health") {
+    sendJSON(res, {
+      status: "ok",
+      redis: redisConnected ? "connected" : "disconnected",
+      rooms: rooms.size,
+      uptime: process.uptime(),
+    });
+    return;
+  }
+
+  // ========================
+  // LEADERBOARD API
+  // ========================
+
+  // GET /api/leaderboard/global?limit=50
+  if (pathname === "/api/leaderboard/global" && req.method === "GET") {
+    const limit = parseInt(url.searchParams.get("limit")) || 50;
+    const leaderboard = await getLeaderboard("global", limit);
+    sendJSON(res, { leaderboard });
+    return;
+  }
+
+  // GET /api/leaderboard/daily?date=YYYY-MM-DD&limit=50
+  if (pathname === "/api/leaderboard/daily" && req.method === "GET") {
+    const limit = parseInt(url.searchParams.get("limit")) || 50;
+    const date = url.searchParams.get("date") || getDateKey();
+    const leaderboard = await getLeaderboard("daily", limit, date);
+    sendJSON(res, { leaderboard, date });
+    return;
+  }
+
+  // GET /api/leaderboard/weekly?limit=50
+  if (pathname === "/api/leaderboard/weekly" && req.method === "GET") {
+    const limit = parseInt(url.searchParams.get("limit")) || 50;
+    const leaderboard = await getLeaderboard("weekly", limit);
+    sendJSON(res, { leaderboard });
+    return;
+  }
+
+  // POST /api/score - Submit a score
+  if (pathname === "/api/score" && req.method === "POST") {
+    try {
+      const body = await parseBody(req);
+      const { playerName, score, mode, seed } = body;
+
+      if (!playerName || typeof score !== "number") {
+        sendJSON(res, { error: "Invalid request" }, 400);
+        return;
+      }
+
+      const success = await submitScore(playerName, score, mode, seed);
+      sendJSON(res, { success });
+    } catch (err) {
+      sendJSON(res, { error: "Invalid JSON" }, 400);
+    }
+    return;
+  }
+
+  // GET /api/player/:name/stats
+  if (
+    pathname.startsWith("/api/player/") &&
+    pathname.endsWith("/stats") &&
+    req.method === "GET"
+  ) {
+    const playerName = decodeURIComponent(pathname.split("/")[3]);
+    const stats = await getPlayerStats(playerName);
+    sendJSON(res, { stats });
+    return;
+  }
+
+  // GET /api/room/:code/history
+  if (
+    pathname.startsWith("/api/room/") &&
+    pathname.endsWith("/history") &&
+    req.method === "GET"
+  ) {
+    const roomCode = pathname.split("/")[3].toUpperCase();
+    const history = await getRoomHistory(roomCode);
+    sendJSON(res, { history });
     return;
   }
 
   // Serve static files
-  let filePath = req.url === "/" ? "/index.html" : req.url;
+  let filePath = pathname === "/" ? "/index.html" : pathname;
   filePath = path.join(STATIC_DIR, filePath);
 
   // Security: prevent directory traversal
@@ -282,6 +567,14 @@ server.on("upgrade", (request, socket, head) => {
 
 // In-memory room storage (Redis is for persistence, not real-time)
 const rooms = new Map();
+
+// Room configuration
+const ROOM_TYPES = {
+  "1v1": { minPlayers: 2, maxPlayers: 2 },
+  royale: { minPlayers: 2, maxPlayers: 16 },
+};
+
+const DEFAULT_ROOM_TYPE = "1v1";
 
 // ========================
 // UTILITY FUNCTIONS
@@ -350,15 +643,20 @@ async function getOrLoadRoom(code) {
   return null;
 }
 
-async function createRoom(playerName, ws) {
+async function createRoom(playerName, ws, roomType = "1v1") {
   const roomCode = generateRoomCode();
   const seed = generateGameSeed();
   const reconnectToken = generateReconnectToken();
   const playerId = "player1";
 
+  // Get room type config
+  const typeConfig = ROOM_TYPES[roomType] || ROOM_TYPES["1v1"];
+
   const room = {
     code: roomCode,
     seed: seed,
+    type: roomType,
+    maxPlayers: typeConfig.maxPlayers,
     players: [
       {
         id: playerId,
@@ -371,11 +669,18 @@ async function createRoom(playerName, ws) {
         ready: false,
         gameOver: false,
         reconnectToken: reconnectToken,
+        eliminated: false,
+        eliminatedAt: null,
+        placement: null,
       },
     ],
     started: false,
     createdAt: Date.now(),
     pendingGarbage: new Map(),
+    // Royale-specific fields
+    alivePlayers: new Set([playerId]),
+    eliminationOrder: [],
+    spectators: new Set(),
   };
 
   rooms.set(roomCode, room);
@@ -398,7 +703,8 @@ async function joinRoom(roomCode, playerName, ws) {
     return { error: "Room not found" };
   }
 
-  if (room.players.length >= 2) {
+  const maxPlayers = room.maxPlayers || 2;
+  if (room.players.length >= maxPlayers) {
     return { error: "Room is full" };
   }
 
@@ -407,11 +713,12 @@ async function joinRoom(roomCode, playerName, ws) {
   }
 
   const reconnectToken = generateReconnectToken();
-  const playerId = "player2";
+  const playerNum = room.players.length + 1;
+  const playerId = `player${playerNum}`;
 
   room.players.push({
     id: playerId,
-    name: playerName || "Player 2",
+    name: playerName || `Player ${playerNum}`,
     ws: ws,
     score: 0,
     level: 1,
@@ -420,14 +727,24 @@ async function joinRoom(roomCode, playerName, ws) {
     ready: false,
     gameOver: false,
     reconnectToken: reconnectToken,
+    eliminated: false,
+    eliminatedAt: null,
+    placement: null,
   });
+
+  // Add to alive players set
+  if (!room.alivePlayers) {
+    room.alivePlayers = new Set(room.players.map((p) => p.id));
+  } else {
+    room.alivePlayers.add(playerId);
+  }
 
   // Save to Redis
   await saveRoom(room);
   await saveReconnectToken(reconnectToken, {
     roomCode: roomCode,
     playerId: playerId,
-    playerName: playerName || "Player 2",
+    playerName: playerName || `Player ${playerNum}`,
   });
 
   return { room, playerId, reconnectToken };
@@ -554,7 +871,8 @@ wss.on("connection", (ws) => {
       // ROOM CREATION
       // ========================
       case "create_room": {
-        const result = await createRoom(message.name, ws);
+        const roomType = message.roomType || "1v1";
+        const result = await createRoom(message.name, ws, roomType);
         const { room, playerId: newPlayerId, reconnectToken } = result;
 
         currentRoom = room.code;
@@ -567,10 +885,14 @@ wss.on("connection", (ws) => {
             playerId: playerId,
             seed: room.seed,
             reconnectToken: reconnectToken,
+            roomType: room.type,
+            maxPlayers: room.maxPlayers,
           }),
         );
 
-        log(`Room ${room.code} created by ${message.name || "Player 1"}`);
+        log(
+          `Room ${room.code} (${room.type}, max ${room.maxPlayers}) created by ${message.name || "Player 1"}`,
+        );
         break;
       }
 
@@ -589,6 +911,15 @@ wss.on("connection", (ws) => {
         currentRoom = room.code;
         playerId = newPlayerId;
 
+        // Build list of all other players (opponents)
+        const otherPlayers = room.players
+          .filter((p) => p.id !== playerId)
+          .map((p) => ({
+            id: p.id,
+            name: p.name,
+            ready: p.ready,
+          }));
+
         ws.send(
           JSON.stringify({
             type: "room_joined",
@@ -596,26 +927,35 @@ wss.on("connection", (ws) => {
             playerId: playerId,
             seed: room.seed,
             reconnectToken: reconnectToken,
-            opponent: {
-              id: room.players[0].id,
-              name: room.players[0].name,
-            },
+            roomType: room.type,
+            maxPlayers: room.maxPlayers,
+            players: otherPlayers,
+            // Keep backward compatibility
+            opponent:
+              otherPlayers.length > 0
+                ? { id: otherPlayers[0].id, name: otherPlayers[0].name }
+                : null,
           }),
         );
 
+        const playerNum = room.players.length;
         broadcastToRoom(
           currentRoom,
           {
             type: "player_joined",
             player: {
               id: playerId,
-              name: message.name || "Player 2",
+              name: message.name || `Player ${playerNum}`,
             },
+            playerCount: room.players.length,
+            maxPlayers: room.maxPlayers,
           },
           ws,
         );
 
-        log(`${message.name || "Player 2"} joined room ${currentRoom}`);
+        log(
+          `${message.name || `Player ${playerNum}`} joined room ${currentRoom} (${room.players.length}/${room.maxPlayers})`,
+        );
         break;
       }
 
@@ -631,25 +971,49 @@ wss.on("connection", (ws) => {
           player.ready = true;
         }
 
-        if (room.players.length === 2 && room.players.every((p) => p.ready)) {
+        const readyCount = room.players.filter((p) => p.ready).length;
+        const totalPlayers = room.players.length;
+        const minPlayers = ROOM_TYPES[room.type]?.minPlayers || 2;
+
+        // Start game when all players are ready and we have minimum players
+        const canStart =
+          totalPlayers >= minPlayers && room.players.every((p) => p.ready);
+
+        if (canStart) {
           room.started = true;
           room.pendingGarbage = new Map();
 
+          // Initialize alive players set for royale
+          room.alivePlayers = new Set(room.players.map((p) => p.id));
+          room.eliminationOrder = [];
+
           await saveRoom(room);
+
+          // Send game start with all player info
+          const playerList = room.players.map((p) => ({
+            id: p.id,
+            name: p.name,
+          }));
 
           broadcastToRoom(currentRoom, {
             type: "game_start",
             seed: room.seed,
             countdown: 3,
+            players: playerList,
+            roomType: room.type,
           });
 
-          log(`Game started in room ${currentRoom}`);
+          log(
+            `Game started in room ${currentRoom} (${room.type}, ${totalPlayers} players)`,
+          );
         } else {
           await saveRoom(room);
 
           broadcastToRoom(currentRoom, {
             type: "player_ready",
             playerId: playerId,
+            readyCount: readyCount,
+            totalPlayers: totalPlayers,
           });
         }
         break;
@@ -698,23 +1062,62 @@ wss.on("connection", (ws) => {
         const garbage = calculateGarbage(linesCleared);
 
         if (garbage > 0) {
-          const opponent = room.players.find((p) => p.id !== playerId);
-          if (opponent && !opponent.gameOver) {
-            sendToPlayer(opponent, {
-              type: "incoming_garbage",
-              lines: garbage,
-              fromPlayer: playerId,
-            });
-
-            ws.send(
-              JSON.stringify({
-                type: "garbage_sent",
-                lines: garbage,
-                toPlayer: opponent.id,
-              }),
+          if (room.type === "royale") {
+            // Royale mode: distribute garbage to all alive opponents
+            const aliveOpponents = room.players.filter(
+              (p) =>
+                p.id !== playerId &&
+                !p.eliminated &&
+                !p.gameOver &&
+                room.alivePlayers?.has(p.id),
             );
 
-            log(`${playerId} sent ${garbage} garbage lines to ${opponent.id}`);
+            if (aliveOpponents.length > 0) {
+              // Round-robin: each opponent gets garbage
+              aliveOpponents.forEach((opponent) => {
+                sendToPlayer(opponent, {
+                  type: "incoming_garbage",
+                  lines: garbage,
+                  fromPlayer: playerId,
+                });
+              });
+
+              ws.send(
+                JSON.stringify({
+                  type: "garbage_sent",
+                  lines: garbage,
+                  toPlayers: aliveOpponents.map((p) => p.id),
+                }),
+              );
+
+              log(
+                `${playerId} sent ${garbage} garbage lines to ${aliveOpponents.length} opponents`,
+              );
+            }
+          } else {
+            // 1v1 mode: send to single opponent
+            const opponent = room.players.find(
+              (p) => p.id !== playerId && !p.gameOver,
+            );
+            if (opponent) {
+              sendToPlayer(opponent, {
+                type: "incoming_garbage",
+                lines: garbage,
+                fromPlayer: playerId,
+              });
+
+              ws.send(
+                JSON.stringify({
+                  type: "garbage_sent",
+                  lines: garbage,
+                  toPlayer: opponent.id,
+                }),
+              );
+
+              log(
+                `${playerId} sent ${garbage} garbage lines to ${opponent.id}`,
+              );
+            }
           }
         }
         break;
@@ -728,41 +1131,171 @@ wss.on("connection", (ws) => {
         if (!room) return;
 
         const player = room.players.find((p) => p.id === playerId);
-        if (player) {
-          player.gameOver = true;
-          player.score = message.score;
-          player.level = message.level;
-          player.lines = message.lines;
-        }
+        if (!player) return;
 
-        const allDone = room.players.every((p) => p.gameOver);
+        player.gameOver = true;
+        player.score = message.score;
+        player.level = message.level;
+        player.lines = message.lines;
 
-        await saveRoom(room);
+        if (room.type === "royale") {
+          // Royale mode: handle elimination
+          player.eliminated = true;
+          player.eliminatedAt = Date.now();
 
-        broadcastToRoom(currentRoom, {
-          type: "player_game_over",
-          playerId: playerId,
-          score: message.score,
-          level: message.level,
-          lines: message.lines,
-          allDone: allDone,
-          winner: allDone
-            ? room.players.reduce((a, b) => (a.score > b.score ? a : b)).id
-            : null,
-          results: allDone
-            ? room.players.map((p) => ({
+          // Remove from alive players
+          if (room.alivePlayers) {
+            room.alivePlayers.delete(playerId);
+          }
+
+          // Add to elimination order (first eliminated = last place)
+          if (!room.eliminationOrder) {
+            room.eliminationOrder = [];
+          }
+          room.eliminationOrder.push(playerId);
+
+          // Calculate placement (reverse of elimination order)
+          const totalPlayers = room.players.length;
+          player.placement = totalPlayers - room.eliminationOrder.length + 1;
+
+          // Add to spectators
+          if (!room.spectators) {
+            room.spectators = new Set();
+          }
+          room.spectators.add(playerId);
+
+          const aliveCount = room.alivePlayers?.size || 0;
+
+          // Broadcast elimination
+          broadcastToRoom(currentRoom, {
+            type: "player_eliminated",
+            playerId: playerId,
+            playerName: player.name,
+            score: message.score,
+            placement: player.placement,
+            aliveCount: aliveCount,
+            totalPlayers: totalPlayers,
+          });
+
+          log(
+            `${player.name} eliminated in room ${currentRoom} (${player.placement}/${totalPlayers}, ${aliveCount} remaining)`,
+          );
+
+          // Check if game is over (1 or 0 players remaining)
+          if (aliveCount <= 1) {
+            // Find the winner (last alive player)
+            const winner = room.players.find(
+              (p) => room.alivePlayers?.has(p.id) && !p.eliminated,
+            );
+
+            if (winner) {
+              winner.placement = 1;
+              winner.gameOver = true;
+            }
+
+            // Build final standings
+            const standings = room.players
+              .map((p) => ({
                 id: p.id,
                 name: p.name,
                 score: p.score,
                 level: p.level,
                 lines: p.lines,
+                placement: p.placement || 1,
+                eliminated: p.eliminated || false,
               }))
-            : null,
-        });
+              .sort((a, b) => a.placement - b.placement);
 
-        log(
-          `${playerId} game over in room ${currentRoom} (score: ${message.score})`,
-        );
+            await saveRoom(room);
+
+            broadcastToRoom(currentRoom, {
+              type: "royale_results",
+              winner: winner
+                ? { id: winner.id, name: winner.name, score: winner.score }
+                : null,
+              standings: standings,
+            });
+
+            // Save royale match to room history
+            const matchData = {
+              matchId: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+              timestamp: Date.now(),
+              type: "royale",
+              winner: winner
+                ? { id: winner.id, name: winner.name, score: winner.score }
+                : null,
+              standings: standings,
+            };
+            await addRoomHistory(currentRoom, matchData);
+
+            log(
+              `Royale ended in room ${currentRoom}. Winner: ${winner?.name || "none"}`,
+            );
+          } else {
+            await saveRoom(room);
+
+            // Send spectator mode to eliminated player
+            sendToPlayer(player, {
+              type: "spectating",
+              alivePlayers: room.players
+                .filter((p) => room.alivePlayers?.has(p.id))
+                .map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  score: p.score,
+                })),
+            });
+          }
+        } else {
+          // 1v1 mode: original logic
+          const allDone = room.players.every((p) => p.gameOver);
+
+          await saveRoom(room);
+
+          const winner = allDone
+            ? room.players.reduce((a, b) => (a.score > b.score ? a : b))
+            : null;
+
+          broadcastToRoom(currentRoom, {
+            type: "player_game_over",
+            playerId: playerId,
+            score: message.score,
+            level: message.level,
+            lines: message.lines,
+            allDone: allDone,
+            winner: winner?.id || null,
+            results: allDone
+              ? room.players.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  score: p.score,
+                  level: p.level,
+                  lines: p.lines,
+                }))
+              : null,
+          });
+
+          // Save match to room history when game ends
+          if (allDone && winner) {
+            const matchData = {
+              matchId: `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+              timestamp: Date.now(),
+              winner: { id: winner.id, name: winner.name, score: winner.score },
+              players: room.players.map((p) => ({
+                id: p.id,
+                name: p.name,
+                score: p.score,
+                level: p.level,
+                lines: p.lines,
+              })),
+            };
+            await addRoomHistory(currentRoom, matchData);
+          }
+
+          log(
+            `${playerId} game over in room ${currentRoom} (score: ${message.score})`,
+          );
+        }
         break;
       }
 
@@ -778,15 +1311,16 @@ wss.on("connection", (ws) => {
           player.wantsRematch = true;
         }
 
-        if (
-          room.players.length === 2 &&
-          room.players.every((p) => p.wantsRematch)
-        ) {
+        const rematchCount = room.players.filter((p) => p.wantsRematch).length;
+        const allWantRematch = room.players.every((p) => p.wantsRematch);
+
+        if (allWantRematch && room.players.length >= 2) {
           const newSeed = generateGameSeed();
           room.seed = newSeed;
           room.started = false;
           room.pendingGarbage = new Map();
 
+          // Reset all player states
           room.players.forEach((p) => {
             p.score = 0;
             p.level = 1;
@@ -795,13 +1329,22 @@ wss.on("connection", (ws) => {
             p.ready = false;
             p.gameOver = false;
             p.wantsRematch = false;
+            p.eliminated = false;
+            p.eliminatedAt = null;
+            p.placement = null;
           });
+
+          // Reset royale-specific fields
+          room.alivePlayers = new Set(room.players.map((p) => p.id));
+          room.eliminationOrder = [];
+          room.spectators = new Set();
 
           await saveRoom(room);
 
           broadcastToRoom(currentRoom, {
             type: "rematch_starting",
             seed: newSeed,
+            players: room.players.map((p) => ({ id: p.id, name: p.name })),
           });
 
           log(`Rematch starting in room ${currentRoom}`);
@@ -813,6 +1356,8 @@ wss.on("connection", (ws) => {
             {
               type: "rematch_requested",
               playerId: playerId,
+              rematchCount: rematchCount,
+              totalPlayers: room.players.length,
             },
             ws,
           );

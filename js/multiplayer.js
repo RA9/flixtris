@@ -22,6 +22,14 @@
   let maxReconnectAttempts = 3;
   let reconnectTimeout = null;
 
+  // Royale mode state
+  let roomType = "1v1";
+  let maxPlayers = 2;
+  let players = new Map(); // All players in the room
+  let isEliminated = false;
+  let isSpectating = false;
+  let placement = null;
+
   // Server URL configuration
   // Can be overridden by setting window.FLIXTRIS_SERVER_URL before this script loads
   function getServerUrl() {
@@ -144,6 +152,12 @@
     gameSeed = null;
     reconnectToken = null;
     reconnectAttempts = 0;
+    roomType = "1v1";
+    maxPlayers = 2;
+    players.clear();
+    isEliminated = false;
+    isSpectating = false;
+    placement = null;
   }
 
   function send(message) {
@@ -163,10 +177,19 @@
         playerId = message.playerId;
         gameSeed = message.seed;
         reconnectToken = message.reconnectToken;
+        roomType = message.roomType || "1v1";
+        maxPlayers = message.maxPlayers || 2;
         isHost = true;
+        isEliminated = false;
+        isSpectating = false;
+        placement = null;
+        players.clear();
         saveReconnectToken();
         if (callbacks.onRoomCreated) {
-          callbacks.onRoomCreated(roomCode, gameSeed);
+          callbacks.onRoomCreated(roomCode, gameSeed, {
+            roomType,
+            maxPlayers,
+          });
         }
         break;
 
@@ -175,11 +198,25 @@
         playerId = message.playerId;
         gameSeed = message.seed;
         reconnectToken = message.reconnectToken;
+        roomType = message.roomType || "1v1";
+        maxPlayers = message.maxPlayers || 2;
         opponent = message.opponent;
         isHost = false;
+        isEliminated = false;
+        isSpectating = false;
+        placement = null;
+        players.clear();
+        // Store all existing players
+        if (message.players) {
+          message.players.forEach((p) => players.set(p.id, p));
+        }
         saveReconnectToken();
         if (callbacks.onRoomJoined) {
-          callbacks.onRoomJoined(roomCode, gameSeed, opponent);
+          callbacks.onRoomJoined(roomCode, gameSeed, opponent, {
+            roomType,
+            maxPlayers,
+            players: message.players || [],
+          });
         }
         break;
 
@@ -201,20 +238,38 @@
 
       case "player_joined":
         opponent = message.player;
+        players.set(message.player.id, message.player);
         if (callbacks.onPlayerJoined) {
-          callbacks.onPlayerJoined(opponent);
+          callbacks.onPlayerJoined(message.player, {
+            playerCount: message.playerCount,
+            maxPlayers: message.maxPlayers || maxPlayers,
+          });
         }
         break;
 
       case "player_ready":
         if (callbacks.onPlayerReady) {
-          callbacks.onPlayerReady(message.playerId);
+          callbacks.onPlayerReady(message.playerId, {
+            readyCount: message.readyCount,
+            totalPlayers: message.totalPlayers,
+          });
         }
         break;
 
       case "game_start":
+        isEliminated = false;
+        isSpectating = false;
+        placement = null;
+        // Store all players for royale mode
+        if (message.players) {
+          players.clear();
+          message.players.forEach((p) => players.set(p.id, p));
+        }
         if (callbacks.onGameStart) {
-          callbacks.onGameStart(message.seed, message.countdown);
+          callbacks.onGameStart(message.seed, message.countdown, {
+            roomType: message.roomType || roomType,
+            players: message.players || [],
+          });
         }
         break;
 
@@ -300,9 +355,58 @@
         break;
 
       // ========================
+      // ROYALE MODE EVENTS
+      // ========================
+      case "player_eliminated":
+        // Track elimination in players map
+        if (players.has(message.playerId)) {
+          const p = players.get(message.playerId);
+          p.eliminated = true;
+          p.placement = message.placement;
+        }
+        // Check if it's us
+        if (message.playerId === playerId) {
+          isEliminated = true;
+          placement = message.placement;
+        }
+        if (callbacks.onPlayerEliminated) {
+          callbacks.onPlayerEliminated({
+            playerId: message.playerId,
+            playerName: message.playerName,
+            score: message.score,
+            placement: message.placement,
+            aliveCount: message.aliveCount,
+            totalPlayers: message.totalPlayers,
+            isMe: message.playerId === playerId,
+          });
+        }
+        break;
+
+      case "spectating":
+        isSpectating = true;
+        if (callbacks.onSpectating) {
+          callbacks.onSpectating({
+            alivePlayers: message.alivePlayers,
+          });
+        }
+        break;
+
+      case "royale_results":
+        if (callbacks.onRoyaleResults) {
+          callbacks.onRoyaleResults({
+            winner: message.winner,
+            standings: message.standings,
+            myPlacement: placement,
+            didWin: message.winner?.id === playerId,
+          });
+        }
+        break;
+
+      // ========================
       // PLAYER STATUS
       // ========================
       case "player_left":
+        players.delete(message.playerId);
         if (callbacks.onPlayerLeft) {
           callbacks.onPlayerLeft(message.playerId);
         }
@@ -400,10 +504,11 @@
   // PUBLIC API - ROOM MANAGEMENT
   // ========================
 
-  async function createRoom(name) {
+  async function createRoom(name, type = "1v1") {
     playerName = name || "Player 1";
+    roomType = type;
     await connect();
-    send({ type: "create_room", name: playerName });
+    send({ type: "create_room", name: playerName, roomType: type });
   }
 
   async function joinRoom(code, name) {
@@ -543,6 +648,38 @@
     return loadReconnectToken() !== null;
   }
 
+  function getRoomType() {
+    return roomType;
+  }
+
+  function getMaxPlayers() {
+    return maxPlayers;
+  }
+
+  function getPlayers() {
+    return Array.from(players.values());
+  }
+
+  function getPlayerCount() {
+    return players.size + 1; // +1 for self
+  }
+
+  function isPlayerEliminated() {
+    return isEliminated;
+  }
+
+  function isPlayerSpectating() {
+    return isSpectating;
+  }
+
+  function getPlacement() {
+    return placement;
+  }
+
+  function isRoyaleMode() {
+    return roomType === "royale";
+  }
+
   // ========================
   // EXPORT API
   // ========================
@@ -585,5 +722,15 @@
     getOpponent,
     getSeed,
     isHostPlayer,
+
+    // Royale mode getters
+    getRoomType,
+    getMaxPlayers,
+    getPlayers,
+    getPlayerCount,
+    isPlayerEliminated,
+    isPlayerSpectating,
+    getPlacement,
+    isRoyaleMode,
   };
 })();

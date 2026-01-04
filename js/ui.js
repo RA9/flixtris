@@ -15,6 +15,7 @@
     audio: document.getElementById("screen-audio"),
     splash: document.getElementById("screen-splash"),
     menu: document.getElementById("screen-menu"),
+    leaderboard: document.getElementById("screen-leaderboard"),
     multiplayer: document.getElementById("screen-multiplayer"),
     waiting: document.getElementById("screen-waiting"),
     game: document.getElementById("screen-game"),
@@ -31,6 +32,12 @@
   let pendingGarbage = 0;
   let rematchRequested = false;
   let opponentWantsRematch = false;
+
+  // Royale mode state
+  let isRoyaleMode = false;
+  let royalePlayers = new Map();
+  let aliveCount = 0;
+  let totalPlayersInGame = 0;
 
   // Opponent board constants (half size of main board)
   const OPPONENT_COLS = 10;
@@ -62,6 +69,123 @@
     } else {
       overlay.classList.remove("active");
     }
+  }
+
+  function showRoyaleResultsOverlay(show) {
+    const overlay = document.getElementById("royale-results-overlay");
+    if (overlay) {
+      if (show) {
+        overlay.classList.add("active");
+      } else {
+        overlay.classList.remove("active");
+      }
+    }
+  }
+
+  function showRoyaleResults(data) {
+    const { winner, standings, myPlacement, didWin } = data;
+    const myId = api.multiplayer.getPlayerId();
+
+    // Update banner
+    const banner = document.getElementById("royaleResultBanner");
+    const icon = document.getElementById("royaleResultIcon");
+    const title = document.getElementById("royaleResultTitle");
+
+    if (banner) {
+      banner.className = "mp-result-banner";
+      if (didWin) {
+        banner.classList.add("win");
+        icon.textContent = "🏆";
+        title.textContent = "Victory Royale!";
+      } else if (myPlacement <= 3) {
+        banner.classList.add("win");
+        icon.textContent = "🥈";
+        title.textContent = `${getOrdinal(myPlacement)} Place!`;
+      } else {
+        banner.classList.add("lose");
+        icon.textContent = "💀";
+        title.textContent = `${getOrdinal(myPlacement)} Place`;
+      }
+    }
+
+    // Build standings list
+    const standingsEl = document.getElementById("royaleStandings");
+    if (standingsEl && standings) {
+      standingsEl.innerHTML = standings
+        .map((p) => {
+          const isMe = p.id === myId;
+          const isWinner = p.placement === 1;
+          const classes = [
+            "royale-standing-row",
+            isWinner ? "winner" : "",
+            isMe ? "you" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+          return `
+          <div class="${classes}">
+            <span class="standing-rank">${getOrdinal(p.placement)}</span>
+            <span class="standing-name">${escapeHtml(p.name)}${isMe ? " (You)" : ""}</span>
+            <span class="standing-score">${p.score.toLocaleString()}</span>
+          </div>
+        `;
+        })
+        .join("");
+    }
+
+    // Hide spectator indicator
+    hideSpectatorIndicator();
+    hideAliveCounter();
+
+    showRoyaleResultsOverlay(true);
+  }
+
+  function getOrdinal(n) {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function showSpectatorIndicator() {
+    const el = document.getElementById("spectatorIndicator");
+    if (el) el.style.display = "block";
+  }
+
+  function hideSpectatorIndicator() {
+    const el = document.getElementById("spectatorIndicator");
+    if (el) el.style.display = "none";
+  }
+
+  function showAliveCounter(alive, total) {
+    const counter = document.getElementById("aliveCounter");
+    const aliveEl = document.getElementById("aliveCount");
+    const totalEl = document.getElementById("totalPlayersCount");
+
+    if (counter && aliveEl && totalEl) {
+      counter.style.display = "block";
+      aliveEl.textContent = alive;
+      totalEl.textContent = total;
+    }
+  }
+
+  function hideAliveCounter() {
+    const counter = document.getElementById("aliveCounter");
+    if (counter) counter.style.display = "none";
+  }
+
+  function showEliminationBanner(playerName, placement, total, isMe) {
+    // Create and show a temporary banner
+    const banner = document.createElement("div");
+    banner.className = "elimination-banner";
+    banner.innerHTML = `
+      <h2>${isMe ? "You were eliminated!" : `${escapeHtml(playerName)} eliminated!`}</h2>
+      <p>${getOrdinal(placement)} / ${total}</p>
+    `;
+    document.body.appendChild(banner);
+
+    setTimeout(() => {
+      banner.remove();
+    }, 2000);
   }
 
   function showWaitingForOpponent() {
@@ -160,6 +284,154 @@
     }
   }
 
+  // ========================
+  // NAME PROMPT
+  // ========================
+
+  let namePromptCallback = null;
+
+  async function showNameOverlay(show, callback = null) {
+    const overlay = document.getElementById("name-overlay");
+    if (show) {
+      namePromptCallback = callback;
+      overlay.classList.add("active");
+      const input = document.getElementById("name-input");
+      const preview = document.getElementById("name-preview-text");
+
+      // Load current player info
+      const displayName = await api.db.getDisplayName();
+      preview.textContent = displayName;
+      myPlayerName = displayName;
+
+      input.value = "";
+      input.focus();
+
+      // Update preview as user types
+      input.oninput = () => {
+        const val = input.value.trim();
+        preview.textContent = val || displayName;
+      };
+    } else {
+      overlay.classList.remove("active");
+      namePromptCallback = null;
+    }
+  }
+
+  async function handleSaveName() {
+    const input = document.getElementById("name-input");
+    const name = input.value.trim();
+
+    // Validate: 2-16 chars, alphanumeric + underscore
+    if (name && (name.length < 2 || name.length > 16)) {
+      alert("Name must be 2-16 characters");
+      return;
+    }
+    if (name && !/^[a-zA-Z0-9_]+$/.test(name)) {
+      alert("Name can only contain letters, numbers, and underscores");
+      return;
+    }
+
+    if (name) {
+      await api.db.setPlayerName(name);
+      myPlayerName = name;
+    } else {
+      myPlayerName = await api.db.getDisplayName();
+    }
+
+    showNameOverlay(false);
+    if (namePromptCallback) {
+      namePromptCallback();
+    }
+  }
+
+  async function handleSkipName() {
+    myPlayerName = await api.db.getDisplayName();
+    showNameOverlay(false);
+    if (namePromptCallback) {
+      namePromptCallback();
+    }
+  }
+
+  // Check if we should show name prompt (first visit)
+  async function checkFirstVisit() {
+    const hasName = await api.db.hasCustomName();
+    return !hasName;
+  }
+
+  // Initialize player name on load
+  async function initPlayerName() {
+    myPlayerName = await api.db.getDisplayName();
+  }
+
+  // ========================
+  // LEADERBOARD
+  // ========================
+
+  let currentLeaderboardTab = "global";
+
+  async function loadLeaderboard(type = "global") {
+    const listEl = document.getElementById("leaderboardList");
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="leaderboard-loading">Loading...</div>';
+
+    try {
+      const response = await fetch(`/api/leaderboard/${type}`);
+      const data = await response.json();
+
+      if (!data.leaderboard || data.leaderboard.length === 0) {
+        listEl.innerHTML =
+          '<div class="leaderboard-empty">No scores yet. Be the first!</div>';
+        return;
+      }
+
+      const playerName = await api.db.getDisplayName();
+
+      listEl.innerHTML = data.leaderboard
+        .map((entry) => {
+          const rankClass =
+            entry.rank === 1
+              ? "gold"
+              : entry.rank === 2
+                ? "silver"
+                : entry.rank === 3
+                  ? "bronze"
+                  : "";
+          const isPlayer = entry.playerName === playerName;
+          return `
+          <div class="leaderboard-row ${isPlayer ? "highlight" : ""}">
+            <span class="leaderboard-rank ${rankClass}">${entry.rank}</span>
+            <span class="leaderboard-name">${escapeHtml(entry.playerName)}</span>
+            <span class="leaderboard-score">${entry.score.toLocaleString()}</span>
+          </div>
+        `;
+        })
+        .join("");
+    } catch (err) {
+      listEl.innerHTML =
+        '<div class="leaderboard-empty">Failed to load leaderboard</div>';
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  async function submitScoreToServer(score, mode, seed) {
+    const playerName = await api.db.getDisplayName();
+    try {
+      await fetch("/api/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerName, score, mode, seed }),
+      });
+    } catch (err) {
+      log("Failed to submit score:", err);
+    }
+  }
+
   function updateStats() {
     const state = getState();
     const statsEl = document.getElementById("stats");
@@ -203,6 +475,12 @@
 
     lastMode = state.mode;
     showGameOverOverlay(true);
+
+    // Submit score to leaderboard
+    submitScoreToServer(state.score, state.mode, state.seed);
+
+    // Update local player stats
+    api.db.updatePlayerStats(state.score);
   }
 
   function shareScore() {
@@ -261,11 +539,20 @@
   });
 
   // Splash screen - any key or click advances to menu
-  function handleSplashInteraction() {
+  async function handleSplashInteraction() {
     if (api.sound && api.sound.stopSplashMusic) {
       api.sound.stopSplashMusic();
     }
-    showScreen("menu");
+
+    // Check if first visit - show name prompt
+    const isFirstVisit = await checkFirstVisit();
+    if (isFirstVisit) {
+      showNameOverlay(true, () => {
+        showScreen("menu");
+      });
+    } else {
+      showScreen("menu");
+    }
   }
 
   screens.splash.addEventListener("click", handleSplashInteraction);
@@ -287,13 +574,22 @@
       const mode = card.dataset.mode;
 
       if (mode === "multiplayer") {
-        // Show multiplayer lobby instead of starting game
+        // Show multiplayer lobby for 1v1
+        isRoyaleMode = false;
+        showScreen("multiplayer");
+        return;
+      }
+
+      if (mode === "royale") {
+        // Show multiplayer lobby for royale
+        isRoyaleMode = true;
         showScreen("multiplayer");
         return;
       }
 
       lastMode = mode;
       isMultiplayerGame = false;
+      isRoyaleMode = false;
       hideOpponentBoard();
       showScreen("game");
       api.game.startGame(mode);
@@ -399,6 +695,43 @@
     }
   });
 
+  // Name prompt overlay
+  document
+    .getElementById("saveNameBtn")
+    .addEventListener("click", handleSaveName);
+  document
+    .getElementById("skipNameBtn")
+    .addEventListener("click", handleSkipName);
+
+  document.getElementById("name-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      handleSaveName();
+    }
+  });
+
+  // Leaderboard
+  document.getElementById("leaderboardBtn").addEventListener("click", () => {
+    showScreen("leaderboard");
+    loadLeaderboard(currentLeaderboardTab);
+  });
+
+  document
+    .getElementById("leaderboardBackBtn")
+    .addEventListener("click", () => {
+      showScreen("menu");
+    });
+
+  document.querySelectorAll(".leaderboard-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document
+        .querySelectorAll(".leaderboard-tab")
+        .forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      currentLeaderboardTab = tab.dataset.tab;
+      loadLeaderboard(currentLeaderboardTab);
+    });
+  });
+
   // Close overlay on Escape key
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
@@ -406,6 +739,7 @@
       showGameOverOverlay(false);
       showSeedOverlay(false);
       showMpResultsOverlay(false);
+      showRoyaleResultsOverlay(false);
     }
     if (e.key === "h" || e.key === "H") {
       if (screens.game.classList.contains("active")) {
@@ -677,6 +1011,41 @@
     });
   }
 
+  // Royale results overlay buttons
+  const royaleRematchBtn = document.getElementById("royaleRematchBtn");
+  const royaleMenuBtn = document.getElementById("royaleMenuBtn");
+
+  if (royaleRematchBtn) {
+    royaleRematchBtn.addEventListener("click", () => {
+      if (api.multiplayer && api.multiplayer.isConnected()) {
+        api.multiplayer.requestRematch();
+        royaleRematchBtn.disabled = true;
+        royaleRematchBtn.textContent = "Waiting for others...";
+        const status = document.getElementById("royaleRematchStatus");
+        if (status) {
+          status.textContent = "Waiting for other players...";
+          status.className = "rematch-status waiting";
+        }
+      }
+    });
+  }
+
+  if (royaleMenuBtn) {
+    royaleMenuBtn.addEventListener("click", () => {
+      showRoyaleResultsOverlay(false);
+      hideSpectatorIndicator();
+      hideAliveCounter();
+      if (api.multiplayer) {
+        api.multiplayer.disconnect();
+      }
+      isMultiplayerGame = false;
+      isRoyaleMode = false;
+      royalePlayers.clear();
+      updateGarbageIndicator(0);
+      showScreen("menu");
+    });
+  }
+
   // ========================
   // MULTIPLAYER UI HANDLING
   // ========================
@@ -701,10 +1070,8 @@
 
   // Player name (could be customized later)
   function getPlayerName() {
-    if (!myPlayerName) {
-      myPlayerName = "Player " + Math.floor(Math.random() * 1000);
-    }
-    return myPlayerName;
+    // Return cached name (initialized on load via initPlayerName)
+    return myPlayerName || "Player";
   }
 
   // Show/hide opponent board
@@ -805,15 +1172,35 @@
     if (!playersList) return;
 
     playersList.innerHTML = "";
-    players.forEach((player) => {
-      const div = document.createElement("div");
-      div.className = "player-item" + (player.ready ? " ready" : "");
-      div.innerHTML = `
-        <span class="player-name">${player.name}</span>
-        <span class="player-status">${player.ready ? "Ready!" : "Waiting..."}</span>
-      `;
-      playersList.appendChild(div);
-    });
+
+    if (isRoyaleMode && players.length > 2) {
+      // Use grid layout for royale with many players
+      playersList.className = "royale-player-grid";
+      players.forEach((player) => {
+        const div = document.createElement("div");
+        const classes = ["royale-player-card"];
+        if (player.ready) classes.push("ready");
+        if (player.isYou) classes.push("you");
+        div.className = classes.join(" ");
+        div.innerHTML = `
+          <div class="player-name">${escapeHtml(player.name.replace(" (You)", ""))}</div>
+          <div class="player-status">${player.isYou ? "(You)" : player.ready ? "Ready" : "..."}</div>
+        `;
+        playersList.appendChild(div);
+      });
+    } else {
+      // Standard list layout for 1v1 or small royale
+      playersList.className = "players-list";
+      players.forEach((player) => {
+        const div = document.createElement("div");
+        div.className = "player-item" + (player.ready ? " ready" : "");
+        div.innerHTML = `
+          <span class="player-name">${escapeHtml(player.name)}</span>
+          <span class="player-status">${player.ready ? "Ready!" : "Waiting..."}</span>
+        `;
+        playersList.appendChild(div);
+      });
+    }
   }
 
   // Create room button
@@ -828,7 +1215,8 @@
       createRoomBtn.textContent = "Creating...";
 
       try {
-        await api.multiplayer.createRoom(getPlayerName());
+        const roomType = isRoyaleMode ? "royale" : "1v1";
+        await api.multiplayer.createRoom(getPlayerName(), roomType);
         // Room created callback will handle the rest
       } catch (err) {
         console.error("Failed to create room:", err);
@@ -917,6 +1305,9 @@
     myReadyState = false;
     opponentReadyState = false;
     opponentName = null;
+    royalePlayers.clear();
+    aliveCount = 0;
+    totalPlayersInGame = 0;
 
     if (createRoomBtn) {
       createRoomBtn.disabled = false;
@@ -937,11 +1328,26 @@
     }
     if (playersList) {
       playersList.innerHTML = "";
+      playersList.className = "players-list";
     }
     if (readyBtn) {
       readyBtn.style.display = "none";
       readyBtn.disabled = false;
       readyBtn.textContent = "Ready!";
+    }
+
+    // Reset royale UI elements
+    hideSpectatorIndicator();
+    hideAliveCounter();
+
+    const royaleRematchBtn = document.getElementById("royaleRematchBtn");
+    if (royaleRematchBtn) {
+      royaleRematchBtn.disabled = false;
+      royaleRematchBtn.textContent = "🔄 Play Again";
+    }
+    const royaleRematchStatus = document.getElementById("royaleRematchStatus");
+    if (royaleRematchStatus) {
+      royaleRematchStatus.textContent = "";
     }
   }
 
@@ -950,11 +1356,26 @@
     const players = [];
 
     // Add self
-    players.push({ name: getPlayerName() + " (You)", ready: myReadyState });
+    players.push({
+      name: getPlayerName() + " (You)",
+      ready: myReadyState,
+      isYou: true,
+    });
 
-    // Add opponent if present
-    if (opponentName) {
-      players.push({ name: opponentName, ready: opponentReadyState });
+    if (isRoyaleMode) {
+      // Add all other players from royale map
+      royalePlayers.forEach((p) => {
+        players.push({
+          name: p.name,
+          ready: p.ready || false,
+          isYou: false,
+        });
+      });
+    } else {
+      // Add opponent if present (1v1 mode)
+      if (opponentName) {
+        players.push({ name: opponentName, ready: opponentReadyState });
+      }
     }
 
     updatePlayersList(players);
@@ -967,15 +1388,21 @@
     const mp = api.multiplayer;
 
     // Room created - show waiting room
-    mp.on("onRoomCreated", (roomCode, seed) => {
-      log("Room created:", roomCode);
+    mp.on("onRoomCreated", (roomCode, seed, options) => {
+      log("Room created:", roomCode, options);
       resetMultiplayerUI();
+
+      isRoyaleMode = options?.roomType === "royale";
 
       if (roomCodeDisplay) {
         roomCodeDisplay.textContent = roomCode;
       }
       if (waitingText) {
-        waitingText.textContent = "Waiting for opponent...";
+        if (isRoyaleMode) {
+          waitingText.textContent = `Waiting for players... (1/${options?.maxPlayers || 16})`;
+        } else {
+          waitingText.textContent = "Waiting for opponent...";
+        }
       }
 
       refreshPlayersList();
@@ -983,16 +1410,29 @@
     });
 
     // Room joined - show waiting room with opponent
-    mp.on("onRoomJoined", (roomCode, seed, opponent) => {
-      log("Joined room:", roomCode, "Opponent:", opponent);
+    mp.on("onRoomJoined", (roomCode, seed, opponent, options) => {
+      log("Joined room:", roomCode, "Opponent:", opponent, "Options:", options);
       resetMultiplayerUI();
-      opponentName = opponent.name;
+
+      isRoyaleMode = options?.roomType === "royale";
+      opponentName = opponent?.name;
+
+      // Store all existing players for royale
+      if (options?.players) {
+        royalePlayers.clear();
+        options.players.forEach((p) => royalePlayers.set(p.id, p));
+      }
 
       if (roomCodeDisplay) {
         roomCodeDisplay.textContent = roomCode;
       }
       if (waitingText) {
-        waitingText.textContent = "Opponent found!";
+        if (isRoyaleMode) {
+          const count = (options?.players?.length || 0) + 1;
+          waitingText.textContent = `${count} players in lobby`;
+        } else {
+          waitingText.textContent = "Opponent found!";
+        }
       }
       if (readyBtn) {
         readyBtn.style.display = "block";
@@ -1003,12 +1443,17 @@
     });
 
     // Player joined our room
-    mp.on("onPlayerJoined", (player) => {
-      log("Player joined:", player);
+    mp.on("onPlayerJoined", (player, options) => {
+      log("Player joined:", player, options);
       opponentName = player.name;
+      royalePlayers.set(player.id, player);
 
       if (waitingText) {
-        waitingText.textContent = "Opponent found!";
+        if (isRoyaleMode) {
+          waitingText.textContent = `${options?.playerCount || royalePlayers.size + 1} players in lobby`;
+        } else {
+          waitingText.textContent = "Opponent found!";
+        }
       }
       if (readyBtn) {
         readyBtn.style.display = "block";
@@ -1018,21 +1463,50 @@
     });
 
     // Player ready
-    mp.on("onPlayerReady", (playerId) => {
-      log("Player ready:", playerId);
+    mp.on("onPlayerReady", (playerId, options) => {
+      log("Player ready:", playerId, options);
       // This is triggered when the OTHER player becomes ready
       opponentReadyState = true;
+
+      // Update player ready state in royale map
+      if (royalePlayers.has(playerId)) {
+        royalePlayers.get(playerId).ready = true;
+      }
+
       refreshPlayersList();
     });
 
     // Game start - begin the game with countdown
-    mp.on("onGameStart", (seed, countdown) => {
-      log("Game starting with seed:", seed, "countdown:", countdown);
+    mp.on("onGameStart", (seed, countdown, options) => {
+      log(
+        "Game starting with seed:",
+        seed,
+        "countdown:",
+        countdown,
+        "options:",
+        options,
+      );
       isMultiplayerGame = true;
-      lastMode = "multiplayer";
+      lastMode = isRoyaleMode ? "royale" : "multiplayer";
 
-      const opponent = mp.getOpponent();
-      showOpponentBoard(opponent ? opponent.name : "Opponent");
+      // Store players for royale
+      if (options?.players) {
+        royalePlayers.clear();
+        options.players.forEach((p) => royalePlayers.set(p.id, p));
+        totalPlayersInGame = options.players.length;
+        aliveCount = totalPlayersInGame;
+      }
+
+      if (isRoyaleMode) {
+        // Show alive counter for royale
+        showAliveCounter(aliveCount, totalPlayersInGame);
+        // In royale, we might show multiple mini-boards instead of one opponent
+        hideOpponentBoard();
+      } else {
+        const opponent = mp.getOpponent();
+        showOpponentBoard(opponent ? opponent.name : "Opponent");
+      }
+
       showScreen("game");
 
       // Start countdown then begin game
@@ -1068,6 +1542,43 @@
     // Emoji received
     mp.on("onEmojiReceived", (data) => {
       showOpponentEmoji(data.emoji);
+    });
+
+    // ========================
+    // ROYALE MODE EVENTS
+    // ========================
+
+    // Player eliminated in royale
+    mp.on("onPlayerEliminated", (data) => {
+      log("Player eliminated:", data);
+      aliveCount = data.aliveCount;
+      showAliveCounter(aliveCount, data.totalPlayers);
+
+      // Show elimination banner
+      showEliminationBanner(
+        data.playerName,
+        data.placement,
+        data.totalPlayers,
+        data.isMe,
+      );
+
+      if (data.isMe) {
+        // We were eliminated - show spectator indicator
+        showSpectatorIndicator();
+      }
+    });
+
+    // Entered spectator mode
+    mp.on("onSpectating", (data) => {
+      log("Now spectating:", data);
+      showSpectatorIndicator();
+      // Could show live boards of remaining players here
+    });
+
+    // Royale game ended
+    mp.on("onRoyaleResults", (data) => {
+      log("Royale results:", data);
+      showRoyaleResults(data);
     });
 
     // Rematch requested by opponent
@@ -1331,6 +1842,9 @@
   // Initialize multiplayer when ready
   initMultiplayer();
 
+  // Initialize player name from db
+  initPlayerName();
+
   // Expose UI API
   api.ui = {
     showGameOver,
@@ -1350,5 +1864,16 @@
     // Emojis
     showFloatingEmoji,
     showOpponentEmoji,
+    // Player name
+    showNameOverlay,
+    getPlayerName,
+    // Royale mode
+    showRoyaleResultsOverlay,
+    showRoyaleResults,
+    showSpectatorIndicator,
+    hideSpectatorIndicator,
+    showAliveCounter,
+    hideAliveCounter,
+    showEliminationBanner,
   };
 })();

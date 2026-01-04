@@ -523,7 +523,8 @@
             }
 
             /* Multiplayer Results Overlay */
-            #mp-results-overlay {
+            #mp-results-overlay,
+            #royale-results-overlay {
                 display: none;
                 position: fixed;
                 inset: 0;
@@ -533,7 +534,8 @@
                 overflow: auto;
             }
 
-            #mp-results-overlay.active {
+            #mp-results-overlay.active,
+            #royale-results-overlay.active {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -653,6 +655,11 @@
                 color: #4ade80;
             }
 
+            /* Royale mode card */
+            .mode-card.royale h3 {
+                color: #f59e0b;
+            }
+
             /* Multiplayer screens */
             .multiplayer-options {
                 display: flex;
@@ -763,7 +770,8 @@
             }
 
             /* Seed Input Overlay */
-            #seed-overlay {
+            #seed-overlay,
+            #name-overlay {
                 display: none;
                 position: fixed;
                 inset: 0;
@@ -773,12 +781,47 @@
                 overflow: auto;
             }
 
-            #seed-overlay.active {
+            #seed-overlay.active,
+            #name-overlay.active {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 animation: fadeIn 0.2s ease-out;
+            }
+
+            .name-input {
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 1.2rem;
+                background: var(--bg-primary);
+                border: 2px solid var(--bg-card);
+                border-radius: 8px;
+                color: var(--text-primary);
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .name-input:focus {
+                outline: none;
+                border-color: var(--accent);
+            }
+
+            .name-hint {
+                color: var(--text-secondary);
+                margin-bottom: 1.5rem;
+                text-align: center;
+            }
+
+            .name-preview {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+
+            .name-preview span {
+                color: var(--accent);
+                font-weight: 600;
             }
 
             .seed-hint {
@@ -809,6 +852,342 @@
             .seed-input::placeholder {
                 color: var(--text-secondary);
                 opacity: 0.6;
+            }
+
+            /* Leaderboard Screen */
+            #screen-leaderboard {
+                padding: 20px;
+            }
+
+            .leaderboard-tabs {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .leaderboard-tab {
+                padding: 0.75rem 1.5rem;
+                background: var(--bg-card);
+                border: 2px solid transparent;
+                border-radius: 8px;
+                color: var(--text-secondary);
+                cursor: pointer;
+                transition: all 0.2s;
+                font-size: 0.9rem;
+            }
+
+            .leaderboard-tab:hover {
+                border-color: var(--accent);
+            }
+
+            .leaderboard-tab.active {
+                background: var(--accent);
+                color: var(--bg-primary);
+                border-color: var(--accent);
+            }
+
+            .leaderboard-container {
+                width: 100%;
+                max-width: 500px;
+                background: var(--bg-secondary);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .leaderboard-header {
+                display: grid;
+                grid-template-columns: 50px 1fr 100px;
+                padding: 1rem;
+                background: var(--bg-card);
+                font-weight: 600;
+                color: var(--text-secondary);
+                font-size: 0.85rem;
+            }
+
+            .leaderboard-list {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+
+            .leaderboard-row {
+                display: grid;
+                grid-template-columns: 50px 1fr 100px;
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid var(--bg-card);
+                align-items: center;
+            }
+
+            .leaderboard-row:last-child {
+                border-bottom: none;
+            }
+
+            .leaderboard-row.highlight {
+                background: rgba(34, 211, 238, 0.1);
+            }
+
+            .leaderboard-rank {
+                font-weight: 700;
+                color: var(--text-secondary);
+            }
+
+            .leaderboard-rank.gold {
+                color: #fbbf24;
+            }
+
+            .leaderboard-rank.silver {
+                color: #9ca3af;
+            }
+
+            .leaderboard-rank.bronze {
+                color: #d97706;
+            }
+
+            .leaderboard-name {
+                font-weight: 500;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .leaderboard-score {
+                text-align: right;
+                font-weight: 600;
+                color: var(--accent);
+            }
+
+            .leaderboard-empty {
+                padding: 2rem;
+                text-align: center;
+                color: var(--text-secondary);
+            }
+
+            .leaderboard-loading {
+                padding: 2rem;
+                text-align: center;
+                color: var(--text-secondary);
+            }
+
+            /* Royale Mode Styles */
+            .royale-player-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.75rem;
+                width: 100%;
+                max-width: 500px;
+                margin-bottom: 1.5rem;
+            }
+
+            .royale-player-card {
+                background: var(--bg-card);
+                border-radius: 8px;
+                padding: 0.75rem;
+                text-align: center;
+                border: 2px solid transparent;
+                transition: all 0.2s;
+            }
+
+            .royale-player-card.ready {
+                border-color: #4ade80;
+                background: rgba(74, 222, 128, 0.1);
+            }
+
+            .royale-player-card.you {
+                border-color: var(--accent);
+            }
+
+            .royale-player-card .player-name {
+                font-weight: 600;
+                font-size: 0.9rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .royale-player-card .player-status {
+                font-size: 0.75rem;
+                color: var(--text-secondary);
+                margin-top: 0.25rem;
+            }
+
+            .royale-player-card.ready .player-status {
+                color: #4ade80;
+            }
+
+            .royale-info {
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .royale-info .player-count {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #f59e0b;
+            }
+
+            .royale-info .player-count-label {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+            }
+
+            /* Mini boards grid for spectating */
+            .mini-boards-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 0.5rem;
+                max-width: 400px;
+            }
+
+            .mini-board-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+            .mini-board-container.eliminated {
+                opacity: 0.4;
+            }
+
+            .mini-board-container .mini-name {
+                font-size: 0.7rem;
+                color: var(--text-secondary);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 80px;
+            }
+
+            .mini-board-container .mini-score {
+                font-size: 0.65rem;
+                color: var(--accent);
+            }
+
+            .mini-board {
+                width: 60px;
+                height: 100px;
+                background: var(--bg-card);
+                border-radius: 4px;
+            }
+
+            /* Elimination banner */
+            .elimination-banner {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(244, 63, 94, 0.95);
+                color: white;
+                padding: 1.5rem 3rem;
+                border-radius: 12px;
+                text-align: center;
+                z-index: 1000;
+                animation: bannerPop 0.3s ease-out;
+            }
+
+            .elimination-banner.win {
+                background: rgba(74, 222, 128, 0.95);
+            }
+
+            .elimination-banner h2 {
+                margin: 0 0 0.5rem 0;
+                font-size: 1.5rem;
+            }
+
+            .elimination-banner p {
+                margin: 0;
+                opacity: 0.9;
+            }
+
+            @keyframes bannerPop {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.8);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+
+            /* Royale results overlay */
+            .royale-standings {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .royale-standing-row {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 0.75rem 1rem;
+                background: var(--bg-card);
+                border-radius: 8px;
+            }
+
+            .royale-standing-row.winner {
+                border: 2px solid #4ade80;
+                background: rgba(74, 222, 128, 0.1);
+            }
+
+            .royale-standing-row.you {
+                border: 2px solid var(--accent);
+            }
+
+            .standing-rank {
+                font-size: 1.25rem;
+                font-weight: 700;
+                min-width: 40px;
+                color: var(--text-secondary);
+            }
+
+            .royale-standing-row.winner .standing-rank {
+                color: #4ade80;
+            }
+
+            .standing-name {
+                flex: 1;
+                font-weight: 500;
+            }
+
+            .standing-score {
+                font-weight: 600;
+                color: var(--accent);
+            }
+
+            /* Spectator mode indicator */
+            .spectator-indicator {
+                position: fixed;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(245, 158, 11, 0.9);
+                color: white;
+                padding: 0.5rem 1.5rem;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                z-index: 100;
+            }
+
+            /* Alive counter during game */
+            .alive-counter {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: var(--bg-card);
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                z-index: 100;
+            }
+
+            .alive-counter .count {
+                color: #f59e0b;
+                font-weight: 700;
             }
 
             /* Mobile Header */
@@ -1195,10 +1574,53 @@
                     <p>Enter a shared seed code to challenge a friend.</p>
                 </button>
                 <button class="mode-card multiplayer" data-mode="multiplayer">
-                    <h3>Multiplayer</h3>
+                    <h3>1v1 Battle</h3>
                     <p>Real-time 1v1 battle. See your opponent live!</p>
                 </button>
+                <button class="mode-card royale" data-mode="royale">
+                    <h3>Battle Royale</h3>
+                    <p>2-16 players. Last one standing wins!</p>
+                </button>
             </div>
+            <button
+                class="btn secondary"
+                id="leaderboardBtn"
+                style="margin-top: 1.5rem"
+            >
+                Leaderboards
+            </button>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="screen-leaderboard" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Leaderboards</h2>
+            <div class="leaderboard-tabs">
+                <button class="leaderboard-tab active" data-tab="global">
+                    Global
+                </button>
+                <button class="leaderboard-tab" data-tab="daily">Daily</button>
+                <button class="leaderboard-tab" data-tab="weekly">
+                    Weekly
+                </button>
+            </div>
+            <div class="leaderboard-container">
+                <div class="leaderboard-header">
+                    <span>#</span>
+                    <span>Player</span>
+                    <span>Score</span>
+                </div>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <div class="leaderboard-loading">Loading...</div>
+                </div>
+            </div>
+            <button
+                class="btn secondary"
+                id="leaderboardBackBtn"
+                style="margin-top: 1.5rem"
+            >
+                Back to Menu
+            </button>
         </div>
 
         <!-- Multiplayer Lobby Screen -->
@@ -1454,6 +1876,32 @@
             </div>
         </div>
 
+        <!-- Name Prompt Overlay -->
+        <div id="name-overlay">
+            <div class="overlay-content">
+                <h2>What's your name?</h2>
+                <p class="name-hint">
+                    Enter a name to appear on leaderboards, or keep playing
+                    anonymously.
+                </p>
+                <input
+                    type="text"
+                    id="name-input"
+                    class="name-input"
+                    placeholder="Enter your name"
+                    maxlength="16"
+                    autocomplete="off"
+                />
+                <p class="name-preview">
+                    Playing as: <span id="name-preview-text">Player_ABC1</span>
+                </p>
+                <button class="btn" id="saveNameBtn">Save Name</button>
+                <button class="btn secondary" id="skipNameBtn">
+                    Stay Anonymous
+                </button>
+            </div>
+        </div>
+
         <!-- Seed Input Overlay -->
         <div id="seed-overlay">
             <div class="overlay-content">
@@ -1528,6 +1976,43 @@
                 </button>
                 <button class="btn secondary" id="mpMenuBtn">Main Menu</button>
             </div>
+        </div>
+
+        <!-- Royale Results Overlay -->
+        <div id="royale-results-overlay">
+            <div class="overlay-content mp-results-content">
+                <div class="mp-result-banner" id="royaleResultBanner">
+                    <span class="result-icon" id="royaleResultIcon">🏆</span>
+                    <h2 id="royaleResultTitle">Victory Royale!</h2>
+                </div>
+                <div class="royale-standings" id="royaleStandings">
+                    <!-- Standings populated dynamically -->
+                </div>
+                <div class="mp-rematch-section" id="royaleRematchSection">
+                    <button class="btn" id="royaleRematchBtn">
+                        🔄 Play Again
+                    </button>
+                    <p class="rematch-status" id="royaleRematchStatus"></p>
+                </div>
+                <button class="btn secondary" id="royaleMenuBtn">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- Spectator Indicator (shown when eliminated in royale) -->
+        <div
+            id="spectatorIndicator"
+            class="spectator-indicator"
+            style="display: none"
+        >
+            👁 Spectating
+        </div>
+
+        <!-- Alive Counter (shown during royale game) -->
+        <div id="aliveCounter" class="alive-counter" style="display: none">
+            <span class="count" id="aliveCount">0</span> /
+            <span id="totalPlayersCount">0</span> alive
         </div>
 
         <script>
