@@ -1462,10 +1462,59 @@ wss.on("connection", (ws) => {
             if (room) {
               const player = room.players.find((p) => p.id === pId);
               if (player && player.disconnectedAt) {
-                broadcastToRoom(roomCode, {
-                  type: "player_left",
-                  playerId: pId,
-                });
+                // Check if game was in progress (1v1 mode)
+                if (
+                  room.started &&
+                  room.type === "1v1" &&
+                  room.players.length === 2
+                ) {
+                  // Award win to remaining player
+                  const remainingPlayer = room.players.find(
+                    (p) => p.id !== pId && p.ws,
+                  );
+                  if (remainingPlayer) {
+                    const leavingPlayer = player;
+
+                    // Send game results - remaining player wins by forfeit
+                    broadcastToRoom(roomCode, {
+                      type: "player_game_over",
+                      playerId: pId,
+                      score: leavingPlayer.score || 0,
+                      level: leavingPlayer.level || 1,
+                      lines: leavingPlayer.lines || 0,
+                      allDone: true,
+                      winner: remainingPlayer.id,
+                      forfeit: true,
+                      results: [
+                        {
+                          id: remainingPlayer.id,
+                          name: remainingPlayer.name,
+                          score: remainingPlayer.score || 0,
+                          level: remainingPlayer.level || 1,
+                          lines: remainingPlayer.lines || 0,
+                        },
+                        {
+                          id: leavingPlayer.id,
+                          name: leavingPlayer.name,
+                          score: leavingPlayer.score || 0,
+                          level: leavingPlayer.level || 1,
+                          lines: leavingPlayer.lines || 0,
+                          forfeited: true,
+                        },
+                      ],
+                    });
+
+                    log(
+                      `${pId} forfeited in room ${roomCode}, ${remainingPlayer.id} wins`,
+                    );
+                  }
+                } else {
+                  // Game not started or not 1v1, just notify player left
+                  broadcastToRoom(roomCode, {
+                    type: "player_left",
+                    playerId: pId,
+                  });
+                }
 
                 await removePlayerFromRoom(roomCode, pId);
               }

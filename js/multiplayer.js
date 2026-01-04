@@ -316,6 +316,7 @@
             allDone: message.allDone,
             winner: message.winner,
             results: message.results,
+            forfeit: message.forfeit || false,
           });
         }
         break;

@@ -223,10 +223,13 @@
     );
   }
 
-  function showMultiplayerResults(myId, winner, results) {
+  function showMultiplayerResults(myId, winner, results, forfeit = false) {
     const state = getState();
     const isWinner = winner === myId;
-    const isTie = results.length === 2 && results[0].score === results[1].score;
+    const isTie =
+      !forfeit && results.length === 2 && results[0].score === results[1].score;
+    const opponentForfeited =
+      forfeit && results.some((r) => r.forfeited && r.id !== myId);
 
     // Submit score to leaderboard for multiplayer games
     submitScoreToServer(state.score, state.mode, state.seed);
@@ -250,7 +253,7 @@
     } else if (isWinner) {
       banner.classList.add("win");
       icon.textContent = "🏆";
-      title.textContent = "You Win!";
+      title.textContent = opponentForfeited ? "You Win! (Forfeit)" : "You Win!";
     } else {
       banner.classList.add("lose");
       icon.textContent = "😔";
@@ -261,13 +264,17 @@
     const player1 = sortedResults[0];
     const player2 = sortedResults[1];
 
+    const player1Suffix = player1.id === myId ? " (You)" : "";
+    const player1Forfeit = player1.forfeited ? " [Forfeit]" : "";
     document.getElementById("mpPlayer1Name").textContent =
-      player1.id === myId ? player1.name + " (You)" : player1.name;
+      player1.name + player1Suffix + player1Forfeit;
     document.getElementById("mpPlayer1Score").textContent = player1.score;
 
     if (player2) {
+      const player2Suffix = player2.id === myId ? " (You)" : "";
+      const player2Forfeit = player2.forfeited ? " [Forfeit]" : "";
       document.getElementById("mpPlayer2Name").textContent =
-        player2.id === myId ? player2.name + " (You)" : player2.name;
+        player2.name + player2Suffix + player2Forfeit;
       document.getElementById("mpPlayer2Score").textContent = player2.score;
     }
 
@@ -1736,23 +1743,26 @@
         // Both players done - show final results
         const myId = mp.getPlayerId();
 
+        // If opponent forfeited, stop our game immediately
+        if (data.forfeit && data.winner === myId) {
+          if (api.game.stop) api.game.stop();
+        }
+
         // Show multiplayer results overlay
         setTimeout(() => {
-          showMultiplayerResults(myId, data.winner, data.results);
+          showMultiplayerResults(myId, data.winner, data.results, data.forfeit);
         }, 500);
       }
     });
 
-    // Player left
+    // Player left (only fires when game hasn't started - forfeit is handled by player_game_over)
     mp.on("onPlayerLeft", (playerId) => {
       log("Player left:", playerId);
       if (isMultiplayerGame) {
-        alert("Opponent left the game!");
-        if (api.game.stop) api.game.stop();
-        mp.disconnect();
-        isMultiplayerGame = false;
-        hideOpponentBoard();
-        showScreen("menu");
+        // During active game, forfeit should be handled by onPlayerGameOver
+        // This is a fallback in case something goes wrong
+        log("Player left during active game - waiting for forfeit result");
+        return;
       } else {
         // In waiting room
         opponentName = null;
