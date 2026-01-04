@@ -532,8 +532,24 @@
     handleAudioEnable();
   });
 
+  // Check if any overlay is currently active
+  function isOverlayActive() {
+    const overlays = [
+      "overlay",
+      "gameover-overlay",
+      "seed-overlay",
+      "name-overlay",
+      "mp-results-overlay",
+      "royale-results-overlay",
+    ];
+    return overlays.some((id) => {
+      const el = document.getElementById(id);
+      return el && el.classList.contains("active");
+    });
+  }
+
   document.addEventListener("keydown", (e) => {
-    if (screens.audio.classList.contains("active")) {
+    if (screens.audio.classList.contains("active") && !isOverlayActive()) {
       handleAudioEnable();
     }
   });
@@ -562,7 +578,7 @@
   });
 
   document.addEventListener("keydown", (e) => {
-    if (screens.splash.classList.contains("active")) {
+    if (screens.splash.classList.contains("active") && !isOverlayActive()) {
       handleSplashInteraction();
     }
   });
