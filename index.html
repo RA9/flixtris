@@ -196,6 +196,10 @@
                 <div class="mobile-stats">
                     <span id="mobile-score">0</span>
                     <span class="mobile-stats-label">Score</span>
+                    <span
+                        class="mobile-high-score"
+                        id="mobile-high-score"
+                    ></span>
                 </div>
                 <canvas id="next-mobile" width="50" height="50"></canvas>
                 <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
@@ -241,6 +245,10 @@
                     </button>
                     <h3>Flixtris</h3>
                     <div id="stats">Score: 0 Level: 1 Lines: 0</div>
+                    <div
+                        id="high-score-display"
+                        class="high-score-display"
+                    ></div>
                     <h4>Next</h4>
                     <canvas id="next" width="80" height="80"></canvas>
                     <h4>Theme</h4>
@@ -531,6 +539,40 @@
             style="display: none"
         >
             👁 Spectating
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pause-overlay">
+            <div class="overlay-content pause-content">
+                <h2>Paused</h2>
+                <p class="pause-hint">Press P or tap Resume to continue</p>
+                <button class="btn" id="resumeBtn">Resume</button>
+                <button class="btn secondary" id="pauseHelpBtn">Help</button>
+                <button class="btn secondary" id="pauseMenuBtn">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- Countdown Overlay -->
+        <div id="countdown-overlay">
+            <div class="countdown-number" id="countdownNumber">3</div>
+        </div>
+
+        <!-- Confirm Leave Dialog -->
+        <div id="confirm-leave-overlay">
+            <div class="overlay-content confirm-content">
+                <h2>Leave Game?</h2>
+                <p>Your progress will be lost.</p>
+                <div class="confirm-buttons">
+                    <button class="btn secondary" id="cancelLeaveBtn">
+                        Cancel
+                    </button>
+                    <button class="btn danger" id="confirmLeaveBtn">
+                        Leave
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Alive Counter (shown during royale game) -->

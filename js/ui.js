@@ -64,6 +64,123 @@
     }
   }
 
+  // ========================
+  // PAUSE OVERLAY
+  // ========================
+
+  function showPauseOverlay(show) {
+    const overlay = document.getElementById("pause-overlay");
+    if (overlay) {
+      if (show) {
+        overlay.classList.add("active");
+      } else {
+        overlay.classList.remove("active");
+      }
+    }
+  }
+
+  function resumeGame() {
+    const state = getState();
+    if (state.paused) {
+      state.paused = false;
+      showPauseOverlay(false);
+      if (api.game.render) api.game.render();
+    }
+  }
+
+  // ========================
+  // COUNTDOWN OVERLAY
+  // ========================
+
+  function showCountdownOverlay(show) {
+    const overlay = document.getElementById("countdown-overlay");
+    if (overlay) {
+      if (show) {
+        overlay.classList.add("active");
+      } else {
+        overlay.classList.remove("active");
+      }
+    }
+  }
+
+  function runCountdown(seconds, callback) {
+    const numberEl = document.getElementById("countdownNumber");
+    let count = seconds;
+
+    showCountdownOverlay(true);
+
+    function tick() {
+      if (numberEl) {
+        numberEl.textContent = count > 0 ? count : "GO!";
+        numberEl.style.animation = "none";
+        // Trigger reflow to restart animation
+        numberEl.offsetHeight;
+        numberEl.style.animation = "countdownPulse 1s ease-in-out infinite";
+      }
+
+      if (count > 0) {
+        if (api.sound) api.sound.move(); // tick sound
+        count--;
+        setTimeout(tick, 1000);
+      } else {
+        setTimeout(() => {
+          showCountdownOverlay(false);
+          if (callback) callback();
+        }, 500);
+      }
+    }
+
+    tick();
+  }
+
+  // ========================
+  // CONFIRM LEAVE DIALOG
+  // ========================
+
+  let confirmLeaveCallback = null;
+
+  function showConfirmLeave(show, onConfirm = null) {
+    const overlay = document.getElementById("confirm-leave-overlay");
+    if (overlay) {
+      if (show) {
+        confirmLeaveCallback = onConfirm;
+        overlay.classList.add("active");
+      } else {
+        overlay.classList.remove("active");
+        confirmLeaveCallback = null;
+      }
+    }
+  }
+
+  // ========================
+  // HIGH SCORE DISPLAY
+  // ========================
+
+  let currentHighScore = 0;
+
+  async function loadHighScore() {
+    const player = await api.db.getPlayer();
+    currentHighScore = player.bestScore || 0;
+    updateHighScoreDisplay();
+  }
+
+  function updateHighScoreDisplay() {
+    const desktopEl = document.getElementById("high-score-display");
+    const mobileEl = document.getElementById("mobile-high-score");
+
+    if (currentHighScore > 0) {
+      if (desktopEl) {
+        desktopEl.innerHTML = `<span class="best-label">Best: </span><span class="best-value">${currentHighScore.toLocaleString()}</span>`;
+      }
+      if (mobileEl) {
+        mobileEl.textContent = `Best: ${currentHighScore.toLocaleString()}`;
+      }
+    } else {
+      if (desktopEl) desktopEl.innerHTML = "";
+      if (mobileEl) mobileEl.textContent = "";
+    }
+  }
+
   function showMpResultsOverlay(show) {
     const overlay = document.getElementById("mp-results-overlay");
     if (show) {
@@ -563,6 +680,9 @@
       "name-overlay",
       "mp-results-overlay",
       "royale-results-overlay",
+      "pause-overlay",
+      "countdown-overlay",
+      "confirm-leave-overlay",
     ];
     return overlays.some((id) => {
       const el = document.getElementById(id);
@@ -659,7 +779,11 @@
       isRoyaleMode = false;
       hideOpponentBoard();
       showScreen("game");
-      api.game.startGame(mode);
+      loadHighScore();
+      // Start with countdown for single player
+      runCountdown(3, () => {
+        api.game.startGame(mode);
+      });
     });
   });
 
@@ -680,6 +804,43 @@
     .getElementById("closeHelp")
     .addEventListener("click", () => showOverlay(false));
 
+  // Pause overlay buttons
+  const resumeBtn = document.getElementById("resumeBtn");
+  const pauseHelpBtn = document.getElementById("pauseHelpBtn");
+  const pauseMenuBtn = document.getElementById("pauseMenuBtn");
+
+  if (resumeBtn) {
+    resumeBtn.addEventListener("click", () => {
+      resumeGame();
+    });
+  }
+
+  if (pauseHelpBtn) {
+    pauseHelpBtn.addEventListener("click", () => {
+      showPauseOverlay(false);
+      showOverlay(true);
+    });
+  }
+
+  if (pauseMenuBtn) {
+    pauseMenuBtn.addEventListener("click", () => {
+      showPauseOverlay(false);
+      showConfirmLeave(true, () => {
+        if (api.game.stop) api.game.stop();
+        const state = getState();
+        state.paused = false;
+
+        if (isMultiplayerGame && api.multiplayer) {
+          api.multiplayer.disconnect();
+          isMultiplayerGame = false;
+        }
+
+        hideOpponentBoard();
+        showScreen("menu");
+      });
+    });
+  }
+
   // Sound toggle
   const soundBtn = document.getElementById("soundBtn");
   soundBtn.addEventListener("click", () => {
@@ -690,20 +851,51 @@
     }
   });
 
-  // Main menu button during game
+  // Main menu button during game - show confirmation
   document.getElementById("mainMenuBtn").addEventListener("click", () => {
-    if (api.game.stop) api.game.stop();
-
-    // Disconnect from multiplayer if connected
-    if (isMultiplayerGame && api.multiplayer) {
-      api.multiplayer.disconnect();
-      isMultiplayerGame = false;
+    const state = getState();
+    // Pause the game while showing confirmation
+    if (state.running && !state.paused) {
+      state.paused = true;
     }
-
-    hideOpponentBoard();
     closePanel();
-    showScreen("menu");
+    showConfirmLeave(true, () => {
+      if (api.game.stop) api.game.stop();
+
+      // Disconnect from multiplayer if connected
+      if (isMultiplayerGame && api.multiplayer) {
+        api.multiplayer.disconnect();
+        isMultiplayerGame = false;
+      }
+
+      hideOpponentBoard();
+      showScreen("menu");
+    });
   });
+
+  // Confirm leave dialog buttons
+  const confirmLeaveBtn = document.getElementById("confirmLeaveBtn");
+  const cancelLeaveBtn = document.getElementById("cancelLeaveBtn");
+
+  if (confirmLeaveBtn) {
+    confirmLeaveBtn.addEventListener("click", () => {
+      const callback = confirmLeaveCallback;
+      showConfirmLeave(false);
+      if (callback) callback();
+    });
+  }
+
+  if (cancelLeaveBtn) {
+    cancelLeaveBtn.addEventListener("click", () => {
+      showConfirmLeave(false);
+      // Resume game if it was paused
+      const state = getState();
+      if (state.paused && state.running) {
+        state.paused = false;
+        if (api.game.render) api.game.render();
+      }
+    });
+  }
 
   // Game over overlay buttons
   document.getElementById("playAgainBtn").addEventListener("click", () => {
@@ -720,7 +912,10 @@
       return;
     }
 
-    api.game.startGame(lastMode);
+    loadHighScore();
+    runCountdown(3, () => {
+      api.game.startGame(lastMode);
+    });
   });
 
   document.getElementById("menuBtn").addEventListener("click", () => {
@@ -752,7 +947,10 @@
     if (seedInput) {
       showSeedOverlay(false);
       showScreen("game");
-      api.game.startGameWithSeed(seedInput);
+      loadHighScore();
+      runCountdown(3, () => {
+        api.game.startGameWithSeed(seedInput);
+      });
     }
   });
 
@@ -802,14 +1000,47 @@
   // Close overlay on Escape key
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      showOverlay(false);
+      // Handle pause overlay - resume game
+      const pauseOverlay = document.getElementById("pause-overlay");
+      if (pauseOverlay && pauseOverlay.classList.contains("active")) {
+        resumeGame();
+        return;
+      }
+      // Handle confirm leave - cancel and resume
+      const confirmLeave = document.getElementById("confirm-leave-overlay");
+      if (confirmLeave && confirmLeave.classList.contains("active")) {
+        showConfirmLeave(false);
+        const state = getState();
+        if (state.paused && state.running) {
+          state.paused = false;
+          if (api.game.render) api.game.render();
+        }
+        return;
+      }
+      // Handle help overlay when coming from pause
+      const helpOverlay = document.getElementById("overlay");
+      if (helpOverlay && helpOverlay.classList.contains("active")) {
+        showOverlay(false);
+        // If game is paused, show pause overlay again
+        const state = getState();
+        if (state.paused && state.running) {
+          showPauseOverlay(true);
+        }
+        return;
+      }
       showGameOverOverlay(false);
       showSeedOverlay(false);
       showMpResultsOverlay(false);
       showRoyaleResultsOverlay(false);
     }
     if (e.key === "h" || e.key === "H") {
-      if (screens.game.classList.contains("active")) {
+      if (screens.game.classList.contains("active") && !isOverlayActive()) {
+        const state = getState();
+        // Pause the game when opening help
+        if (state.running && !state.paused && state.mode !== "hardcore") {
+          state.paused = true;
+          showPauseOverlay(false); // Don't show pause overlay, show help directly
+        }
         showOverlay(true);
       }
     }
@@ -1945,5 +2176,15 @@
     showAliveCounter,
     hideAliveCounter,
     showEliminationBanner,
+    // Pause overlay
+    showPauseOverlay,
+    resumeGame,
+    // Countdown
+    runCountdown,
+    // Confirm leave
+    showConfirmLeave,
+    // High score
+    loadHighScore,
+    updateHighScoreDisplay,
   };
 })();

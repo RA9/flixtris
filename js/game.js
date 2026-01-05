@@ -529,11 +529,19 @@
   function handleKeyDown(e) {
     if (!state.running) return;
 
-    // Pause toggle (not allowed in hardcore)
+    // Pause toggle (not allowed in hardcore or multiplayer)
     if (e.key === "p" || e.key === "P") {
-      if (state.mode !== "hardcore") {
+      if (
+        state.mode !== "hardcore" &&
+        state.mode !== "multiplayer" &&
+        state.mode !== "royale"
+      ) {
         state.paused = !state.paused;
         window.Flixtris.api.sound.pause();
+        // Show/hide pause overlay
+        if (window.Flixtris.api.ui && window.Flixtris.api.ui.showPauseOverlay) {
+          window.Flixtris.api.ui.showPauseOverlay(state.paused);
+        }
         render();
       }
       return;
