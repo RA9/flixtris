@@ -315,6 +315,22 @@ body {
     box-shadow: none;
 }
 
+.btn.back {
+    width: auto;
+    min-width: 120px;
+    max-width: 200px;
+    padding: 10px 24px;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 400px) {
+    .btn.back {
+        min-width: 100px;
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+}
+
 /* Help Overlay */
 #overlay {
     display: none;
