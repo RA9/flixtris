@@ -65,10 +65,14 @@
     ctx: null,
     nextCanvas: null,
     nextCtx: null,
+    holdCanvas: null,
+    holdCtx: null,
     cellSize: 25,
     board: [],
     current: null,
     next: null,
+    hold: null,
+    canHold: true,
     posX: 0,
     posY: 0,
     dropInterval: null,
@@ -81,6 +85,15 @@
     doubles: 0,
     triples: 0,
     tetrises: 0,
+    // Combo tracking
+    combo: 0,
+    lastClearWasTetris: false,
+    backToBack: false,
+    // T-spin detection
+    lastMoveWasRotation: false,
+    // Settings
+    ghostEnabled: true,
+    hapticEnabled: true,
   });
   const state = window.Flixtris.state;
 
@@ -108,6 +121,8 @@
     state.ctx = state.canvas.getContext("2d");
     state.nextCanvas = document.getElementById("next");
     state.nextCtx = state.nextCanvas.getContext("2d");
+    state.holdCanvas = document.getElementById("hold");
+    state.holdCtx = state.holdCanvas ? state.holdCanvas.getContext("2d") : null;
     resizeCanvas();
   }
 
@@ -148,12 +163,72 @@
     state.next = randomPiece();
     state.posX = Math.floor((COLS - state.current.shape[0].length) / 2);
     state.posY = 0;
+    state.canHold = true;
+    state.lastMoveWasRotation = false;
 
     if (collides(state.current.shape, state.posX, state.posY)) {
       gameOver();
     }
 
     renderNext();
+    renderHold();
+  }
+
+  function holdPiece() {
+    if (!state.current || !state.canHold) return false;
+    if (state.mode === "hardcore") return false; // No hold in hardcore
+
+    state.canHold = false;
+    window.Flixtris.api.sound.hold && window.Flixtris.api.sound.hold();
+
+    // Trigger haptic feedback
+    triggerHaptic("light");
+
+    if (state.hold) {
+      // Swap current and hold
+      const temp = state.hold;
+      state.hold = {
+        name: state.current.name,
+        shape: PIECES[state.current.name].shape.map((row) => [...row]),
+        color: state.current.color,
+      };
+      state.current = temp;
+    } else {
+      // First hold - store current and spawn next
+      state.hold = {
+        name: state.current.name,
+        shape: PIECES[state.current.name].shape.map((row) => [...row]),
+        color: state.current.color,
+      };
+      state.current = state.next;
+      state.next = randomPiece();
+    }
+
+    // Reset position
+    state.posX = Math.floor((COLS - state.current.shape[0].length) / 2);
+    state.posY = 0;
+    state.lastMoveWasRotation = false;
+
+    renderNext();
+    renderHold();
+    return true;
+  }
+
+  function triggerHaptic(style = "light") {
+    if (!state.hapticEnabled) return;
+    if (!navigator.vibrate) return;
+
+    switch (style) {
+      case "light":
+        navigator.vibrate(10);
+        break;
+      case "medium":
+        navigator.vibrate(25);
+        break;
+      case "heavy":
+        navigator.vibrate(50);
+        break;
+    }
   }
 
   function collides(shape, offX, offY) {
@@ -192,7 +267,9 @@
       if (!collides(rotated, state.posX + kick, state.posY)) {
         state.current.shape = rotated;
         state.posX += kick;
+        state.lastMoveWasRotation = true;
         window.Flixtris.api.sound.rotate();
+        triggerHaptic("light");
         return true;
       }
     }
@@ -203,6 +280,7 @@
     if (!state.current) return false;
     if (!collides(state.current.shape, state.posX - 1, state.posY)) {
       state.posX--;
+      state.lastMoveWasRotation = false;
       window.Flixtris.api.sound.move();
       return true;
     }
@@ -213,6 +291,7 @@
     if (!state.current) return false;
     if (!collides(state.current.shape, state.posX + 1, state.posY)) {
       state.posX++;
+      state.lastMoveWasRotation = false;
       window.Flixtris.api.sound.move();
       return true;
     }
@@ -223,6 +302,7 @@
     if (!state.current) return false;
     if (!collides(state.current.shape, state.posX, state.posY + 1)) {
       state.posY++;
+      state.lastMoveWasRotation = false;
       window.Flixtris.api.sound.softDrop();
       return true;
     }
@@ -234,7 +314,9 @@
     while (!collides(state.current.shape, state.posX, state.posY + 1)) {
       state.posY++;
     }
+    state.lastMoveWasRotation = false;
     window.Flixtris.api.sound.hardDrop();
+    triggerHaptic("medium");
     lockPiece();
   }
 
@@ -296,6 +378,34 @@
     }
   }
 
+  function isTSpin() {
+    // T-spin detection: T piece, last move was rotation, and 3+ corners filled
+    if (!state.current || state.current.name !== "T") return false;
+    if (!state.lastMoveWasRotation) return false;
+
+    // Check 4 corners around T piece center
+    const centerX = state.posX + 1;
+    const centerY = state.posY + 1;
+    let filledCorners = 0;
+
+    const corners = [
+      [centerY - 1, centerX - 1],
+      [centerY - 1, centerX + 1],
+      [centerY + 1, centerX - 1],
+      [centerY + 1, centerX + 1],
+    ];
+
+    for (const [r, c] of corners) {
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS) {
+        filledCorners++;
+      } else if (state.board[r] && state.board[r][c]) {
+        filledCorners++;
+      }
+    }
+
+    return filledCorners >= 3;
+  }
+
   function clearLines() {
     let linesCleared = 0;
     for (let r = ROWS - 1; r >= 0; r--) {
@@ -308,33 +418,102 @@
     }
 
     if (linesCleared > 0) {
+      // Increment combo
+      state.combo++;
+
+      // Check for T-spin (detected before piece lock but we track it)
+      const wasTSpin =
+        state.current &&
+        state.current.name === "T" &&
+        state.lastMoveWasRotation;
+
       // Track line clear types
       if (linesCleared === 1) state.singles++;
       else if (linesCleared === 2) state.doubles++;
       else if (linesCleared === 3) state.triples++;
       else if (linesCleared === 4) state.tetrises++;
 
+      // Check for back-to-back (consecutive tetrises or T-spins)
+      const isTetris = linesCleared === 4;
+      const isBackToBack = state.lastClearWasTetris && (isTetris || wasTSpin);
+      state.lastClearWasTetris = isTetris || wasTSpin;
+
       // Play sound
       if (linesCleared === 4) {
         window.Flixtris.api.sound.tetris();
+        triggerHaptic("heavy");
       } else {
         window.Flixtris.api.sound.lineClear();
+        triggerHaptic("medium");
       }
 
       // NES-style scoring: base points * (level + 1)
       // Single: 40, Double: 100, Triple: 300, Tetris: 1200
-      const basePoints = [0, 40, 100, 300, 1200];
-      state.score += basePoints[linesCleared] * (state.level + 1);
+      let basePoints = [0, 40, 100, 300, 1200][linesCleared];
+
+      // T-spin bonus
+      if (wasTSpin) {
+        basePoints *= 2;
+      }
+
+      // Back-to-back bonus
+      if (isBackToBack) {
+        basePoints = Math.floor(basePoints * 1.5);
+      }
+
+      // Combo bonus
+      if (state.combo > 1) {
+        basePoints += 50 * (state.combo - 1) * (state.level + 1);
+      }
+
+      state.score += basePoints * (state.level + 1);
       state.lines += linesCleared;
       // Level advances every 10 lines
       state.level = Math.floor(state.lines / 10) + 1;
       window.Flixtris.api.ui.updateStats();
+
+      // Show action indicator
+      showActionIndicator(linesCleared, state.combo, wasTSpin, isBackToBack);
 
       // Send garbage to opponent in multiplayer
       const mp = window.Flixtris.api.multiplayer;
       if (mp && mp.isConnected()) {
         mp.sendGarbage(linesCleared);
       }
+    } else {
+      // No lines cleared - reset combo
+      state.combo = 0;
+    }
+  }
+
+  function showActionIndicator(lines, combo, isTSpin, isBackToBack) {
+    const ui = window.Flixtris.api.ui;
+    if (!ui || !ui.showActionIndicator) return;
+
+    const actions = [];
+
+    if (lines === 4) {
+      actions.push({ text: "TETRIS!", class: "tetris" });
+    } else if (isTSpin) {
+      const spinText =
+        lines === 1
+          ? "T-SPIN SINGLE"
+          : lines === 2
+            ? "T-SPIN DOUBLE"
+            : "T-SPIN TRIPLE";
+      actions.push({ text: spinText, class: "tspin" });
+    }
+
+    if (isBackToBack && (lines === 4 || isTSpin)) {
+      actions.push({ text: "BACK-TO-BACK", class: "back-to-back" });
+    }
+
+    if (combo > 1) {
+      actions.push({ text: `${combo} COMBO`, class: "combo" });
+    }
+
+    if (actions.length > 0) {
+      ui.showActionIndicator(actions);
     }
   }
 
@@ -395,8 +574,8 @@
     }
 
     if (state.current) {
-      // Draw ghost piece (not in hardcore mode)
-      if (state.mode !== "hardcore") {
+      // Draw ghost piece (not in hardcore mode and if enabled)
+      if (state.mode !== "hardcore" && state.ghostEnabled) {
         const ghostY = getGhostY();
         const shape = state.current.shape;
         ctx.globalAlpha = 0.3;
@@ -473,8 +652,69 @@
     const mobileCanvas = document.getElementById("next-mobile");
     if (mobileCanvas) {
       const mobileCtx = mobileCanvas.getContext("2d");
-      renderNextOnCanvas(mobileCanvas, mobileCtx, 11);
+      renderNextOnCanvas(mobileCanvas, mobileCtx, 9);
     }
+  }
+
+  function renderHold() {
+    // Render on desktop hold canvas
+    renderHoldOnCanvas(state.holdCanvas, state.holdCtx, 18);
+
+    // Render on mobile hold canvas
+    const mobileCanvas = document.getElementById("hold-mobile");
+    if (mobileCanvas) {
+      const mobileCtx = mobileCanvas.getContext("2d");
+      renderHoldOnCanvas(mobileCanvas, mobileCtx, 9);
+    }
+
+    // Update visual state for "used" indicator
+    if (state.holdCanvas) {
+      if (state.canHold) {
+        state.holdCanvas.classList.remove("used");
+      } else {
+        state.holdCanvas.classList.add("used");
+      }
+    }
+    const mobileHold = document.getElementById("hold-mobile");
+    if (mobileHold) {
+      if (state.canHold) {
+        mobileHold.classList.remove("used");
+      } else {
+        mobileHold.classList.add("used");
+      }
+    }
+  }
+
+  function renderHoldOnCanvas(canvas, ctx, cellSize) {
+    if (!canvas || !ctx) return;
+
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (!state.hold) return;
+
+    const shape = state.hold.shape;
+    const offsetX = (canvas.width - shape[0].length * cellSize) / 2;
+    const offsetY = (canvas.height - shape.length * cellSize) / 2;
+
+    // Draw slightly dimmed if can't hold
+    ctx.globalAlpha = state.canHold ? 1 : 0.5;
+
+    for (let r = 0; r < shape.length; r++) {
+      for (let c = 0; c < shape[r].length; c++) {
+        if (shape[r][c]) {
+          drawCell(
+            ctx,
+            offsetX + c * cellSize,
+            offsetY + r * cellSize,
+            cellSize,
+            state.hold.color,
+          );
+        }
+      }
+    }
+
+    ctx.globalAlpha = 1;
   }
 
   function renderNextOnCanvas(canvas, ctx, cellSize) {
@@ -565,6 +805,10 @@
       case " ":
         hardDrop();
         break;
+      case "c":
+      case "C":
+        holdPiece();
+        break;
     }
     render();
   }
@@ -583,6 +827,13 @@
     state.doubles = 0;
     state.triples = 0;
     state.tetrises = 0;
+    // Reset hold and combo
+    state.hold = null;
+    state.canHold = true;
+    state.combo = 0;
+    state.lastClearWasTetris = false;
+    state.backToBack = false;
+    state.lastMoveWasRotation = false;
 
     if (mode === "daily") {
       state.seed = generateDailySeed();
@@ -615,6 +866,13 @@
     state.doubles = 0;
     state.triples = 0;
     state.tetrises = 0;
+    // Reset hold and combo
+    state.hold = null;
+    state.canHold = true;
+    state.combo = 0;
+    state.lastClearWasTetris = false;
+    state.backToBack = false;
+    state.lastMoveWasRotation = false;
     state.seed = customSeed;
     state.rng = seededRandom(customSeed);
 
@@ -666,13 +924,21 @@
     moveDown,
     rotate: tryRotate,
     hardDrop,
+    holdPiece,
     render,
     getBoardSnapshot,
     sendMultiplayerUpdate,
     addGarbageLines,
+    triggerHaptic,
     getPendingGarbage: () => state.pendingGarbage,
     setPendingGarbage: (n) => {
       state.pendingGarbage = n;
+    },
+    setGhostEnabled: (enabled) => {
+      state.ghostEnabled = enabled;
+    },
+    setHapticEnabled: (enabled) => {
+      state.hapticEnabled = enabled;
     },
   };
 

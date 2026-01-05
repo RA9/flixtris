@@ -59,6 +59,132 @@
             <button class="menu-link" id="leaderboardBtn">
                 🏆 Leaderboards
             </button>
+            <button class="menu-link" id="settingsBtn">⚙️ Settings</button>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="screen-settings" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Settings</h2>
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h3>Audio</h3>
+                    <div class="setting-row">
+                        <span class="setting-label">Sound Effects</span>
+                        <button
+                            class="toggle-btn"
+                            id="sfxToggle"
+                            data-enabled="true"
+                        >
+                            <span class="toggle-slider"></span>
+                        </button>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Music</span>
+                        <button
+                            class="toggle-btn"
+                            id="musicToggle"
+                            data-enabled="true"
+                        >
+                            <span class="toggle-slider"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Display</h3>
+                    <div class="setting-row">
+                        <span class="setting-label">Theme</span>
+                        <div class="theme-selector">
+                            <button class="theme-btn active" data-theme="dark">
+                                Dark
+                            </button>
+                            <button class="theme-btn" data-theme="neon">
+                                Neon
+                            </button>
+                            <button class="theme-btn" data-theme="retro">
+                                Retro
+                            </button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Ghost Piece</span>
+                        <button
+                            class="toggle-btn"
+                            id="ghostToggle"
+                            data-enabled="true"
+                        >
+                            <span class="toggle-slider"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Gameplay</h3>
+                    <div class="setting-row">
+                        <span class="setting-label">Haptic Feedback</span>
+                        <button
+                            class="toggle-btn"
+                            id="hapticToggle"
+                            data-enabled="true"
+                        >
+                            <span class="toggle-slider"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Controls</h3>
+                    <div class="controls-info">
+                        <div class="control-row">
+                            <span class="key">←→</span>
+                            <span>Move</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">↑</span>
+                            <span>Rotate</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">↓</span>
+                            <span>Soft Drop</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">Space</span>
+                            <span>Hard Drop</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">C</span>
+                            <span>Hold Piece</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">P</span>
+                            <span>Pause</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Profile</h3>
+                    <div class="setting-row">
+                        <span class="setting-label">Player Name</span>
+                        <button class="btn secondary small" id="changeNameBtn">
+                            Change
+                        </button>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Reset Tutorial</span>
+                        <button
+                            class="btn secondary small"
+                            id="resetTutorialBtn"
+                        >
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button
+                class="btn secondary"
+                id="settingsBackBtn"
+                style="margin-top: 1.5rem"
+            >
+                Back
+            </button>
         </div>
 
         <!-- Single Player Mode Selection -->
@@ -201,13 +327,33 @@
                         id="mobile-high-score"
                     ></span>
                 </div>
-                <canvas id="next-mobile" width="50" height="50"></canvas>
+                <div class="mobile-pieces">
+                    <div class="mobile-piece-box">
+                        <span class="piece-label">Hold</span>
+                        <canvas
+                            id="hold-mobile"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                    </div>
+                    <div class="mobile-piece-box">
+                        <span class="piece-label">Next</span>
+                        <canvas
+                            id="next-mobile"
+                            width="40"
+                            height="40"
+                        ></canvas>
+                    </div>
+                </div>
                 <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
             </div>
+
+            <!-- Combo/Action Indicator -->
+            <div id="action-indicator" class="action-indicator"></div>
 
             <div class="panel-overlay" id="panelOverlay"></div>
             <div class="game-container">
@@ -249,18 +395,10 @@
                         id="high-score-display"
                         class="high-score-display"
                     ></div>
+                    <h4>Hold <span class="hold-hint">(C)</span></h4>
+                    <canvas id="hold" width="80" height="80"></canvas>
                     <h4>Next</h4>
                     <canvas id="next" width="80" height="80"></canvas>
-                    <h4>Theme</h4>
-                    <button class="btn secondary" data-theme="dark">
-                        Dark
-                    </button>
-                    <button class="btn secondary" data-theme="neon">
-                        Neon
-                    </button>
-                    <button class="btn secondary" data-theme="retro">
-                        Retro
-                    </button>
                     <button class="btn secondary" id="helpBtn">Help</button>
                     <button class="btn secondary" id="soundBtn">
                         Sound: On
@@ -273,7 +411,21 @@
 
             <!-- Mobile touch controls -->
             <div class="mobile-controls">
-                <div class="controls-row">
+                <div class="controls-row top-row">
+                    <button
+                        class="control-btn"
+                        id="holdBtn"
+                        aria-label="Hold Piece"
+                    >
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"
+                            />
+                            <path
+                                d="M12 7.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"
+                            />
+                        </svg>
+                    </button>
                     <button
                         class="control-btn"
                         id="rotateBtn"
@@ -571,6 +723,36 @@
                     <button class="btn danger" id="confirmLeaveBtn">
                         Leave
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutorial Overlay -->
+        <div id="tutorial-overlay">
+            <div class="tutorial-content">
+                <div class="tutorial-header">
+                    <span class="tutorial-step" id="tutorialStep">1/5</span>
+                    <button class="tutorial-skip" id="tutorialSkip">
+                        Skip
+                    </button>
+                </div>
+                <div class="tutorial-body" id="tutorialBody">
+                    <div class="tutorial-icon" id="tutorialIcon">🎮</div>
+                    <h2 id="tutorialTitle">Welcome to Flixtris!</h2>
+                    <p id="tutorialText">
+                        Stack blocks to clear lines. Don't let them reach the
+                        top!
+                    </p>
+                </div>
+                <div class="tutorial-nav">
+                    <button
+                        class="btn secondary"
+                        id="tutorialPrev"
+                        style="visibility: hidden"
+                    >
+                        Back
+                    </button>
+                    <button class="btn" id="tutorialNext">Next</button>
                 </div>
             </div>
         </div>

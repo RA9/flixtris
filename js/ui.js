@@ -15,6 +15,7 @@
     audio: document.getElementById("screen-audio"),
     splash: document.getElementById("screen-splash"),
     menu: document.getElementById("screen-menu"),
+    settings: document.getElementById("screen-settings"),
     singleplayer: document.getElementById("screen-singleplayer"),
     multiplayerSelect: document.getElementById("screen-multiplayer-select"),
     leaderboard: document.getElementById("screen-leaderboard"),
@@ -178,6 +179,292 @@
     } else {
       if (desktopEl) desktopEl.innerHTML = "";
       if (mobileEl) mobileEl.textContent = "";
+    }
+  }
+
+  // ========================
+  // ACTION INDICATOR (Combo/T-Spin)
+  // ========================
+
+  let actionIndicatorTimeout = null;
+
+  function showActionIndicator(actions) {
+    const indicator = document.getElementById("action-indicator");
+    if (!indicator) return;
+
+    // Clear any existing timeout
+    if (actionIndicatorTimeout) {
+      clearTimeout(actionIndicatorTimeout);
+    }
+
+    // Build HTML for actions
+    indicator.innerHTML = actions
+      .map((a) => `<div class="action-text ${a.class}">${a.text}</div>`)
+      .join("");
+
+    // Trigger animation
+    indicator.classList.remove("show");
+    void indicator.offsetWidth; // Force reflow
+    indicator.classList.add("show");
+
+    // Remove after animation
+    actionIndicatorTimeout = setTimeout(() => {
+      indicator.classList.remove("show");
+    }, 1500);
+  }
+
+  // ========================
+  // SETTINGS
+  // ========================
+
+  const settings = {
+    sfxEnabled: true,
+    musicEnabled: true,
+    theme: "dark",
+    ghostEnabled: true,
+    hapticEnabled: true,
+    tutorialComplete: false,
+  };
+
+  async function loadSettings() {
+    const saved = await api.db.getSetting("gameSettings");
+    if (saved) {
+      Object.assign(settings, saved);
+    }
+    applySettings();
+  }
+
+  async function saveSettings() {
+    await api.db.saveSetting("gameSettings", settings);
+  }
+
+  function applySettings() {
+    // Apply to UI toggles
+    const sfxToggle = document.getElementById("sfxToggle");
+    const musicToggle = document.getElementById("musicToggle");
+    const ghostToggle = document.getElementById("ghostToggle");
+    const hapticToggle = document.getElementById("hapticToggle");
+
+    if (sfxToggle) sfxToggle.dataset.enabled = settings.sfxEnabled;
+    if (musicToggle) musicToggle.dataset.enabled = settings.musicEnabled;
+    if (ghostToggle) ghostToggle.dataset.enabled = settings.ghostEnabled;
+    if (hapticToggle) hapticToggle.dataset.enabled = settings.hapticEnabled;
+
+    // Apply theme buttons
+    document.querySelectorAll(".theme-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.theme === settings.theme);
+    });
+
+    // Apply to game
+    if (api.game) {
+      if (api.game.setGhostEnabled)
+        api.game.setGhostEnabled(settings.ghostEnabled);
+      if (api.game.setHapticEnabled)
+        api.game.setHapticEnabled(settings.hapticEnabled);
+    }
+
+    // Apply to sound
+    if (api.sound) {
+      if (api.sound.setEnabled) api.sound.setEnabled(settings.sfxEnabled);
+    }
+  }
+
+  function setupSettingsListeners() {
+    // Toggle buttons
+    document.querySelectorAll(".toggle-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const enabled = btn.dataset.enabled === "true";
+        btn.dataset.enabled = !enabled;
+
+        // Update settings
+        if (btn.id === "sfxToggle") {
+          settings.sfxEnabled = !enabled;
+          if (api.sound) api.sound.setEnabled(!enabled);
+        } else if (btn.id === "musicToggle") {
+          settings.musicEnabled = !enabled;
+        } else if (btn.id === "ghostToggle") {
+          settings.ghostEnabled = !enabled;
+          if (api.game && api.game.setGhostEnabled) {
+            api.game.setGhostEnabled(!enabled);
+          }
+        } else if (btn.id === "hapticToggle") {
+          settings.hapticEnabled = !enabled;
+          if (api.game && api.game.setHapticEnabled) {
+            api.game.setHapticEnabled(!enabled);
+          }
+        }
+
+        saveSettings();
+      });
+    });
+
+    // Theme buttons
+    document.querySelectorAll(".theme-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll(".theme-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        settings.theme = btn.dataset.theme;
+        saveSettings();
+        // Could apply theme CSS variables here in the future
+      });
+    });
+
+    // Settings button
+    const settingsBtn = document.getElementById("settingsBtn");
+    if (settingsBtn) {
+      settingsBtn.addEventListener("click", () => {
+        showScreen("settings");
+      });
+    }
+
+    // Settings back button
+    const settingsBackBtn = document.getElementById("settingsBackBtn");
+    if (settingsBackBtn) {
+      settingsBackBtn.addEventListener("click", () => {
+        showScreen("menu");
+      });
+    }
+
+    // Change name button
+    const changeNameBtn = document.getElementById("changeNameBtn");
+    if (changeNameBtn) {
+      changeNameBtn.addEventListener("click", () => {
+        showNameOverlay(true, () => {
+          // Name changed, stay on settings
+        });
+      });
+    }
+
+    // Reset tutorial button
+    const resetTutorialBtn = document.getElementById("resetTutorialBtn");
+    if (resetTutorialBtn) {
+      resetTutorialBtn.addEventListener("click", () => {
+        settings.tutorialComplete = false;
+        saveSettings();
+        resetTutorialBtn.textContent = "Reset!";
+        setTimeout(() => {
+          resetTutorialBtn.textContent = "Reset";
+        }, 1500);
+      });
+    }
+  }
+
+  // ========================
+  // TUTORIAL
+  // ========================
+
+  const tutorialSteps = [
+    {
+      icon: "🎮",
+      title: "Welcome to Flixtris!",
+      text: "Stack falling blocks to clear lines. Don't let them reach the top!",
+    },
+    {
+      icon: "⬅️➡️",
+      title: "Move & Rotate",
+      text: "Use arrow keys to move. Up arrow or tap the rotate button to spin pieces.",
+    },
+    {
+      icon: "⬇️",
+      title: "Drop Pieces",
+      text: "Down arrow for soft drop. Space bar or the big button for instant hard drop!",
+    },
+    {
+      icon: "📦",
+      title: "Hold Piece",
+      text: "Press C or tap Hold to save a piece for later. Swap it back when you need it!",
+    },
+    {
+      icon: "🔥",
+      title: "Combos & Tetrises",
+      text: "Clear 4 lines at once for a Tetris! Chain clears for combos and bonus points.",
+    },
+  ];
+
+  let currentTutorialStep = 0;
+
+  function showTutorial() {
+    const overlay = document.getElementById("tutorial-overlay");
+    if (overlay) {
+      overlay.classList.add("active");
+      currentTutorialStep = 0;
+      renderTutorialStep();
+    }
+  }
+
+  function hideTutorial() {
+    const overlay = document.getElementById("tutorial-overlay");
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
+    settings.tutorialComplete = true;
+    saveSettings();
+  }
+
+  function renderTutorialStep() {
+    const step = tutorialSteps[currentTutorialStep];
+    const stepEl = document.getElementById("tutorialStep");
+    const iconEl = document.getElementById("tutorialIcon");
+    const titleEl = document.getElementById("tutorialTitle");
+    const textEl = document.getElementById("tutorialText");
+    const prevBtn = document.getElementById("tutorialPrev");
+    const nextBtn = document.getElementById("tutorialNext");
+
+    if (stepEl)
+      stepEl.textContent = `${currentTutorialStep + 1}/${tutorialSteps.length}`;
+    if (iconEl) iconEl.textContent = step.icon;
+    if (titleEl) titleEl.textContent = step.title;
+    if (textEl) textEl.textContent = step.text;
+
+    if (prevBtn) {
+      prevBtn.style.visibility =
+        currentTutorialStep === 0 ? "hidden" : "visible";
+    }
+
+    if (nextBtn) {
+      nextBtn.textContent =
+        currentTutorialStep === tutorialSteps.length - 1
+          ? "Let's Play!"
+          : "Next";
+    }
+  }
+
+  function setupTutorialListeners() {
+    const skipBtn = document.getElementById("tutorialSkip");
+    const prevBtn = document.getElementById("tutorialPrev");
+    const nextBtn = document.getElementById("tutorialNext");
+
+    if (skipBtn) {
+      skipBtn.addEventListener("click", hideTutorial);
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        if (currentTutorialStep > 0) {
+          currentTutorialStep--;
+          renderTutorialStep();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        if (currentTutorialStep < tutorialSteps.length - 1) {
+          currentTutorialStep++;
+          renderTutorialStep();
+        } else {
+          hideTutorial();
+        }
+      });
+    }
+  }
+
+  async function checkShowTutorial() {
+    await loadSettings();
+    if (!settings.tutorialComplete) {
+      showTutorial();
     }
   }
 
@@ -683,6 +970,7 @@
       "pause-overlay",
       "countdown-overlay",
       "confirm-leave-overlay",
+      "tutorial-overlay",
     ];
     return overlays.some((id) => {
       const el = document.getElementById(id);
@@ -702,11 +990,13 @@
       api.sound.stopSplashMusic();
     }
 
-    // Check if first visit - show name prompt
+    // Check if first visit - show name prompt then tutorial
     const isFirstVisit = await checkFirstVisit();
     if (isFirstVisit) {
-      showNameOverlay(true, () => {
+      showNameOverlay(true, async () => {
         showScreen("menu");
+        // Show tutorial for first-time users
+        await checkShowTutorial();
       });
     } else {
       showScreen("menu");
@@ -1095,6 +1385,7 @@
     const downBtn = document.getElementById("downBtn");
     const rotateBtn = document.getElementById("rotateBtn");
     const dropBtn = document.getElementById("dropBtn");
+    const holdBtn = document.getElementById("holdBtn");
 
     function handleControl(action) {
       return (e) => {
@@ -1121,9 +1412,14 @@
     if (dropBtn) {
       dropBtn.addEventListener("touchstart", handleControl("hardDrop"));
     }
+    if (holdBtn) {
+      holdBtn.addEventListener("touchstart", handleControl("holdPiece"));
+    }
   }
 
   setupMobileControls();
+  setupSettingsListeners();
+  setupTutorialListeners();
 
   // ========================
   // GARBAGE INDICATOR
@@ -2186,5 +2482,13 @@
     // High score
     loadHighScore,
     updateHighScoreDisplay,
+    // Action indicator
+    showActionIndicator,
+    // Settings
+    loadSettings,
+    saveSettings,
+    // Tutorial
+    showTutorial,
+    hideTutorial,
   };
 })();
