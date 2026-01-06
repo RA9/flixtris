@@ -11,6 +11,30 @@
     --canvas-height: 500px;
 }
 
+/* Neon Theme */
+html[data-theme="neon"] {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-card: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --accent: #00ffff;
+    --accent-glow: rgba(0, 255, 255, 0.6);
+    --danger: #ff00ff;
+}
+
+/* Retro Theme */
+html[data-theme="retro"] {
+    --bg-primary: #2d1b69;
+    --bg-secondary: #4a2c7f;
+    --bg-card: #6b46c1;
+    --text-primary: #fef3c7;
+    --text-secondary: #d1d5db;
+    --accent: #fbbf24;
+    --accent-glow: rgba(251, 191, 36, 0.4);
+    --danger: #ef4444;
+}
+
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -321,6 +345,50 @@ body {
     max-width: 200px;
     padding: 10px 24px;
     margin-top: 1.5rem;
+}
+
+/* Settings header layout */
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.settings-header .btn.back {
+    margin: 0;
+    padding: 0.25rem;
+    min-width: auto;
+    width: auto;
+}
+
+.settings-header .btn.back svg {
+    width: 20px;
+    height: 20px;
+}
+
+.settings-header .brand-header {
+    margin: 0;
+    flex: 1;
+}
+
+@media (max-width: 600px) {
+    .settings-header {
+        gap: 0.75rem;
+    }
+
+    .settings-header .btn.back {
+        padding: 0.2rem;
+    }
+
+    .settings-header .btn.back svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .settings-header .brand-header {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+    }
 }
 
 @media (max-width: 400px) {

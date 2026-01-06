@@ -226,6 +226,11 @@
     tutorialComplete: false,
   };
 
+  // Function to apply theme
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+
   async function loadSettings() {
     const saved = await api.db.getSetting("gameSettings");
     if (saved) {
@@ -254,6 +259,9 @@
     document.querySelectorAll(".theme-btn").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.theme === settings.theme);
     });
+
+    // Apply current theme
+    applyTheme(settings.theme);
 
     // Apply to game
     if (api.game) {
@@ -307,7 +315,7 @@
         btn.classList.add("active");
         settings.theme = btn.dataset.theme;
         saveSettings();
-        // Could apply theme CSS variables here in the future
+        applyTheme(settings.theme);
       });
     });
 
@@ -1081,7 +1089,9 @@
   document.querySelectorAll("[data-theme]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const theme = btn.dataset.theme;
-      // Theme implementation can be added later
+      settings.theme = theme;
+      saveSettings();
+      applyTheme(theme);
       log("Theme selected:", theme);
     });
   });
@@ -2441,6 +2451,9 @@
 
   // Initialize player name from db
   initPlayerName();
+
+  // Load settings on initialization
+  loadSettings();
 
   // Expose UI API
   api.ui = {
