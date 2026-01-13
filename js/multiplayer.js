@@ -596,9 +596,21 @@
   // ========================
 
   const VALID_EMOJIS = ["👍", "👎", "😀", "😢", "🔥", "❄️", "💀", "🎉"];
+  const SYMBOL_TO_ID = {
+    "👍": "thumbs_up",
+    "🔥": "fire",
+    "😀": "grin",
+    "💀": "skull",
+  };
 
   function sendEmoji(emoji) {
-    if (VALID_EMOJIS.includes(emoji)) {
+    if (!VALID_EMOJIS.includes(emoji)) return;
+    // Premium gating via UI entitlements (if available)
+    const store = window.Flixtris?.api?.ui?.store;
+    const ent = store?.entitlements?.emojis;
+    const emojiId = SYMBOL_TO_ID[emoji] || emoji;
+    const isOwned = ent ? ent.has(emojiId) : true;
+    if (isOwned) {
       send({ type: "send_emoji", emoji });
     }
   }

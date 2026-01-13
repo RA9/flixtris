@@ -165,6 +165,16 @@
     state.posY = 0;
     state.canHold = true;
     state.lastMoveWasRotation = false;
+    // Drought tracking: count pieces since last I piece
+    if (state.current && state.current.name === "I") {
+      state.droughtMax = Math.max(
+        state.droughtMax || 0,
+        state.droughtCount || 0,
+      );
+      state.droughtCount = 0;
+    } else {
+      state.droughtCount = (state.droughtCount || 0) + 1;
+    }
 
     if (collides(state.current.shape, state.posX, state.posY)) {
       gameOver();
@@ -323,6 +333,23 @@
   function lockPiece() {
     if (!state.current) return;
     const shape = state.current.shape;
+    // Misdrop detection: compare holes before and after lock
+    let holesBefore = 0;
+    for (let c = 0; c < COLS; c++) {
+      let height = 0;
+      for (let r = 0; r < ROWS; r++) {
+        if (state.board[r][c]) {
+          height = ROWS - r;
+          break;
+        }
+      }
+      if (height > 0) {
+        const startRow = ROWS - height + 1;
+        for (let r = startRow; r < ROWS; r++) {
+          if (!state.board[r][c]) holesBefore++;
+        }
+      }
+    }
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c]) {
@@ -333,6 +360,26 @@
           }
         }
       }
+    }
+    // Compute holes after lock and update misdrops if holes increased
+    let holesAfter = 0;
+    for (let c = 0; c < COLS; c++) {
+      let height = 0;
+      for (let r = 0; r < ROWS; r++) {
+        if (state.board[r][c]) {
+          height = ROWS - r;
+          break;
+        }
+      }
+      if (height > 0) {
+        const startRow = ROWS - height + 1;
+        for (let r = startRow; r < ROWS; r++) {
+          if (!state.board[r][c]) holesAfter++;
+        }
+      }
+    }
+    if (holesAfter > holesBefore) {
+      state.misdrops = (state.misdrops || 0) + 1;
     }
     clearLines();
     spawnPiece();
@@ -420,12 +467,17 @@
     if (linesCleared > 0) {
       // Increment combo
       state.combo++;
+      // Track max combo for analytics
+      state.comboMax = Math.max(state.comboMax || 0, state.combo);
 
       // Check for T-spin (detected before piece lock but we track it)
       const wasTSpin =
         state.current &&
         state.current.name === "T" &&
         state.lastMoveWasRotation;
+      if (wasTSpin) {
+        state.tSpins = (state.tSpins || 0) + 1;
+      }
 
       // Track line clear types
       if (linesCleared === 1) state.singles++;
@@ -810,6 +862,14 @@
         holdPiece();
         break;
     }
+    // Telemetry: record input for replay (Phase 2)
+    if (state.inputs) {
+      state.inputs.push({
+        key: e.key,
+        timestamp: performance.now(),
+      });
+      state.actions = (state.actions || 0) + 1;
+    }
     render();
   }
 
@@ -834,6 +894,10 @@
     state.lastClearWasTetris = false;
     state.backToBack = false;
     state.lastMoveWasRotation = false;
+    // Telemetry & replay (Phase 2)
+    state.inputs = [];
+    state.actions = 0;
+    state.startTime = performance.now();
 
     if (mode === "daily") {
       state.seed = generateDailySeed();
@@ -906,12 +970,132 @@
       date: Date.now(),
     });
 
+    // Phase 2: persist analytics and replay
+    const endTime = performance.now();
+    const durationMs = Math.max(0, endTime - (state.startTime || endTime));
+    const minutes = durationMs > 0 ? durationMs / 60000 : 0;
+    const actions = state.actions || (state.inputs ? state.inputs.length : 0);
+    const apm = minutes > 0 ? Math.round(actions / minutes) : actions;
+    const lpm = minutes > 0 ? Math.round(state.lines / minutes) : state.lines;
+
+    if (window.Flixtris.api?.db?.addGameAnalytics) {
+      // Compute board holes and average height at game end
+      let holes = 0;
+      let totalHeight = 0;
+      for (let c = 0; c < COLS; c++) {
+        // find highest filled in column
+        let height = 0;
+        for (let r = 0; r < ROWS; r++) {
+          if (state.board[r][c]) {
+            height = ROWS - r;
+            break;
+          }
+        }
+        totalHeight += height;
+        // count holes: empty cell below highest filled cell
+        if (height > 0) {
+          const startRow = ROWS - height + 1; // row after the highest filled
+          for (let r = startRow; r < ROWS; r++) {
+            if (!state.board[r][c]) holes++;
+          }
+        }
+      }
+      const avgHeight = COLS > 0 ? Math.round(totalHeight / COLS) : 0;
+
+      window.Flixtris.api.db.addGameAnalytics({
+        mode: state.mode,
+        seed: state.seed,
+        apm,
+        lpm,
+        misdrops: state.misdrops || 0,
+        droughtMax: state.droughtMax || 0,
+        tSpins: state.tSpins || 0,
+        tetrises: state.tetrises,
+        holes,
+        avgHeight,
+        comboMax: state.comboMax || state.combo || 0,
+        backToBack: state.backToBack,
+        actions,
+      });
+    }
+
+    if (window.Flixtris.api?.db?.addReplay) {
+      window.Flixtris.api.db.addReplay({
+        mode: state.mode,
+        seed: state.seed,
+        inputs: state.inputs || [],
+        durationMs,
+        score: state.score,
+        level: state.level,
+        lines: state.lines,
+        metadata: {
+          singles: state.singles,
+          doubles: state.doubles,
+          triples: state.triples,
+          tetrises: state.tetrises,
+        },
+      });
+    }
+
     window.Flixtris.api.ui.showGameOver();
   }
 
   // Event listeners
   document.addEventListener("keydown", handleKeyDown);
   window.addEventListener("resize", resizeCanvas);
+
+  // Replay playback runner (basic): replays input timeline by invoking key handlers
+  let replayTimer = null;
+  let replayIndex = 0;
+  let replayInputs = null;
+  let replayStartTs = 0;
+
+  function startReplayPlayback(replay) {
+    // replay: { inputs: [{key, timestamp}, ...], seed, mode }
+    stopReplayPlayback();
+    if (!replay || !Array.isArray(replay.inputs) || replay.inputs.length === 0)
+      return;
+
+    // Start a fresh game with the same seed/mode if provided
+    if (replay.seed) {
+      startGameWithSeed(replay.seed);
+    } else {
+      startGame(replay.mode || "classic");
+    }
+
+    replayInputs = replay.inputs.slice();
+    replayIndex = 0;
+    replayStartTs = replayInputs[0].timestamp;
+
+    function tick() {
+      if (!replayInputs || replayIndex >= replayInputs.length) {
+        stopReplayPlayback();
+        return;
+      }
+      const ev = replayInputs[replayIndex];
+      const elapsed =
+        performance.now() - (state.startTime || performance.now());
+      const target = ev.timestamp - replayStartTs;
+
+      if (elapsed >= target) {
+        // Simulate the key event by calling the handlers
+        const fakeEvent = { key: ev.key };
+        handleKeyDown(fakeEvent);
+        replayIndex++;
+      }
+      replayTimer = requestAnimationFrame(tick);
+    }
+    replayTimer = requestAnimationFrame(tick);
+  }
+
+  function stopReplayPlayback() {
+    if (replayTimer) {
+      cancelAnimationFrame(replayTimer);
+      replayTimer = null;
+    }
+    replayInputs = null;
+    replayIndex = 0;
+  }
 
   window.Flixtris.api.game = {
     startGame,
@@ -930,6 +1114,9 @@
     sendMultiplayerUpdate,
     addGarbageLines,
     triggerHaptic,
+    // Replay playback API
+    startReplayPlayback,
+    stopReplayPlayback,
     getPendingGarbage: () => state.pendingGarbage,
     setPendingGarbage: (n) => {
       state.pendingGarbage = n;

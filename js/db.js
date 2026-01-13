@@ -1,7 +1,7 @@
 // db.js
 (() => {
   const DB_NAME = "flixtris";
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
   let db;
   let playerCache = null;
 
@@ -19,6 +19,16 @@
         }
         if (!db.objectStoreNames.contains("player")) {
           db.createObjectStore("player", { keyPath: "id" });
+        }
+        // Premium foundations: purchases, replays, analytics
+        if (!db.objectStoreNames.contains("purchases")) {
+          db.createObjectStore("purchases", { autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains("replays")) {
+          db.createObjectStore("replays", { autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains("analytics")) {
+          db.createObjectStore("analytics", { autoIncrement: true });
         }
       };
 
@@ -157,9 +167,104 @@
     });
   }
 
+  // Premium helper APIs (Phase 1–2)
+
+  // Purchases
+  function recordPurchase(purchase) {
+    // purchase: { type: "theme|skin|emoji|pass", id: string, price?: number, currency?: string, source?: "store|pass|bundle" }
+    const tx = db.transaction("purchases", "readwrite");
+    tx.objectStore("purchases").add({
+      ...purchase,
+      createdAt: Date.now(),
+    });
+  }
+
+  function getPurchases(limit = 50) {
+    return new Promise((resolve) => {
+      const tx = db.transaction("purchases", "readonly");
+      const store = tx.objectStore("purchases");
+      const req = store.openCursor(null, "prev");
+      const res = [];
+      req.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor && res.length < limit) {
+          res.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(res);
+        }
+      };
+    });
+  }
+
+  // Replays
+  function addReplay(replay) {
+    // replay: { mode, seed, inputs: Array, durationMs, score, level, lines, metadata?: {} }
+    const tx = db.transaction("replays", "readwrite");
+    tx.objectStore("replays").add({
+      ...replay,
+      createdAt: Date.now(),
+    });
+  }
+
+  function getReplays(limit = 50) {
+    return new Promise((resolve) => {
+      const tx = db.transaction("replays", "readonly");
+      const store = tx.objectStore("replays");
+      const req = store.openCursor(null, "prev");
+      const res = [];
+      req.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor && res.length < limit) {
+          res.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(res);
+        }
+      };
+    });
+  }
+
+  function deleteReplay(id) {
+    return new Promise((resolve) => {
+      const tx = db.transaction("replays", "readwrite");
+      tx.objectStore("replays").delete(id);
+      tx.oncomplete = () => resolve();
+    });
+  }
+
+  // Analytics
+  function addGameAnalytics(analytics) {
+    // analytics: { mode, seed, apm, lpm, misdrops, droughtMax, tSpins, tetrises, holes, avgHeight, comboMax, backToBack, actions?: {} }
+    const tx = db.transaction("analytics", "readwrite");
+    tx.objectStore("analytics").add({
+      ...analytics,
+      createdAt: Date.now(),
+    });
+  }
+
+  function getGameAnalytics(limit = 50) {
+    return new Promise((resolve) => {
+      const tx = db.transaction("analytics", "readonly");
+      const store = tx.objectStore("analytics");
+      const req = store.openCursor(null, "prev");
+      const res = [];
+      req.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor && res.length < limit) {
+          res.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(res);
+        }
+      };
+    });
+  }
+
   openDB();
 
   window.Flixtris.api.db = {
+    // Existing
     addGame,
     getGames,
     saveSetting,
@@ -169,5 +274,13 @@
     getDisplayName,
     updatePlayerStats,
     hasCustomName,
+    // Premium foundations (Phase 1–2)
+    recordPurchase,
+    getPurchases,
+    addReplay,
+    getReplays,
+    deleteReplay,
+    addGameAnalytics,
+    getGameAnalytics,
   };
 })();

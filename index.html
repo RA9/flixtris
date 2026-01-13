@@ -379,7 +379,81 @@
                     >
                         &times;
                     </button>
-                    <h3>Flixtris</h3>
+                    <h1>Flixtris</h1>
+                    <!-- Store: Themes -->
+                    <div id="storeThemes">
+                        <h3>Themes</h3>
+                        <div>
+                            <button data-store-theme="light">
+                                Buy Light Theme
+                            </button>
+                            <button data-store-theme="neon">
+                                Buy Neon Theme
+                            </button>
+                            <button data-store-theme="retro">
+                                Buy Retro Theme
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Store: Skins -->
+                    <div id="storeSkins">
+                        <h3>Piece Skins</h3>
+                        <div>
+                            <button data-store-skin="outline">
+                                Buy Outline Pieces
+                            </button>
+                            <button data-store-skin="pixel">
+                                Buy Pixel Pieces
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Store: Emojis -->
+                    <div id="storeEmojis">
+                        <h3>Premium Emojis</h3>
+                        <div>
+                            <button data-store-emoji="fire">Buy 🔥</button>
+                            <button data-store-emoji="grin">Buy 😀</button>
+                            <button data-store-emoji="skull">Buy 💀</button>
+                        </div>
+                    </div>
+                    <!-- Replay Viewer -->
+                    <div id="replayViewer" class="overlay">
+                        <div class="overlay-content">
+                            <h3>Replay Viewer</h3>
+
+                            <!-- Playback Controls -->
+                            <div class="replay-controls">
+                                <button id="replayPlayBtn">Play</button>
+                                <button id="replayPauseBtn">Pause</button>
+                                <button id="replayStopBtn">Stop</button>
+                                <input
+                                    id="replaySeek"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value="0"
+                                />
+                                <span id="replayProgressLabel">0%</span>
+                            </div>
+
+                            <!-- Timeline of input events -->
+                            <ul id="replayTimeline"></ul>
+
+                            <button id="replayCloseBtn">Close</button>
+                        </div>
+                    </div>
+
+                    <div id="replayList" class="panel-section">
+                        <h3>Your Replays</h3>
+                        <!-- Populated by initReplayViewer() -->
+                    </div>
+
+                    <!-- Analytics Panel -->
+                    <div id="analyticsList" class="panel-section">
+                        <h3>Recent Analytics</h3>
+                        <!-- Populated by initAnalyticsPanel() -->
+                    </div>
+
                     <div id="stats">Score: 0 Level: 1 Lines: 0</div>
                     <div
                         id="high-score-display"

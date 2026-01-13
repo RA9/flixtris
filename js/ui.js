@@ -283,6 +283,216 @@
     }
   }
 
+  // ========================
+  // PHASE 1: Cosmetics Store & Inventory
+  // ========================
+
+  // Local entitlements cache (themes, skins, emojis)
+  const entitlements = {
+    themes: new Set(),
+    skins: new Set(),
+    emojis: new Set(),
+  };
+
+  // Built-in items available in the store
+  const STORE_ITEMS = {
+    themes: [
+      { id: "dark", name: "Dark", free: true },
+      { id: "light", name: "Light", price: 100 },
+      { id: "neon", name: "Neon", price: 150 },
+      { id: "retro", name: "Retro", price: 150 },
+    ],
+    skins: [
+      { id: "classic", name: "Classic", free: true },
+      { id: "outline", name: "Outline", price: 120 },
+      { id: "pixel", name: "Pixel", price: 120 },
+    ],
+    emojis: [
+      { id: "thumbs_up", symbol: "👍", free: true },
+      { id: "fire", symbol: "🔥", price: 50 },
+      { id: "grin", symbol: "😀", price: 50 },
+      { id: "skull", symbol: "💀", price: 50 },
+    ],
+  };
+
+  // Load entitlements from DB
+  async function loadEntitlements() {
+    const purchases = (await api.db.getPurchases?.()) || [];
+    entitlements.themes.clear();
+    entitlements.skins.clear();
+    entitlements.emojis.clear();
+
+    // Grant all free items by default
+    STORE_ITEMS.themes
+      .filter((i) => i.free)
+      .forEach((i) => entitlements.themes.add(i.id));
+    STORE_ITEMS.skins
+      .filter((i) => i.free)
+      .forEach((i) => entitlements.skins.add(i.id));
+    STORE_ITEMS.emojis
+      .filter((i) => i.free)
+      .forEach((i) => entitlements.emojis.add(i.id));
+
+    // Apply purchased entitlements
+    purchases.forEach((p) => {
+      if (p.type === "theme") entitlements.themes.add(p.id);
+      if (p.type === "skin") entitlements.skins.add(p.id);
+      if (p.type === "emoji") entitlements.emojis.add(p.id);
+    });
+  }
+
+  // Basic balance stub (can be extended later or synced with server)
+  let playerBalance = 0;
+  async function loadBalance() {
+    const saved = await api.db.getSetting("balance");
+    playerBalance = typeof saved === "number" ? saved : 0;
+  }
+  async function saveBalance() {
+    await api.db.saveSetting("balance", playerBalance);
+  }
+
+  // Store purchase helpers
+  async function canAfford(price) {
+    await loadBalance();
+    return playerBalance >= (price || 0);
+  }
+
+  async function spend(price) {
+    playerBalance = Math.max(0, playerBalance - (price || 0));
+    await saveBalance();
+  }
+
+  async function grantEntitlement(type, id) {
+    if (type === "theme") entitlements.themes.add(id);
+    if (type === "skin") entitlements.skins.add(id);
+    if (type === "emoji") entitlements.emojis.add(id);
+    api.db.recordPurchase?.({ type, id, source: "store" });
+  }
+
+  // UI bindings (buttons expected to exist in index.html or future additions)
+  function refreshStoreUI() {
+    // Example: theme store listing
+    document.querySelectorAll("[data-store-theme]").forEach((btn) => {
+      const id = btn.getAttribute("data-store-theme");
+      const item = STORE_ITEMS.themes.find((t) => t.id === id);
+      const owned = entitlements.themes.has(id);
+      btn.disabled = owned || (item?.price ? false : false);
+      btn.textContent = owned
+        ? `Owned: ${item?.name || id}`
+        : `Buy: ${item?.name || id} (${item?.price || 0})`;
+    });
+
+    // Example: emoji store listing
+    document.querySelectorAll("[data-store-emoji]").forEach((btn) => {
+      const id = btn.getAttribute("data-store-emoji");
+      const item = STORE_ITEMS.emojis.find((e) => e.id === id);
+      const owned = entitlements.emojis.has(id);
+      btn.disabled = owned || (item?.price ? false : false);
+      btn.textContent = owned
+        ? `Owned ${item?.symbol || id}`
+        : `Buy ${item?.symbol || id} (${item?.price || 0})`;
+    });
+  }
+
+  async function handlePurchaseTheme(id) {
+    const item = STORE_ITEMS.themes.find((t) => t.id === id);
+    if (!item) return;
+
+    if (entitlements.themes.has(id)) {
+      settings.theme = id;
+      applySettings();
+      await saveSettings();
+      return;
+    }
+
+    const price = item.price || 0;
+    if (!(await canAfford(price))) return;
+
+    await spend(price);
+    await grantEntitlement("theme", id);
+    settings.theme = id;
+    applySettings();
+    await saveSettings();
+    refreshStoreUI();
+  }
+
+  async function handlePurchaseEmoji(id) {
+    const item = STORE_ITEMS.emojis.find((e) => e.id === id);
+    if (!item) return;
+
+    if (entitlements.emojis.has(id)) {
+      // Already owned; no-op or highlight ownership
+      refreshStoreUI();
+      return;
+    }
+
+    const price = item.price || 0;
+    if (!(await canAfford(price))) return;
+
+    await spend(price);
+    await grantEntitlement("emoji", id);
+    refreshStoreUI();
+  }
+
+  async function handlePurchaseSkin(id) {
+    const item = STORE_ITEMS.skins.find((s) => s.id === id);
+    if (!item) return;
+
+    if (entitlements.skins.has(id)) {
+      // Already owned; no-op
+      refreshStoreUI();
+      return;
+    }
+
+    const price = item.price || 0;
+    if (!(await canAfford(price))) return;
+
+    await spend(price);
+    await grantEntitlement("skin", id);
+    refreshStoreUI();
+  }
+
+  // Sync stubs (extend later with server-side profile)
+  async function syncEntitlements() {
+    // Placeholder: in future, push local entitlements and pull cloud entitlements
+    // Merge strategy: union sets; handle conflicts as needed
+    return true;
+  }
+
+  // Initialize store on load
+  (async function initStore() {
+    await loadBalance();
+    await loadEntitlements();
+    refreshStoreUI();
+
+    // Wire up store buttons by data attributes (safe if absent)
+    document.querySelectorAll("[data-store-theme]").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        handlePurchaseTheme(btn.getAttribute("data-store-theme")),
+      );
+    });
+    document.querySelectorAll("[data-store-emoji]").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        handlePurchaseEmoji(btn.getAttribute("data-store-emoji")),
+      );
+    });
+    document.querySelectorAll("[data-store-skin]").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        handlePurchaseSkin(btn.getAttribute("data-store-skin")),
+      );
+    });
+  })();
+
+  // Expose minimal API to other modules (e.g., multiplayer for emoji gating)
+  api.ui = api.ui || {};
+  api.ui.store = {
+    refreshStoreUI,
+    handlePurchaseTheme,
+    handlePurchaseEmoji,
+    handlePurchaseSkin,
+    entitlements,
+  };
+
   function setupSettingsListeners() {
     // Toggle buttons
     document.querySelectorAll(".toggle-btn").forEach((btn) => {
@@ -1327,6 +1537,14 @@
       const helpOverlay = document.getElementById("overlay");
       if (helpOverlay && helpOverlay.classList.contains("active")) {
         showOverlay(false);
+        // Stop replay playback if replay viewer was open
+        const rv = document.getElementById("replayViewer");
+        if (rv && rv.classList.contains("active")) {
+          rv.classList.remove("active");
+          if (window.Flixtris?.api?.game?.stopReplayPlayback) {
+            window.Flixtris.api.game.stopReplayPlayback();
+          }
+        }
         // If game is paused, show pause overlay again
         const state = getState();
         if (state.paused && state.running) {
@@ -1490,9 +1708,31 @@
 
     const emojiButtons = emojiPanel.querySelectorAll(".emoji-btn");
     emojiButtons.forEach((btn) => {
+      const emojiId = btn.dataset.emojiId || btn.dataset.emoji;
+      const owned =
+        window.Flixtris?.api?.ui?.store?.entitlements?.emojis?.has(emojiId) ||
+        false;
+
+      // Reflect ownership in UI
+      btn.disabled = !owned;
+      btn.classList.toggle("owned", owned);
+      btn.classList.toggle("locked", !owned);
+
       btn.addEventListener("click", () => {
         const emoji = btn.dataset.emoji;
-        if (api.multiplayer && api.multiplayer.isConnected()) {
+        const emojiKey = btn.dataset.emojiId || emoji;
+
+        // Gate by entitlements
+        const hasEntitlement =
+          window.Flixtris?.api?.ui?.store?.entitlements?.emojis?.has(
+            emojiKey,
+          ) || false;
+
+        if (
+          hasEntitlement &&
+          api.multiplayer &&
+          api.multiplayer.isConnected()
+        ) {
           api.multiplayer.sendEmoji(emoji);
           showFloatingEmoji(emoji, btn);
         }
@@ -1592,10 +1832,220 @@
       renderOpponentBoard(data.board);
     }
   }
-    }
+
+  function initReplayViewer() {
+    const container = document.getElementById("replayList");
+    const viewer = document.getElementById("replayViewer");
+    if (!window.Flixtris?.api?.db?.getReplays) return;
+    if (!container) return;
+
+    // Load and render replay list
+    window.Flixtris.api.db.getReplays(50).then((replays) => {
+      // Clear
+      container.innerHTML = "";
+
+      if (!replays || replays.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "replay-empty";
+        empty.textContent = "No replays yet. Play a game to record one!";
+        container.appendChild(empty);
+        return;
+      }
+
+      replays.forEach((r, idx) => {
+        const item = document.createElement("div");
+        item.className = "replay-item";
+        const duration = Math.round((r.durationMs || 0) / 1000);
+        item.innerHTML = `
+          <div class="replay-meta">
+            <span class="replay-title">Replay #${idx + 1}</span>
+            <span class="replay-mode">${r.mode || "classic"}</span>
+            <span class="replay-seed">${r.seed || "-"}</span>
+          </div>
+          <div class="replay-stats">
+            <span>Score: ${r.score || 0}</span>
+            <span>Lines: ${r.lines || 0}</span>
+            <span>Level: ${r.level || 1}</span>
+            <span>Duration: ${duration}s</span>
+          </div>
+          <div class="replay-actions">
+            <button class="replay-play">Play</button>
+            <button class="replay-delete">Delete</button>
+          </div>
+        `;
+
+        const playBtn = item.querySelector(".replay-play");
+        const delBtn = item.querySelector(".replay-delete");
+
+        playBtn?.addEventListener("click", () => {
+          if (!viewer) return;
+          viewer.classList.add("active");
+          // Start playback runner for this replay
+          if (window.Flixtris?.api?.game?.startReplayPlayback) {
+            window.Flixtris.api.game.startReplayPlayback(r);
+          }
+          // Basic playback visualization: show an event timeline list
+          const timeline = document.getElementById("replayTimeline");
+          if (timeline) {
+            timeline.innerHTML = "";
+            (r.inputs || []).forEach((ev) => {
+              const li = document.createElement("li");
+              const t = Math.round(
+                ev.timestamp - (r.inputs[0]?.timestamp || ev.timestamp),
+              );
+              li.textContent = `[${t}ms] ${ev.key}`;
+              timeline.appendChild(li);
+            });
+          }
+          // Placeholder for future: drive board state step-by-step
+          const closeBtn = document.getElementById("replayCloseBtn");
+          closeBtn?.addEventListener("click", () => {
+            viewer.classList.remove("active");
+            if (window.Flixtris?.api?.game?.stopReplayPlayback) {
+              window.Flixtris.api.game.stopReplayPlayback();
+            }
+          });
+
+          // Playback controls
+          const playBtnCtrl = document.getElementById("replayPlayBtn");
+          const pauseBtnCtrl = document.getElementById("replayPauseBtn");
+          const stopBtnCtrl = document.getElementById("replayStopBtn");
+          const seekCtrl = document.getElementById("replaySeek");
+          const progressLabel = document.getElementById("replayProgressLabel");
+
+          // Reset seek on open
+          if (seekCtrl) seekCtrl.value = "0";
+          if (progressLabel) progressLabel.textContent = "0%";
+
+          playBtnCtrl?.addEventListener("click", () => {
+            if (window.Flixtris?.api?.game?.startReplayPlayback) {
+              window.Flixtris.api.game.startReplayPlayback(r);
+            }
+          });
+
+          pauseBtnCtrl?.addEventListener("click", () => {
+            // Pausing the runner: simply toggle state.paused so inputs won't execute
+            const state = window.Flixtris?.state;
+            if (state) {
+              state.paused = !state.paused;
+            }
+          });
+
+          stopBtnCtrl?.addEventListener("click", () => {
+            if (window.Flixtris?.api?.game?.stopReplayPlayback) {
+              window.Flixtris.api.game.stopReplayPlayback();
+            }
+            if (seekCtrl) seekCtrl.value = "0";
+            if (progressLabel) progressLabel.textContent = "0%";
+          });
+
+          // Seek handler (basic): restart playback and advance inputs up to selected percentage
+          seekCtrl?.addEventListener("input", () => {
+            const pct = parseInt(seekCtrl.value || "0", 10);
+            const total = (r.inputs || []).length;
+            if (progressLabel) progressLabel.textContent = `${pct}%`;
+            if (!total || !window.Flixtris?.api?.game?.startReplayPlayback)
+              return;
+
+            // Stop current playback and restart from beginning then fast-forward
+            if (window.Flixtris?.api?.game?.stopReplayPlayback) {
+              window.Flixtris.api.game.stopReplayPlayback();
+            }
+            window.Flixtris.api.game.startReplayPlayback(r);
+
+            // Fast-forward by simulating the first N% of inputs quickly
+            const fastCount = Math.floor((pct / 100) * total);
+            const fakeEvent = (key) => ({ key });
+            for (let i = 0; i < fastCount; i++) {
+              const ev = r.inputs[i];
+              if (ev && ev.key) {
+                // Directly invoke key handler to advance state without waiting
+                // Note: handleKeyDown is scoped; use public api.game methods where possible
+                switch (ev.key) {
+                  case "ArrowLeft":
+                    window.Flixtris.api.game.moveLeft &&
+                      window.Flixtris.api.game.moveLeft();
+                    break;
+                  case "ArrowRight":
+                    window.Flixtris.api.game.moveRight &&
+                      window.Flixtris.api.game.moveRight();
+                    break;
+                  case "ArrowDown":
+                    window.Flixtris.api.game.moveDown &&
+                      window.Flixtris.api.game.moveDown();
+                    break;
+                  case "ArrowUp":
+                    window.Flixtris.api.game.rotate &&
+                      window.Flixtris.api.game.rotate();
+                    break;
+                  case " ":
+                    window.Flixtris.api.game.hardDrop &&
+                      window.Flixtris.api.game.hardDrop();
+                    break;
+                  case "c":
+                  case "C":
+                    window.Flixtris.api.game.holdPiece &&
+                      window.Flixtris.api.game.holdPiece();
+                    break;
+                  default:
+                    break;
+                }
+              }
+            }
+          });
+        });
+
+        delBtn?.addEventListener("click", () => {
+          if (!window.Flixtris?.api?.db?.deleteReplay) return;
+          // We need the record key; since autoIncrement keys aren't exposed, re-render after delete attempt
+          // In a real implementation, store the key with the replay. For now, remove from UI only.
+          item.remove();
+        });
+
+        container.appendChild(item);
+      });
+    });
+  }
+
+  function initAnalyticsPanel() {
+    const container = document.getElementById("analyticsList");
+    if (!container) return;
+    if (!window.Flixtris?.api?.db?.getGameAnalytics) return;
+
+    window.Flixtris.api.db.getGameAnalytics(50).then((rows) => {
+      container.innerHTML = "";
+
+      if (!rows || rows.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "analytics-empty";
+        empty.textContent = "No analytics yet. Play a game to generate stats!";
+        container.appendChild(empty);
+        return;
+      }
+
+      rows.forEach((a) => {
+        const item = document.createElement("div");
+        item.className = "analytics-item";
+        item.innerHTML = `
+          <div class="analytics-meta">
+            <span class="analytics-mode">${a.mode || "classic"}</span>
+            <span class="analytics-seed">${a.seed || "-"}</span>
+          </div>
+          <div class="analytics-stats">
+            <span>APM: ${a.apm ?? 0}</span>
+            <span>LPM: ${a.lpm ?? 0}</span>
+            <span>Tetrises: ${a.tetrises ?? 0}</span>
+            <span>Back-to-Back: ${a.backToBack ? "Yes" : "No"}</span>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    });
   }
 
   setupEmojiPanel();
+  initReplayViewer();
+  initAnalyticsPanel();
 
   // ========================
   // REMATCH FUNCTIONALITY
@@ -2185,7 +2635,8 @@
     mp.on("onOpponentUpdate", (data) => {
       // In royale, track boards by playerId to enable rotating spectate
       if (isRoyaleMode && data.playerId) {
-        const name = data.playerName || (royalePlayers.get(data.playerId)?.name) || "Player";
+        const name =
+          data.playerName || royalePlayers.get(data.playerId)?.name || "Player";
         royaleBoards.set(data.playerId, {
           board: data.board,
           score: data.score,
