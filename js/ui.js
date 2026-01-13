@@ -1904,6 +1904,17 @@
             if (window.Flixtris?.api?.game?.stopReplayPlayback) {
               window.Flixtris.api.game.stopReplayPlayback();
             }
+            // Stop progress ticker
+            if (window.__replayProgressTimer) {
+              clearInterval(window.__replayProgressTimer);
+              window.__replayProgressTimer = null;
+            }
+            const progressLabel = document.getElementById(
+              "replayProgressLabel",
+            );
+            const seekCtrl = document.getElementById("replaySeek");
+            if (seekCtrl) seekCtrl.value = "0";
+            if (progressLabel) progressLabel.textContent = "0%";
           });
 
           // Playback controls
@@ -1916,6 +1927,27 @@
           // Reset seek on open
           if (seekCtrl) seekCtrl.value = "0";
           if (progressLabel) progressLabel.textContent = "0%";
+
+          // Progress ticker: update every 200ms based on elapsed/duration
+          if (r && typeof r.durationMs === "number") {
+            if (window.__replayProgressTimer) {
+              clearInterval(window.__replayProgressTimer);
+              window.__replayProgressTimer = null;
+            }
+            window.__replayProgressTimer = setInterval(() => {
+              const st = window.Flixtris?.state;
+              if (!st || !st.startTime) return;
+              const elapsed = performance.now() - st.startTime;
+              const pct = Math.max(
+                0,
+                Math.min(100, Math.round((elapsed / r.durationMs) * 100)),
+              );
+              if (seekCtrl && !seekCtrl.matches(":active")) {
+                seekCtrl.value = String(pct);
+              }
+              if (progressLabel) progressLabel.textContent = `${pct}%`;
+            }, 200);
+          }
 
           playBtnCtrl?.addEventListener("click", () => {
             if (window.Flixtris?.api?.game?.startReplayPlayback) {
@@ -1939,57 +1971,59 @@
             if (progressLabel) progressLabel.textContent = "0%";
           });
 
-          // Seek handler (basic): restart playback and advance inputs up to selected percentage
+          // Deterministic seek: map slider to target time, fast-forward inputs to that timestamp
           seekCtrl?.addEventListener("input", () => {
             const pct = parseInt(seekCtrl.value || "0", 10);
-            const total = (r.inputs || []).length;
             if (progressLabel) progressLabel.textContent = `${pct}%`;
-            if (!total || !window.Flixtris?.api?.game?.startReplayPlayback)
-              return;
 
-            // Stop current playback and restart from beginning then fast-forward
+            const inputs = r.inputs || [];
+            if (!inputs.length) return;
+
+            const totalDuration = r.durationMs || 0;
+            const targetMs = Math.floor((pct / 100) * totalDuration);
+
+            // Restart playback fresh
             if (window.Flixtris?.api?.game?.stopReplayPlayback) {
               window.Flixtris.api.game.stopReplayPlayback();
             }
-            window.Flixtris.api.game.startReplayPlayback(r);
+            if (window.Flixtris?.api?.game?.startReplayPlayback) {
+              window.Flixtris.api.game.startReplayPlayback(r);
+            }
 
-            // Fast-forward by simulating the first N% of inputs quickly
-            const fastCount = Math.floor((pct / 100) * total);
-            const fakeEvent = (key) => ({ key });
-            for (let i = 0; i < fastCount; i++) {
-              const ev = r.inputs[i];
-              if (ev && ev.key) {
-                // Directly invoke key handler to advance state without waiting
-                // Note: handleKeyDown is scoped; use public api.game methods where possible
-                switch (ev.key) {
-                  case "ArrowLeft":
-                    window.Flixtris.api.game.moveLeft &&
-                      window.Flixtris.api.game.moveLeft();
-                    break;
-                  case "ArrowRight":
-                    window.Flixtris.api.game.moveRight &&
-                      window.Flixtris.api.game.moveRight();
-                    break;
-                  case "ArrowDown":
-                    window.Flixtris.api.game.moveDown &&
-                      window.Flixtris.api.game.moveDown();
-                    break;
-                  case "ArrowUp":
-                    window.Flixtris.api.game.rotate &&
-                      window.Flixtris.api.game.rotate();
-                    break;
-                  case " ":
-                    window.Flixtris.api.game.hardDrop &&
-                      window.Flixtris.api.game.hardDrop();
-                    break;
-                  case "c":
-                  case "C":
-                    window.Flixtris.api.game.holdPiece &&
-                      window.Flixtris.api.game.holdPiece();
-                    break;
-                  default:
-                    break;
-                }
+            // Fast-forward by applying inputs up to target timestamp deterministically
+            const baseTs = inputs[0]?.timestamp || 0;
+            for (let i = 0; i < inputs.length; i++) {
+              const ev = inputs[i];
+              const relTs = ev.timestamp - baseTs;
+              if (relTs > targetMs) break;
+              switch (ev.key) {
+                case "ArrowLeft":
+                  window.Flixtris.api.game.moveLeft &&
+                    window.Flixtris.api.game.moveLeft();
+                  break;
+                case "ArrowRight":
+                  window.Flixtris.api.game.moveRight &&
+                    window.Flixtris.api.game.moveRight();
+                  break;
+                case "ArrowDown":
+                  window.Flixtris.api.game.moveDown &&
+                    window.Flixtris.api.game.moveDown();
+                  break;
+                case "ArrowUp":
+                  window.Flixtris.api.game.rotate &&
+                    window.Flixtris.api.game.rotate();
+                  break;
+                case " ":
+                  window.Flixtris.api.game.hardDrop &&
+                    window.Flixtris.api.game.hardDrop();
+                  break;
+                case "c":
+                case "C":
+                  window.Flixtris.api.game.holdPiece &&
+                    window.Flixtris.api.game.holdPiece();
+                  break;
+                default:
+                  break;
               }
             }
           });
