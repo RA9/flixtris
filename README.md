@@ -107,6 +107,82 @@ python -m http.server 8000
 
 Open in browser and optionally install as a PWA.
 
+## Premium Roadmap Progress (Phase 1–2)
+
+The premium roadmap is being implemented incrementally. Current status:
+- Completed
+  - Phase 1 Foundations
+    - Cosmetics Store scaffolding (themes, piece skins, premium emojis)
+    - Entitlements stored locally in IndexedDB (`purchases` store)
+    - Basic local balance support (for testing; can be extended to server-backed profiles)
+    - Premium emoji gating in multiplayer (owned emojis become usable)
+  - Phase 2 Foundations
+    - Replay recording (input timeline, seed, mode, scores)
+    - Replay viewer (overlay with timeline, play/pause/stop, seek, progress indicator)
+    - Advanced analytics:
+      - APM/LPM, holes, average column height, comboMax
+      - Misdrop detection, drought tracking, T-spin counting
+- In progress / Upcoming
+  - Deterministic seek improvements and richer playback UI
+  - Cloud sync for entitlements/replays/analytics
+  - Ranked mode and anti-cheat (Phase 3)
+
+## Using the Cosmetics Store (Phase 1)
+
+The store is designed to be local-first and data-attribute driven:
+- Themes:
+  - Buttons with `data-store-theme="light|neon|retro"` will purchase/apply themes.
+- Piece Skins:
+  - Buttons with `data-store-skin="outline|pixel"` will purchase skins.
+- Premium Emojis:
+  - Buttons with `data-store-emoji="fire|grin|skull"` purchase emojis.
+  - Emoji panel buttons should include `data-emoji="🔥"` and optionally `data-emoji-id="fire"` so entitlement checks map correctly.
+
+Testing tips:
+- Grant test balance in DevTools to try purchases:
+  - `window.Flixtris.api.db.saveSetting("balance", 500)`
+- Owned items display as “Owned” and buttons disable accordingly.
+
+## Replays & Analytics (Phase 2)
+
+What’s recorded:
+- Replay inputs (keys + timestamps), mode, seed, duration, score/lines/level, and line clear metadata.
+- Analytics metrics:
+  - APM/LPM
+  - Board holes and average height (computed at game end)
+  - ComboMax (max combo streak)
+  - Misdrops (locks that increase holes)
+  - DroughtMax (max pieces between I tetromino)
+  - T-Spins (counted when T clears occur post-rotation)
+
+Viewer usage:
+- “Your Replays” list shows recorded replays with Play/Delete buttons.
+- Replay Viewer overlay provides:
+  - Play/Pause/Stop controls
+  - Seek slider that deterministically fast-forwards inputs to a timestamp
+  - Progress label reflecting elapsed vs recorded duration
+  - Event timeline listing inputs with relative timestamps
+
+## Running Tests
+
+Basic tests are provided to validate analytics and replay playback:
+- Test runner: `npm run test` (executes analytics and replay tests sequentially)
+- Individual tests:
+  - `npm run test:analytics`
+  - `npm run test:replay`
+
+Notes:
+- Tests run in Node with minimal DOM shims and requestAnimationFrame polyfills.
+- Analytics test validates the presence and sanity of computed metrics.
+- Replay test runs a short input stream and checks board state changes.
+
+## Next Steps
+
+- Tighten deterministic replay seeking and add richer playback controls (step, speed, progress bar sync with exact input timing).
+- Visual analytics dashboards (charts for height/holes over time, combo streak distribution).
+- Cloud sync layer for profiles, purchases, settings, replays, and analytics.
+- Phase 3 ranked mode with server-authoritative RNG and anti-cheat primitives.
+
 ### Multiplayer Server
 
 The multiplayer feature requires running the WebSocket server with Redis:
