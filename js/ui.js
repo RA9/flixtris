@@ -42,6 +42,12 @@
   let aliveCount = 0;
   let totalPlayersInGame = 0;
 
+  // Royale spectating state
+  let royaleBoards = new Map(); // playerId -> { board, score, name }
+  let currentSpectateId = null;
+  let spectateInterval = null;
+  const SPECTATE_SWITCH_MS = 3000;
+
   // Opponent board constants (half size of main board)
   const OPPONENT_COLS = 10;
   const OPPONENT_ROWS = 20;
@@ -1534,6 +1540,61 @@
     }
   }
 
+  // Auto-switching spectate of opponent boards in royale
+  function startAutoSpectate() {
+    stopAutoSpectate();
+
+    // Choose an initial player to spectate
+    selectNextSpectate();
+
+    spectateInterval = setInterval(() => {
+      selectNextSpectate();
+    }, SPECTATE_SWITCH_MS);
+  }
+
+  function stopAutoSpectate() {
+    if (spectateInterval) {
+      clearInterval(spectateInterval);
+      spectateInterval = null;
+    }
+  }
+
+  function selectNextSpectate() {
+    // Build a list of candidate playerIds with known boards and not eliminated
+    const candidates = [];
+    royaleBoards.forEach((_val, pid) => {
+      const player = royalePlayers.get(pid);
+      if (!player || !player.eliminated) {
+        candidates.push(pid);
+      }
+    });
+
+    if (candidates.length === 0) {
+      // No boards available - clear display
+      if (opponentNameEl) opponentNameEl.textContent = "Players";
+      clearOpponentBoard();
+      updateOpponentScore(0);
+      return;
+    }
+
+    // Pick next index
+    let nextIdx = 0;
+    if (currentSpectateId) {
+      const curIdx = candidates.indexOf(currentSpectateId);
+      nextIdx = curIdx >= 0 ? (curIdx + 1) % candidates.length : 0;
+    }
+    currentSpectateId = candidates[nextIdx];
+
+    const data = royaleBoards.get(currentSpectateId);
+    if (data) {
+      if (opponentNameEl) opponentNameEl.textContent = data.name || "Player";
+      updateOpponentScore(data.score || 0);
+      renderOpponentBoard(data.board);
+    }
+  }
+    }
+  }
+
   setupEmojiPanel();
 
   // ========================
@@ -2104,8 +2165,9 @@
       if (isRoyaleMode) {
         // Show alive counter for royale
         showAliveCounter(aliveCount, totalPlayersInGame);
-        // In royale, we might show multiple mini-boards instead of one opponent
-        hideOpponentBoard();
+        // Start auto spectating opponents' boards during royale
+        showOpponentBoard("Players");
+        startAutoSpectate();
       } else {
         const opponent = mp.getOpponent();
         showOpponentBoard(opponent ? opponent.name : "Opponent");
@@ -2121,8 +2183,25 @@
 
     // Opponent update - render their board
     mp.on("onOpponentUpdate", (data) => {
-      updateOpponentScore(data.score);
-      renderOpponentBoard(data.board);
+      // In royale, track boards by playerId to enable rotating spectate
+      if (isRoyaleMode && data.playerId) {
+        const name = data.playerName || (royalePlayers.get(data.playerId)?.name) || "Player";
+        royaleBoards.set(data.playerId, {
+          board: data.board,
+          score: data.score,
+          name,
+        });
+        // If currently spectating this player, update immediately
+        if (currentSpectateId === data.playerId) {
+          updateOpponentScore(data.score);
+          renderOpponentBoard(data.board);
+          if (opponentNameEl) opponentNameEl.textContent = name;
+        }
+      } else {
+        // 1v1 or generic case
+        updateOpponentScore(data.score);
+        renderOpponentBoard(data.board);
+      }
     });
 
     // Incoming garbage lines
@@ -2158,6 +2237,19 @@
       aliveCount = data.aliveCount;
       showAliveCounter(aliveCount, data.totalPlayers);
 
+      // Mark eliminated in local state and remove their board from rotation
+      if (royalePlayers.has(data.playerId)) {
+        const p = royalePlayers.get(data.playerId);
+        p.eliminated = true;
+        royalePlayers.set(data.playerId, p);
+      }
+      royaleBoards.delete(data.playerId);
+
+      // If we were spectating this player, switch immediately
+      if (currentSpectateId === data.playerId) {
+        selectNextSpectate();
+      }
+
       // Show elimination banner
       showEliminationBanner(
         data.playerName,
@@ -2169,6 +2261,8 @@
       if (data.isMe) {
         // We were eliminated - show spectator indicator
         showSpectatorIndicator();
+        // Ensure auto-spectate is running
+        startAutoSpectate();
       }
     });
 
@@ -2176,7 +2270,8 @@
     mp.on("onSpectating", (data) => {
       log("Now spectating:", data);
       showSpectatorIndicator();
-      // Could show live boards of remaining players here
+      // Begin auto-switching between remaining players' boards
+      startAutoSpectate();
     });
 
     // Royale game ended

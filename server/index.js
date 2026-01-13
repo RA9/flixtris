@@ -1044,6 +1044,7 @@ wss.on("connection", (ws) => {
           {
             type: "opponent_update",
             playerId: playerId,
+            playerName: player.name,
             score: message.score,
             level: message.level,
             lines: message.lines,

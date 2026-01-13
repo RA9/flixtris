@@ -276,6 +276,8 @@
       case "opponent_update":
         if (callbacks.onOpponentUpdate) {
           callbacks.onOpponentUpdate({
+            playerId: message.playerId,
+            playerName: message.playerName,
             score: message.score,
             level: message.level,
             lines: message.lines,
