@@ -440,6 +440,240 @@ body {
     color: var(--text-secondary);
 }
 
+/* Store Sections */
+#storeThemes,
+#storeSkins,
+#storeEmojis {
+    margin: 1rem 0 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+#storeThemes h3,
+#storeSkins h3,
+#storeEmojis h3 {
+    margin: 0 0 0.75rem 0;
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+#storeThemes button,
+#storeSkins button,
+#storeEmojis button {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+        transform 0.05s ease,
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+#storeThemes button:hover,
+#storeSkins button:hover,
+#storeEmojis button:hover {
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+#storeThemes button:disabled,
+#storeSkins button:disabled,
+#storeEmojis button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Replay Viewer Overlay */
+#replayViewer.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.95);
+    z-index: 110;
+    padding: 24px;
+    overflow: auto;
+    animation: fadeIn 0.2s ease-out;
+}
+
+#replayViewer.overlay .overlay-content {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 1.25rem;
+    max-width: 640px;
+    width: 100%;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+#replayViewer.overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#replayViewer .replay-controls {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#replayPlayBtn,
+#replayPauseBtn,
+#replayStopBtn {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+#replayPlayBtn:hover,
+#replayPauseBtn:hover,
+#replayStopBtn:hover {
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+#replaySeek {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+#replayProgressLabel {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Replay Timeline */
+#replayTimeline {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0 0 0;
+    max-height: 240px;
+    overflow: auto;
+    border-top: 1px dashed rgba(148, 163, 184, 0.2);
+}
+
+#replayTimeline li {
+    padding: 0.4rem 0;
+    color: var(--text-secondary);
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.1);
+}
+
+/* Panel Sections (common) */
+.panel-section {
+    margin: 1rem 0 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.panel-section h3 {
+    margin: 0 0 0.75rem 0;
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+/* Replay List Items */
+#replayList .replay-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-primary);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 10px;
+}
+
+#replayList .replay-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+#replayList .replay-title {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+#replayList .replay-stats {
+    display: flex;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+#replayList .replay-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+#replayList .replay-actions .replay-play,
+#replayList .replay-actions .replay-delete {
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.05s ease;
+}
+
+#replayList .replay-actions .replay-play:hover,
+#replayList .replay-actions .replay-delete:hover {
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+/* Analytics List Items */
+#analyticsList .analytics-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: var(--bg-primary);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 10px;
+}
+
+#analyticsList .analytics-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+#analyticsList .analytics-stats {
+    display: flex;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 /* Game Over Overlay */
 #gameover-overlay {
     display: none;
