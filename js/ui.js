@@ -501,7 +501,9 @@
     const devToggle = document.querySelector("[data-dev-pro-toggle]");
     if (devToggle) {
       // Initialize button label based on current state
-      devToggle.textContent = settings.proEnabled ? "Disable Pro" : "Enable Pro";
+      devToggle.textContent = settings.proEnabled
+        ? "Disable Pro"
+        : "Enable Pro";
       devToggle.addEventListener("click", async () => {
         const enabled = !settings.proEnabled;
         settings.proEnabled = enabled;
@@ -513,24 +515,23 @@
     }
   })();
 
-    // Pro overlay open helper on trying to purchase when Pro disabled
-    const proOverlay = document.getElementById("pro-overlay");
-    function openProOverlay() {
-      if (proOverlay) {
-        proOverlay.style.display = "flex";
-        proOverlay.classList.add("active");
-      }
+  // Pro overlay open helper on trying to purchase when Pro disabled
+  const proOverlay = document.getElementById("pro-overlay");
+  function openProOverlay() {
+    if (proOverlay) {
+      proOverlay.style.display = "flex";
+      proOverlay.classList.add("active");
     }
-    ["data-store-theme", "data-store-emoji", "data-store-skin"].forEach(
-      (attr) => {
-        document.querySelectorAll(`[${attr}]`).forEach((btn) => {
-          btn.addEventListener("click", () => {
-            if (!settings.proEnabled) openProOverlay();
-          });
+  }
+  ["data-store-theme", "data-store-emoji", "data-store-skin"].forEach(
+    (attr) => {
+      document.querySelectorAll(`[${attr}]`).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (!settings.proEnabled) openProOverlay();
         });
-      },
-    );
-  })();
+      });
+    },
+  );
 
   // Expose minimal API to other modules (e.g., multiplayer for emoji gating)
   api.ui = api.ui || {};
@@ -2028,7 +2029,9 @@
           // Speed selector: adjust a global speed factor used by the runner (if utilized)
           speedSel?.addEventListener("change", () => {
             const val = parseFloat(speedSel.value || "1");
-            window.__replaySpeed = isNaN(val) ? 1 : Math.max(0.25, Math.min(3, val));
+            window.__replaySpeed = isNaN(val)
+              ? 1
+              : Math.max(0.25, Math.min(3, val));
           });
 
           // Step forward: apply the next input in the stream deterministically
@@ -2038,9 +2041,13 @@
             const baseTs = inputs[0]?.timestamp || 0;
             // Current target based on seek position
             const pct = parseInt(seekCtrl?.value || "0", 10);
-            const targetMs = Math.floor(((pct || 0) / 100) * (r.durationMs || 0));
+            const targetMs = Math.floor(
+              ((pct || 0) / 100) * (r.durationMs || 0),
+            );
             // Find first input after targetMs
-            const nextIdx = inputs.findIndex((ev) => (ev.timestamp - baseTs) > targetMs);
+            const nextIdx = inputs.findIndex(
+              (ev) => ev.timestamp - baseTs > targetMs,
+            );
             const idx = nextIdx >= 0 ? nextIdx : inputs.length - 1;
             const ev = inputs[idx];
             if (!ev) return;
@@ -2049,30 +2056,38 @@
             if (state) state.paused = true;
             switch (ev.key) {
               case "ArrowLeft":
-                window.Flixtris.api.game.moveLeft && window.Flixtris.api.game.moveLeft();
+                window.Flixtris.api.game.moveLeft &&
+                  window.Flixtris.api.game.moveLeft();
                 break;
               case "ArrowRight":
-                window.Flixtris.api.game.moveRight && window.Flixtris.api.game.moveRight();
+                window.Flixtris.api.game.moveRight &&
+                  window.Flixtris.api.game.moveRight();
                 break;
               case "ArrowDown":
-                window.Flixtris.api.game.moveDown && window.Flixtris.api.game.moveDown();
+                window.Flixtris.api.game.moveDown &&
+                  window.Flixtris.api.game.moveDown();
                 break;
               case "ArrowUp":
-                window.Flixtris.api.game.rotate && window.Flixtris.api.game.rotate();
+                window.Flixtris.api.game.rotate &&
+                  window.Flixtris.api.game.rotate();
                 break;
               case " ":
-                window.Flixtris.api.game.hardDrop && window.Flixtris.api.game.hardDrop();
+                window.Flixtris.api.game.hardDrop &&
+                  window.Flixtris.api.game.hardDrop();
                 break;
               case "c":
               case "C":
-                window.Flixtris.api.game.holdPiece && window.Flixtris.api.game.holdPiece();
+                window.Flixtris.api.game.holdPiece &&
+                  window.Flixtris.api.game.holdPiece();
                 break;
               default:
                 break;
             }
             // Advance seek to reflect new position
             const relTs = ev.timestamp - baseTs;
-            const newPct = (r.durationMs ? Math.round((relTs / r.durationMs) * 100) : pct);
+            const newPct = r.durationMs
+              ? Math.round((relTs / r.durationMs) * 100)
+              : pct;
             if (seekCtrl) seekCtrl.value = String(Math.max(pct, newPct));
             if (progressLabel) progressLabel.textContent = `${seekCtrl.value}%`;
           });
@@ -2083,7 +2098,9 @@
             if (!inputs.length) return;
             const baseTs = inputs[0]?.timestamp || 0;
             const pct = parseInt(seekCtrl?.value || "0", 10);
-            const targetMs = Math.floor(((pct || 0) / 100) * (r.durationMs || 0));
+            const targetMs = Math.floor(
+              ((pct || 0) / 100) * (r.durationMs || 0),
+            );
             // Find last input before targetMs
             let prevIdx = -1;
             for (let i = 0; i < inputs.length; i++) {
@@ -2098,7 +2115,9 @@
             }
             const prevEv = inputs[prevIdx];
             const relTs = prevEv.timestamp - baseTs;
-            const newPct = (r.durationMs ? Math.round((relTs / r.durationMs) * 100) : 0);
+            const newPct = r.durationMs
+              ? Math.round((relTs / r.durationMs) * 100)
+              : 0;
             if (seekCtrl) seekCtrl.value = String(newPct);
             if (progressLabel) progressLabel.textContent = `${seekCtrl.value}%`;
           });
@@ -2226,7 +2245,10 @@
       if (!ctx || !values.length) return;
       const c = ctx.canvas;
       const max = Math.max(...values, 1);
-      const bw = Math.max(4, Math.floor(c.width / Math.max(1, values.length * 2)));
+      const bw = Math.max(
+        4,
+        Math.floor(c.width / Math.max(1, values.length * 2)),
+      );
       for (let i = 0; i < values.length; i++) {
         const x = (i / values.length) * (c.width - 10) + 5;
         const h = (values[i] / max) * (c.height - 10);
@@ -2261,7 +2283,12 @@
     // Combo Timeline (bars)
     const ctxCombo = getCtx("chartComboTimeline");
     clear(ctxCombo);
-    drawBars(ctxCombo, Array.from({ length: combos.length }), combos, "#22d3ee");
+    drawBars(
+      ctxCombo,
+      Array.from({ length: combos.length }),
+      combos,
+      "#22d3ee",
+    );
 
     // Piece Distribution (bars)
     const ctxPieces = getCtx("chartPieceDistribution");
@@ -2313,10 +2340,9 @@
   const yourReplaysBtn = document.getElementById("yourReplaysBtn");
   if (yourReplaysBtn) {
     yourReplaysBtn.addEventListener("click", () => {
-      const isPro =
-        window.Flixtris?.api?.ui?.getProEnabled
-          ? window.Flixtris.api.ui.getProEnabled()
-          : false;
+      const isPro = window.Flixtris?.api?.ui?.getProEnabled
+        ? window.Flixtris.api.ui.getProEnabled()
+        : false;
 
       if (isPro) {
         const viewer = document.getElementById("replayViewer");
@@ -2340,10 +2366,9 @@
   const rankedModeBtn = document.getElementById("rankedModeBtn");
   if (rankedModeBtn) {
     rankedModeBtn.addEventListener("click", () => {
-      const isPro =
-        window.Flixtris?.api?.ui?.getProEnabled
-          ? window.Flixtris.api.ui.getProEnabled()
-          : false;
+      const isPro = window.Flixtris?.api?.ui?.getProEnabled
+        ? window.Flixtris.api.ui.getProEnabled()
+        : false;
 
       if (!isPro) {
         // Pro required to access Ranked; show overlay
@@ -2357,7 +2382,9 @@
 
       const mp = window.Flixtris?.api?.multiplayer;
       // Toggle join/leave based on button label
-      const joining = rankedModeBtn.textContent?.toLowerCase().includes("ranked");
+      const joining = rankedModeBtn.textContent
+        ?.toLowerCase()
+        .includes("ranked");
       if (joining) {
         // Join ranked queue
         mp?.joinRankedQueue && mp.joinRankedQueue();
