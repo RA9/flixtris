@@ -1989,6 +1989,10 @@
           const stopBtnCtrl = document.getElementById("replayStopBtn");
           const seekCtrl = document.getElementById("replaySeek");
           const progressLabel = document.getElementById("replayProgressLabel");
+          // Optional step controls and speed selector (if present)
+          const stepFwdBtn = document.getElementById("replayStepFwdBtn");
+          const stepBackBtn = document.getElementById("replayStepBackBtn");
+          const speedSel = document.getElementById("replaySpeed");
 
           // Reset seek on open
           if (seekCtrl) seekCtrl.value = "0";
@@ -2019,6 +2023,84 @@
             if (window.Flixtris?.api?.game?.startReplayPlayback) {
               window.Flixtris.api.game.startReplayPlayback(r);
             }
+          });
+
+          // Speed selector: adjust a global speed factor used by the runner (if utilized)
+          speedSel?.addEventListener("change", () => {
+            const val = parseFloat(speedSel.value || "1");
+            window.__replaySpeed = isNaN(val) ? 1 : Math.max(0.25, Math.min(3, val));
+          });
+
+          // Step forward: apply the next input in the stream deterministically
+          stepFwdBtn?.addEventListener("click", () => {
+            const inputs = r.inputs || [];
+            if (!inputs.length) return;
+            const baseTs = inputs[0]?.timestamp || 0;
+            // Current target based on seek position
+            const pct = parseInt(seekCtrl?.value || "0", 10);
+            const targetMs = Math.floor(((pct || 0) / 100) * (r.durationMs || 0));
+            // Find first input after targetMs
+            const nextIdx = inputs.findIndex((ev) => (ev.timestamp - baseTs) > targetMs);
+            const idx = nextIdx >= 0 ? nextIdx : inputs.length - 1;
+            const ev = inputs[idx];
+            if (!ev) return;
+            // Pause runner then apply single action
+            const state = window.Flixtris?.state;
+            if (state) state.paused = true;
+            switch (ev.key) {
+              case "ArrowLeft":
+                window.Flixtris.api.game.moveLeft && window.Flixtris.api.game.moveLeft();
+                break;
+              case "ArrowRight":
+                window.Flixtris.api.game.moveRight && window.Flixtris.api.game.moveRight();
+                break;
+              case "ArrowDown":
+                window.Flixtris.api.game.moveDown && window.Flixtris.api.game.moveDown();
+                break;
+              case "ArrowUp":
+                window.Flixtris.api.game.rotate && window.Flixtris.api.game.rotate();
+                break;
+              case " ":
+                window.Flixtris.api.game.hardDrop && window.Flixtris.api.game.hardDrop();
+                break;
+              case "c":
+              case "C":
+                window.Flixtris.api.game.holdPiece && window.Flixtris.api.game.holdPiece();
+                break;
+              default:
+                break;
+            }
+            // Advance seek to reflect new position
+            const relTs = ev.timestamp - baseTs;
+            const newPct = (r.durationMs ? Math.round((relTs / r.durationMs) * 100) : pct);
+            if (seekCtrl) seekCtrl.value = String(Math.max(pct, newPct));
+            if (progressLabel) progressLabel.textContent = `${seekCtrl.value}%`;
+          });
+
+          // Step backward: apply the previous input (reverse stepping only updates seek visualization)
+          stepBackBtn?.addEventListener("click", () => {
+            const inputs = r.inputs || [];
+            if (!inputs.length) return;
+            const baseTs = inputs[0]?.timestamp || 0;
+            const pct = parseInt(seekCtrl?.value || "0", 10);
+            const targetMs = Math.floor(((pct || 0) / 100) * (r.durationMs || 0));
+            // Find last input before targetMs
+            let prevIdx = -1;
+            for (let i = 0; i < inputs.length; i++) {
+              const relTs = inputs[i].timestamp - baseTs;
+              if (relTs < targetMs) prevIdx = i;
+              else break;
+            }
+            if (prevIdx < 0) {
+              if (seekCtrl) seekCtrl.value = "0";
+              if (progressLabel) progressLabel.textContent = "0%";
+              return;
+            }
+            const prevEv = inputs[prevIdx];
+            const relTs = prevEv.timestamp - baseTs;
+            const newPct = (r.durationMs ? Math.round((relTs / r.durationMs) * 100) : 0);
+            if (seekCtrl) seekCtrl.value = String(newPct);
+            if (progressLabel) progressLabel.textContent = `${seekCtrl.value}%`;
           });
 
           pauseBtnCtrl?.addEventListener("click", () => {
@@ -2104,7 +2186,87 @@
 
         container.appendChild(item);
       });
+
+      // Render dashboards
+      renderAnalyticsCharts(rows);
     });
+  }
+
+  // Basic chart rendering using Canvas 2D for dashboard canvases
+  function renderAnalyticsCharts(rows) {
+    // Helpers
+    function getCtx(id) {
+      const c = document.getElementById(id);
+      return c ? c.getContext("2d") : null;
+    }
+    function clear(ctx) {
+      if (!ctx) return;
+      const c = ctx.canvas;
+      ctx.clearRect(0, 0, c.width, c.height);
+      // background stripe
+      ctx.fillStyle = "rgba(148,163,184,0.06)";
+      ctx.fillRect(0, 0, c.width, c.height);
+    }
+    function drawLine(ctx, data, color) {
+      if (!ctx || !data.length) return;
+      const c = ctx.canvas;
+      const max = Math.max(...data, 1);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = (i / Math.max(1, data.length - 1)) * (c.width - 10) + 5;
+        const y = c.height - (data[i] / max) * (c.height - 10) - 5;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    function drawBars(ctx, labels, values, color) {
+      if (!ctx || !values.length) return;
+      const c = ctx.canvas;
+      const max = Math.max(...values, 1);
+      const bw = Math.max(4, Math.floor(c.width / Math.max(1, values.length * 2)));
+      for (let i = 0; i < values.length; i++) {
+        const x = (i / values.length) * (c.width - 10) + 5;
+        const h = (values[i] / max) * (c.height - 10);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, c.height - h - 5, bw, h);
+      }
+    }
+
+    // Build series from rows (last N games)
+    const N = Math.min(20, rows.length);
+    const recent = rows.slice(0, N);
+    const heights = recent.map((r) => r.avgHeight || 0).reverse();
+    const holes = recent.map((r) => r.holes || 0).reverse();
+    const combos = recent.map((r) => r.comboMax || 0).reverse();
+    // Piece distribution approximation: use tetrises and tSpins as stand-ins
+    const pieceLabels = ["Tetrises", "T-Spins"];
+    const pieceValues = [
+      recent.reduce((acc, r) => acc + (r.tetrises || 0), 0),
+      recent.reduce((acc, r) => acc + (r.tSpins || 0), 0),
+    ];
+
+    // Height Over Time
+    const ctxHeight = getCtx("chartHeightOverTime");
+    clear(ctxHeight);
+    drawLine(ctxHeight, heights, "#3b82f6");
+
+    // Holes Over Time
+    const ctxHoles = getCtx("chartHolesOverTime");
+    clear(ctxHoles);
+    drawLine(ctxHoles, holes, "#f43f5e");
+
+    // Combo Timeline (bars)
+    const ctxCombo = getCtx("chartComboTimeline");
+    clear(ctxCombo);
+    drawBars(ctxCombo, Array.from({ length: combos.length }), combos, "#22d3ee");
+
+    // Piece Distribution (bars)
+    const ctxPieces = getCtx("chartPieceDistribution");
+    clear(ctxPieces);
+    drawBars(ctxPieces, pieceLabels, pieceValues, "#a78bfa");
   }
 
   function initAnalyticsPanel() {
@@ -2120,6 +2282,8 @@
         empty.className = "analytics-empty";
         empty.textContent = "No analytics yet. Play a game to generate stats!";
         container.appendChild(empty);
+        // Also clear any dashboard canvases
+        renderAnalyticsCharts([]);
         return;
       }
 
@@ -2171,6 +2335,43 @@
       }
     });
   }
+
+  // Ranked Mode button: join/leave queue with basic feedback
+  const rankedModeBtn = document.getElementById("rankedModeBtn");
+  if (rankedModeBtn) {
+    rankedModeBtn.addEventListener("click", () => {
+      const isPro =
+        window.Flixtris?.api?.ui?.getProEnabled
+          ? window.Flixtris.api.ui.getProEnabled()
+          : false;
+
+      if (!isPro) {
+        // Pro required to access Ranked; show overlay
+        const proOverlay = document.getElementById("pro-overlay");
+        if (proOverlay) {
+          proOverlay.style.display = "flex";
+          proOverlay.classList.add("active");
+        }
+        return;
+      }
+
+      const mp = window.Flixtris?.api?.multiplayer;
+      // Toggle join/leave based on button label
+      const joining = rankedModeBtn.textContent?.toLowerCase().includes("ranked");
+      if (joining) {
+        // Join ranked queue
+        mp?.joinRankedQueue && mp.joinRankedQueue();
+        rankedModeBtn.textContent = "Leave Ranked Queue";
+        rankedModeBtn.classList.add("active");
+      } else {
+        // Leave ranked queue
+        mp?.leaveRankedQueue && mp.leaveRankedQueue();
+        rankedModeBtn.textContent = "Ranked Mode";
+        rankedModeBtn.classList.remove("active");
+      }
+    });
+  }
+
   initAnalyticsPanel();
 
   // ========================

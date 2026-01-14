@@ -620,6 +620,57 @@
   }
 
   // ========================
+  // RANKED MODE - PROTOCOL STUBS
+  // ========================
+
+  // Join ranked matchmaking queue
+  function joinRankedQueue() {
+    send({ type: "ranked_queue_join" });
+  }
+
+  // Leave ranked matchmaking queue
+  function leaveRankedQueue() {
+    send({ type: "ranked_queue_leave" });
+  }
+
+  // Server-authoritative RNG: set ranked seed (to be called upon match start message)
+  function setRankedSeed(seed) {
+    // Expose seed to game module if available
+    try {
+      if (window.Flixtris?.api?.game?.startGameWithSeed) {
+        // Start a ranked game with the server-provided seed
+        window.Flixtris.api.game.startGameWithSeed(seed);
+      }
+    } catch (e) {
+      // No-op if game module is unavailable
+    }
+  }
+
+  // Send periodic client snapshot for anti-cheat in ranked mode
+  // board: 2D array from getBoardSnapshot(), score/level/lines: current stats
+  function sendRankedSnapshot(board, score, level, lines) {
+    send({
+      type: "ranked_snapshot",
+      board,
+      score,
+      level,
+      lines,
+      ts: Date.now(),
+    });
+  }
+
+  // Attach ranked API to multiplayer namespace for external usage
+  if (!window.Flixtris) window.Flixtris = {};
+  if (!window.Flixtris.api) window.Flixtris.api = {};
+  if (!window.Flixtris.api.multiplayer) window.Flixtris.api.multiplayer = {};
+  Object.assign(window.Flixtris.api.multiplayer, {
+    joinRankedQueue,
+    leaveRankedQueue,
+    setRankedSeed,
+    sendRankedSnapshot,
+  });
+
+  // ========================
   // PUBLIC API - CALLBACKS
   // ========================
 

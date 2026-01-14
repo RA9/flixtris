@@ -107,7 +107,7 @@ python -m http.server 8000
 
 Open in browser and optionally install as a PWA.
 
-## Premium Roadmap Progress (Phase 1–2)
+## Premium Roadmap Progress (Phase 1–3)
 
 The premium roadmap is being implemented incrementally. Current status:
 - Completed
@@ -122,10 +122,14 @@ The premium roadmap is being implemented incrementally. Current status:
     - Advanced analytics:
       - APM/LPM, holes, average column height, comboMax
       - Misdrop detection, drought tracking, T-spin counting
-- In progress / Upcoming
-  - Deterministic seek improvements and richer playback UI
-  - Cloud sync for entitlements/replays/analytics
-  - Ranked mode and anti-cheat (Phase 3)
+- In progress
+  - Phase 3 Ranked Mode (scaffolding added)
+    - Ranked queue join/leave from client
+    - Server-authoritative RNG seed broadcast at match start
+    - Basic ELO update endpoint and storage (Redis-backed)
+    - Client snapshot sending for anti-cheat validation (soft enforcement)
+  - Deterministic replay seek refinements and richer playback UI (step controls, speed selector)
+  - Cloud sync for entitlements/replays/analytics (planned)
 
 ## Using the Cosmetics Store (Phase 1)
 

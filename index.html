@@ -384,6 +384,13 @@
                         <button id="yourReplaysBtn" class="btn secondary">
                             Your Replays
                         </button>
+                        <button
+                            id="rankedModeBtn"
+                            class="btn secondary"
+                            style="margin-left: 0.5rem"
+                        >
+                            Ranked Mode
+                        </button>
                     </div>
                     <!-- Store: Themes -->
                     <div id="storeThemes">
@@ -457,6 +464,47 @@
                     <div id="analyticsList" class="panel-section">
                         <h3>Recent Analytics</h3>
                         <!-- Populated by initAnalyticsPanel() -->
+                    </div>
+
+                    <!-- Analytics Dashboard (Phase 2 Completion) -->
+                    <div id="analyticsDashboard" class="panel-section">
+                        <h3>Analytics Dashboard</h3>
+                        <div class="dashboard-row">
+                            <div class="dashboard-chart">
+                                <h4>Height Over Time</h4>
+                                <canvas
+                                    id="chartHeightOverTime"
+                                    width="320"
+                                    height="160"
+                                ></canvas>
+                            </div>
+                            <div class="dashboard-chart">
+                                <h4>Holes Over Time</h4>
+                                <canvas
+                                    id="chartHolesOverTime"
+                                    width="320"
+                                    height="160"
+                                ></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-row" style="margin-top: 0.75rem">
+                            <div class="dashboard-chart">
+                                <h4>Combo Streak Timeline</h4>
+                                <canvas
+                                    id="chartComboTimeline"
+                                    width="320"
+                                    height="160"
+                                ></canvas>
+                            </div>
+                            <div class="dashboard-chart">
+                                <h4>Piece Distribution</h4>
+                                <canvas
+                                    id="chartPieceDistribution"
+                                    width="320"
+                                    height="160"
+                                ></canvas>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Subscriptions (Enable Pro - Free) -->

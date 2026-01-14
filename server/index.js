@@ -821,6 +821,161 @@ wss.on("connection", (ws) => {
     }
 
     switch (message.type) {
+      // Ranked Mode: join matchmaking queue
+      case "ranked_queue_join": {
+        // Track player in a Redis set for ranked queue
+        const queueKey = "flixtris:ranked:queue";
+        try {
+          if (redisClient && redisConnected) {
+            await redisClient.sAdd(queueKey, playerId);
+          }
+        } catch (e) {
+          log("redis error on ranked_queue_join", e);
+        }
+
+        // Acknowledge join
+        ws.send(
+          JSON.stringify({
+            type: "ranked_queue_joined",
+            playerId,
+          }),
+        );
+        break;
+      }
+
+      // Ranked Mode: leave matchmaking queue
+      case "ranked_queue_leave": {
+        const queueKey = "flixtris:ranked:queue";
+        try {
+          if (redisClient && redisConnected) {
+            await redisClient.sRem(queueKey, playerId);
+          }
+        } catch (e) {
+          log("redis error on ranked_queue_leave", e);
+        }
+
+        // Acknowledge leave
+        ws.send(
+          JSON.stringify({
+            type: "ranked_queue_left",
+            playerId,
+          }),
+        );
+        break;
+      }
+
+      // Ranked Mode: periodic client snapshot for anti-cheat
+      case "ranked_snapshot": {
+        // Minimal stub: store snapshot with TTL in Redis for later validation/review
+        const snapshotKey = `flixtris:ranked:snap:${playerId}:${Date.now()}`;
+        const payload = {
+          board: message.board || null,
+          score: message.score || 0,
+          level: message.level || 1,
+          lines: message.lines || 0,
+          ts: message.ts || Date.now(),
+        };
+        try {
+          if (redisClient && redisConnected) {
+            await redisClient.set(snapshotKey, JSON.stringify(payload), { EX: 60 });
+          }
+        } catch (e) {
+          log("redis error on ranked_snapshot", e);
+        }
+        break;
+      }
+
+      // Ranked Mode: result submission to update ELO
+      case "ranked_result_submit": {
+        // message: { winnerId, loserId }
+        const { winnerId, loserId } = message;
+
+        // Simple ELO params
+        const K = 32;
+        const baseKey = "flixtris:ranked:elo";
+
+        async function getElo(id) {
+          try {
+            if (redisClient && redisConnected) {
+              const val = await redisClient.hGet(baseKey, id);
+              return val ? parseInt(val, 10) : 1200;
+            }
+          } catch {}
+          return 1200;
+        }
+
+        async function setElo(id, rating) {
+          try {
+            if (redisClient && redisConnected) {
+              await redisClient.hSet(baseKey, id, String(Math.round(rating)));
+            }
+          } catch (e) {
+            log("redis error on setElo", e);
+          }
+        }
+
+        const Ra = await getElo(winnerId);
+        const Rb = await getElo(loserId);
+        const Ea = 1 / (1 + Math.pow(10, (Rb - Ra) / 400));
+        const Eb = 1 / (1 + Math.pow(10, (Ra - Rb) / 400));
+
+        const RaNew = Ra + K * (1 - Ea);
+        const RbNew = Rb + K * (0 - Eb);
+
+        await setElo(winnerId, RaNew);
+        await setElo(loserId, RbNew);
+
+        // Notify both players (if connected) and acknowledge submitter
+        try {
+          ws.send(
+            JSON.stringify({
+              type: "ranked_elo_update",
+              ratings: {
+                [winnerId]: Math.round(RaNew),
+                [loserId]: Math.round(RbNew),
+              },
+            }),
+          );
+        } catch {}
+        break;
+      }
+
+      // Ranked Mode: server-authoritative RNG stub
+      case "ranked_match_found": {
+        // message: { players: [id...], seed?: string }
+        // If seed not provided, generate one and broadcast
+        const matchSeed = message.seed || generateGameSeed();
+        const playersInMatch = Array.isArray(message.players)
+          ? message.players
+          : [];
+
+        // Broadcast start to involved players with server seed
+        const startMsg = JSON.stringify({
+          type: "ranked_match_start",
+          seed: matchSeed,
+          players: playersInMatch,
+          countdown: 3,
+        });
+
+        try {
+          // Save minimal match record in Redis with TTL for audit
+          if (redisClient && redisConnected) {
+            const matchId = `match:${Date.now()}`;
+            await redisClient.set(
+              `flixtris:ranked:${matchId}`,
+              JSON.stringify({ seed: matchSeed, players: playersInMatch }),
+              { EX: 600 },
+            );
+          }
+        } catch (e) {
+          log("redis error on ranked_match_found", e);
+        }
+
+        // Send to current player; in a full implementation, sendToPlayer for all players
+        ws.send(startMsg);
+        break;
+      }
+    }
       // ========================
       // RECONNECTION
       // ========================
