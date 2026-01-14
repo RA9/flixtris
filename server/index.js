@@ -424,8 +424,14 @@ function sendJSON(res, data, status = 200) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = url.pathname;
+  let url;
+  try {
+    const host = req.headers.host || `localhost:${PORT}`;
+    url = new URL(req.url || "/", `http://${host}`);
+  } catch (e) {
+    url = { pathname: (req.url || "/"), searchParams: new URLSearchParams() };
+  }
+  const pathname = url.pathname || (req.url || "/");
 
   // CORS preflight
   if (req.method === "OPTIONS") {
@@ -443,7 +449,7 @@ const server = http.createServer(async (req, res) => {
     sendJSON(res, {
       status: "ok",
       redis: redisConnected ? "connected" : "disconnected",
-      rooms: rooms.size,
+      rooms: (rooms && typeof rooms.size === "number") ? rooms.size : 0,
       uptime: process.uptime(),
     });
     return;
