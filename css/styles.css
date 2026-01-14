@@ -674,6 +674,57 @@ body {
     font-size: 0.9rem;
 }
 
+/* Pro Overlay */
+#pro-overlay.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.95);
+    z-index: 120;
+    padding: 24px;
+    overflow: auto;
+    animation: fadeIn 0.2s ease-out;
+}
+#pro-overlay.overlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#pro-overlay .overlay-content {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 1.25rem;
+    max-width: 560px;
+    width: 100%;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+#pro-overlay .overlay-content h3 {
+    margin: 0 0 0.75rem 0;
+    color: var(--accent);
+}
+#pro-overlay .overlay-content p,
+#pro-overlay .overlay-content li {
+    color: var(--text-secondary);
+}
+
+/* Dev Pro Toggle Button */
+[data-dev-pro-toggle] {
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+[data-dev-pro-toggle]:hover {
+    background: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
 /* Game Over Overlay */
 #gameover-overlay {
     display: none;

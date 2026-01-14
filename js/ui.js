@@ -230,6 +230,7 @@
     ghostEnabled: true,
     hapticEnabled: true,
     tutorialComplete: false,
+    proEnabled: false,
   };
 
   // Function to apply theme
@@ -376,7 +377,8 @@
       const id = btn.getAttribute("data-store-theme");
       const item = STORE_ITEMS.themes.find((t) => t.id === id);
       const owned = entitlements.themes.has(id);
-      btn.disabled = owned || (item?.price ? false : false);
+      const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
+      btn.disabled = owned || !isPro || (item?.price ? false : false);
       btn.textContent = owned
         ? `Owned: ${item?.name || id}`
         : `Buy: ${item?.name || id} (${item?.price || 0})`;
@@ -387,7 +389,8 @@
       const id = btn.getAttribute("data-store-emoji");
       const item = STORE_ITEMS.emojis.find((e) => e.id === id);
       const owned = entitlements.emojis.has(id);
-      btn.disabled = owned || (item?.price ? false : false);
+      const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
+      btn.disabled = owned || !isPro || (item?.price ? false : false);
       btn.textContent = owned
         ? `Owned ${item?.symbol || id}`
         : `Buy ${item?.symbol || id} (${item?.price || 0})`;
@@ -397,6 +400,10 @@
   async function handlePurchaseTheme(id) {
     const item = STORE_ITEMS.themes.find((t) => t.id === id);
     if (!item) return;
+    if (!api.ui.getProEnabled || !api.ui.getProEnabled()) {
+      refreshStoreUI();
+      return;
+    }
 
     if (entitlements.themes.has(id)) {
       settings.theme = id;
@@ -419,6 +426,10 @@
   async function handlePurchaseEmoji(id) {
     const item = STORE_ITEMS.emojis.find((e) => e.id === id);
     if (!item) return;
+    if (!api.ui.getProEnabled || !api.ui.getProEnabled()) {
+      refreshStoreUI();
+      return;
+    }
 
     if (entitlements.emojis.has(id)) {
       // Already owned; no-op or highlight ownership
@@ -437,6 +448,10 @@
   async function handlePurchaseSkin(id) {
     const item = STORE_ITEMS.skins.find((s) => s.id === id);
     if (!item) return;
+    if (!api.ui.getProEnabled || !api.ui.getProEnabled()) {
+      refreshStoreUI();
+      return;
+    }
 
     if (entitlements.skins.has(id)) {
       // Already owned; no-op
@@ -481,6 +496,40 @@
         handlePurchaseSkin(btn.getAttribute("data-store-skin")),
       );
     });
+
+    // Bind developer Pro toggle if present
+    const devToggle = document.querySelector("[data-dev-pro-toggle]");
+    if (devToggle) {
+      // Initialize button label based on current state
+      devToggle.textContent = settings.proEnabled ? "Disable Pro" : "Enable Pro";
+      devToggle.addEventListener("click", async () => {
+        const enabled = !settings.proEnabled;
+        settings.proEnabled = enabled;
+        await saveSettings();
+        // Update button label and refresh store UI to reflect gating
+        devToggle.textContent = enabled ? "Disable Pro" : "Enable Pro";
+        refreshStoreUI();
+      });
+    }
+  })();
+
+    // Pro overlay open helper on trying to purchase when Pro disabled
+    const proOverlay = document.getElementById("pro-overlay");
+    function openProOverlay() {
+      if (proOverlay) {
+        proOverlay.style.display = "flex";
+        proOverlay.classList.add("active");
+      }
+    }
+    ["data-store-theme", "data-store-emoji", "data-store-skin"].forEach(
+      (attr) => {
+        document.querySelectorAll(`[${attr}]`).forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!settings.proEnabled) openProOverlay();
+          });
+        });
+      },
+    );
   })();
 
   // Expose minimal API to other modules (e.g., multiplayer for emoji gating)
@@ -491,6 +540,12 @@
     handlePurchaseEmoji,
     handlePurchaseSkin,
     entitlements,
+  };
+  // Expose Pro flag accessors for developer toggle and gating
+  api.ui.getProEnabled = () => settings.proEnabled === true;
+  api.ui.setProEnabled = async (val) => {
+    settings.proEnabled = !!val;
+    await saveSettings();
   };
 
   function setupSettingsListeners() {
@@ -1714,7 +1769,8 @@
         false;
 
       // Reflect ownership in UI
-      btn.disabled = !owned;
+      const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
+      btn.disabled = !owned || !isPro;
       btn.classList.toggle("owned", owned);
       btn.classList.toggle("locked", !owned);
 
@@ -1727,6 +1783,16 @@
           window.Flixtris?.api?.ui?.store?.entitlements?.emojis?.has(
             emojiKey,
           ) || false;
+
+        const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
+        if (!isPro) {
+          const proOverlay = document.getElementById("pro-overlay");
+          if (proOverlay) {
+            proOverlay.style.display = "flex";
+            proOverlay.classList.add("active");
+          }
+          return;
+        }
 
         if (
           hasEntitlement &&
