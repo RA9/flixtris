@@ -2145,6 +2145,32 @@
 
   setupEmojiPanel();
   initReplayViewer();
+
+  const yourReplaysBtn = document.getElementById("yourReplaysBtn");
+  if (yourReplaysBtn) {
+    yourReplaysBtn.addEventListener("click", () => {
+      const isPro =
+        window.Flixtris?.api?.ui?.getProEnabled
+          ? window.Flixtris.api.ui.getProEnabled()
+          : false;
+
+      if (isPro) {
+        const viewer = document.getElementById("replayViewer");
+        if (viewer) {
+          viewer.classList.add("active");
+        }
+        // Ensure list is populated
+        initReplayViewer();
+      } else {
+        // Show Pro overlay to inform user
+        const proOverlay = document.getElementById("pro-overlay");
+        if (proOverlay) {
+          proOverlay.style.display = "flex";
+          proOverlay.classList.add("active");
+        }
+      }
+    });
+  }
   initAnalyticsPanel();
 
   // ========================

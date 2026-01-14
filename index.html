@@ -380,6 +380,11 @@
                         &times;
                     </button>
                     <h1>Flixtris</h1>
+                    <div style="margin: 0.5rem 0 1rem 0">
+                        <button id="yourReplaysBtn" class="btn secondary">
+                            Your Replays
+                        </button>
+                    </div>
                     <!-- Store: Themes -->
                     <div id="storeThemes">
                         <h3>Themes</h3>
@@ -452,6 +457,18 @@
                     <div id="analyticsList" class="panel-section">
                         <h3>Recent Analytics</h3>
                         <!-- Populated by initAnalyticsPanel() -->
+                    </div>
+
+                    <!-- Subscriptions (Enable Pro - Free) -->
+                    <div id="subscriptionsSection" class="panel-section">
+                        <h3>Subscriptions</h3>
+                        <p style="color: var(--text-secondary)">
+                            Enable Pro to access premium features. This is free
+                            in the current build.
+                        </p>
+                        <button data-dev-pro-toggle class="btn">
+                            Enable Pro
+                        </button>
                     </div>
 
                     <div id="stats">Score: 0 Level: 1 Lines: 0</div>
