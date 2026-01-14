@@ -429,9 +429,9 @@ const server = http.createServer(async (req, res) => {
     const host = req.headers.host || `localhost:${PORT}`;
     url = new URL(req.url || "/", `http://${host}`);
   } catch (e) {
-    url = { pathname: (req.url || "/"), searchParams: new URLSearchParams() };
+    url = { pathname: req.url || "/", searchParams: new URLSearchParams() };
   }
-  const pathname = url.pathname || (req.url || "/");
+  const pathname = url.pathname || req.url || "/";
 
   // CORS preflight
   if (req.method === "OPTIONS") {
@@ -449,7 +449,7 @@ const server = http.createServer(async (req, res) => {
     sendJSON(res, {
       status: "ok",
       redis: redisConnected ? "connected" : "disconnected",
-      rooms: (rooms && typeof rooms.size === "number") ? rooms.size : 0,
+      rooms: rooms && typeof rooms.size === "number" ? rooms.size : 0,
       uptime: process.uptime(),
     });
     return;
@@ -883,7 +883,9 @@ wss.on("connection", (ws) => {
         };
         try {
           if (redisClient && redisConnected) {
-            await redisClient.set(snapshotKey, JSON.stringify(payload), { EX: 60 });
+            await redisClient.set(snapshotKey, JSON.stringify(payload), {
+              EX: 60,
+            });
           }
         } catch (e) {
           log("redis error on ranked_snapshot", e);
@@ -981,7 +983,6 @@ wss.on("connection", (ws) => {
         ws.send(startMsg);
         break;
       }
-    }
       // ========================
       // RECONNECTION
       // ========================
