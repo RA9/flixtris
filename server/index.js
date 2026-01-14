@@ -829,7 +829,15 @@ wss.on("connection", (ws) => {
     switch (message.type) {
       // Ranked Mode: join matchmaking queue
       case "ranked_queue_join": {
-        // Track player in a Redis set for ranked queue
+        // Track player in local queue map with websocket reference
+        const playerName = message.name || `Player_${playerId.slice(0, 4)}`;
+        rankedQueuePlayers.set(playerId, {
+          ws,
+          name: playerName,
+          joinedAt: Date.now(),
+        });
+
+        // Also track in Redis set for persistence
         const queueKey = "flixtris:ranked:queue";
         try {
           if (redisClient && redisConnected) {
@@ -839,18 +847,29 @@ wss.on("connection", (ws) => {
           log("redis error on ranked_queue_join", e);
         }
 
+        // Get current queue count
+        const queueStatus = getQueueStatus();
+
         // Acknowledge join
         ws.send(
           JSON.stringify({
             type: "ranked_queue_joined",
             playerId,
+            playersInQueue: queueStatus.playersInQueue,
           }),
+        );
+
+        log(
+          `Player ${playerName} joined ranked queue (${queueStatus.playersInQueue} in queue)`,
         );
         break;
       }
 
       // Ranked Mode: leave matchmaking queue
       case "ranked_queue_leave": {
+        // Remove from local queue
+        rankedQueuePlayers.delete(playerId);
+
         const queueKey = "flixtris:ranked:queue";
         try {
           if (redisClient && redisConnected) {
@@ -867,6 +886,8 @@ wss.on("connection", (ws) => {
             playerId,
           }),
         );
+
+        log(`Player ${playerId} left ranked queue`);
         break;
       }
 
@@ -1783,6 +1804,151 @@ process.on("SIGINT", shutdown);
 // STARTUP
 // ========================
 
+// ========================
+// RANKED MATCHMAKING
+// ========================
+
+// Track players waiting in ranked queue with their websockets
+const rankedQueuePlayers = new Map(); // playerId -> { ws, name, joinedAt }
+
+// Matchmaking interval
+let matchmakingInterval = null;
+const MATCHMAKING_INTERVAL_MS = 2000; // Check every 2 seconds
+
+function startMatchmaking() {
+  if (matchmakingInterval) return;
+
+  matchmakingInterval = setInterval(async () => {
+    await processMatchmakingQueue();
+  }, MATCHMAKING_INTERVAL_MS);
+
+  log("Ranked matchmaking started");
+}
+
+async function processMatchmakingQueue() {
+  // Get all players in queue
+  const queuedPlayers = Array.from(rankedQueuePlayers.entries())
+    .filter(([_, data]) => data.ws.readyState === 1) // Only connected players
+    .map(([id, data]) => ({ id, ...data }));
+
+  // Remove disconnected players from queue
+  for (const [id, data] of rankedQueuePlayers.entries()) {
+    if (data.ws.readyState !== 1) {
+      rankedQueuePlayers.delete(id);
+      log(`Removed disconnected player ${id} from ranked queue`);
+    }
+  }
+
+  // Need at least 2 players to match
+  if (queuedPlayers.length < 2) return;
+
+  // Simple FIFO matching - pair first two players
+  const player1 = queuedPlayers[0];
+  const player2 = queuedPlayers[1];
+
+  // Remove both from queue
+  rankedQueuePlayers.delete(player1.id);
+  rankedQueuePlayers.delete(player2.id);
+
+  // Also remove from Redis queue if connected
+  if (redisClient && redisConnected) {
+    try {
+      await redisClient.sRem("flixtris:ranked:queue", player1.id);
+      await redisClient.sRem("flixtris:ranked:queue", player2.id);
+    } catch (e) {
+      log("Redis error removing from queue:", e);
+    }
+  }
+
+  // Generate match seed
+  const matchSeed = generateGameSeed();
+  const matchId = `ranked_${Date.now()}`;
+
+  log(
+    `Ranked match created: ${player1.name} vs ${player2.name} (seed: ${matchSeed})`,
+  );
+
+  // Get ELO ratings for both players
+  let player1Elo = 1200;
+  let player2Elo = 1200;
+
+  if (redisClient && redisConnected) {
+    try {
+      const elo1 = await redisClient.hGet("flixtris:ranked:elo", player1.id);
+      const elo2 = await redisClient.hGet("flixtris:ranked:elo", player2.id);
+      if (elo1) player1Elo = parseInt(elo1, 10);
+      if (elo2) player2Elo = parseInt(elo2, 10);
+    } catch (e) {
+      log("Redis error getting ELO:", e);
+    }
+  }
+
+  // Create match message
+  const matchMsg = {
+    type: "ranked_match_found",
+    matchId,
+    seed: matchSeed,
+    countdown: 3,
+    players: [
+      { id: player1.id, name: player1.name, elo: player1Elo },
+      { id: player2.id, name: player2.name, elo: player2Elo },
+    ],
+  };
+
+  // Send to both players
+  try {
+    player1.ws.send(
+      JSON.stringify({
+        ...matchMsg,
+        you: { id: player1.id, name: player1.name, elo: player1Elo },
+        opponent: { id: player2.id, name: player2.name, elo: player2Elo },
+      }),
+    );
+  } catch (e) {
+    log("Error sending match to player1:", e);
+  }
+
+  try {
+    player2.ws.send(
+      JSON.stringify({
+        ...matchMsg,
+        you: { id: player2.id, name: player2.name, elo: player2Elo },
+        opponent: { id: player1.id, name: player1.name, elo: player1Elo },
+      }),
+    );
+  } catch (e) {
+    log("Error sending match to player2:", e);
+  }
+
+  // Store match in Redis for tracking
+  if (redisClient && redisConnected) {
+    try {
+      await redisClient.set(
+        `flixtris:ranked:match:${matchId}`,
+        JSON.stringify({
+          seed: matchSeed,
+          players: [
+            { id: player1.id, name: player1.name },
+            { id: player2.id, name: player2.name },
+          ],
+          startedAt: Date.now(),
+        }),
+        { EX: 3600 }, // 1 hour TTL
+      );
+    } catch (e) {
+      log("Redis error storing match:", e);
+    }
+  }
+}
+
+// Get queue status
+function getQueueStatus() {
+  const count = Array.from(rankedQueuePlayers.values()).filter(
+    (data) => data.ws.readyState === 1,
+  ).length;
+  return { playersInQueue: count };
+}
+
 async function start() {
   // Initialize Redis
   await initRedis();
@@ -1799,6 +1965,9 @@ async function start() {
     }
   }
 
+  // Start ranked matchmaking
+  startMatchmaking();
+
   // Start HTTP server
   server.listen(PORT, () => {
     log(`Flixtris Multiplayer Server v2.1 running on port ${PORT}`);
@@ -1806,7 +1975,7 @@ async function start() {
       `Redis: ${redisConnected ? "Connected" : "Not connected (memory-only mode)"}`,
     );
     log(
-      `Features: Garbage lines, Reconnection, Rematch, Emojis, Redis persistence`,
+      `Features: Garbage lines, Reconnection, Rematch, Emojis, Redis persistence, Ranked Matchmaking`,
     );
     log(`Health check: http://localhost:${PORT}/health`);
   });

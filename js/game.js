@@ -532,6 +532,21 @@
       if (mp && mp.isConnected()) {
         mp.sendGarbage(linesCleared);
       }
+
+      // Send garbage to bot in bot battle mode
+      const bot = window.Flixtris.api.bot;
+      if (
+        bot &&
+        bot.getBotState &&
+        bot.getBotState().active &&
+        linesCleared > 1
+      ) {
+        const garbageTable = [0, 0, 1, 2, 4];
+        const garbage = garbageTable[Math.min(linesCleared, 4)];
+        if (garbage > 0) {
+          bot.receiveGarbage(garbage);
+        }
+      }
     } else {
       // No lines cleared - reset combo
       state.combo = 0;
@@ -916,11 +931,11 @@
     requestAnimationFrame(gameLoop);
   }
 
-  function startGameWithSeed(customSeed) {
+  function startGameWithSeed(customSeed, startLevel = 1) {
     state.mode = "daily";
     state.score = 0;
     state.lines = 0;
-    state.level = 1;
+    state.level = startLevel;
     state.running = true;
     state.paused = false;
     state.lastDrop = 0;

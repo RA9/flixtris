@@ -237,12 +237,56 @@
                     <h3>Hardcore</h3>
                     <p>No pause. No ghost piece. No mercy.</p>
                 </button>
+                <button class="mode-card bot" id="botBattleBtn">
+                    <h3>🤖 Bot Battle</h3>
+                    <p>Practice against AI bots of varying difficulty.</p>
+                </button>
                 <button class="mode-card seed" id="playSeedBtn">
                     <h3>Play Seed</h3>
                     <p>Enter a shared seed code to challenge a friend.</p>
                 </button>
             </div>
             <button class="btn secondary back" id="singlePlayerBackBtn">
+                Back
+            </button>
+        </div>
+
+        <!-- Bot Battle Screen -->
+        <div id="screen-bot-select" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Bot Battle</h2>
+            <p class="menu-subtitle">
+                Select your opponent. Game starts at the bot's level.
+            </p>
+            <div class="mode-cards bot-cards">
+                <button class="mode-card bot-card" data-bot="beginner">
+                    <h3>🟢 Beginner Bot</h3>
+                    <p>
+                        Level 1 • Slow and makes mistakes. Great for learning.
+                    </p>
+                </button>
+                <button class="mode-card bot-card" data-bot="easy">
+                    <h3>🟡 Easy Bot</h3>
+                    <p>Level 3 • Takes its time. Occasionally slips up.</p>
+                </button>
+                <button class="mode-card bot-card" data-bot="medium">
+                    <h3>🟠 Medium Bot</h3>
+                    <p>Level 5 • Balanced play. Good for practice.</p>
+                </button>
+                <button class="mode-card bot-card" data-bot="hard">
+                    <h3>🔴 Hard Bot</h3>
+                    <p>Level 8 • Fast and strategic. A real challenge.</p>
+                </button>
+                <button class="mode-card bot-card" data-bot="expert">
+                    <h3>🟣 Expert Bot</h3>
+                    <p>Level 12 • Near-perfect play. Only for the brave.</p>
+                </button>
+                <button class="mode-card bot-card" data-bot="master">
+                    <h3>⚫ Master Bot</h3>
+                    <p>Level 15 • Optimal play. Can you survive?</p>
+                </button>
+            </div>
+            <button class="btn secondary back" id="botSelectBackBtn">
                 Back
             </button>
         </div>
@@ -874,6 +918,33 @@
             👁 Spectating
         </div>
 
+        <!-- Ranked Matchmaking Overlay -->
+        <div id="ranked-overlay" class="overlay">
+            <div class="overlay-content ranked-content">
+                <h2>🏅 Ranked Match</h2>
+                <p class="ranked-description">
+                    Compete against players of similar skill. Win to gain ELO,
+                    lose to drop.
+                </p>
+                <div class="ranked-status-container">
+                    <div class="ranked-spinner" id="rankedSpinner"></div>
+                    <p id="rankedStatus">
+                        Click 'Find Match' to start searching...
+                    </p>
+                </div>
+                <div class="ranked-elo-display">
+                    <span>Your ELO:</span>
+                    <span id="playerElo" class="elo-value">1200</span>
+                </div>
+                <div class="ranked-buttons">
+                    <button class="btn" id="rankedFindBtn">Find Match</button>
+                    <button class="btn secondary" id="rankedCancelBtn">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Pause Overlay -->
         <div id="pause-overlay">
             <div class="overlay-content pause-content">
@@ -950,6 +1021,7 @@
         <script src="js/db.js"></script>
         <script src="js/sound.js"></script>
         <script src="js/game.js"></script>
+        <script src="js/bot.js"></script>
         <script src="js/multiplayer.js"></script>
         <script src="js/ui.js"></script>
     </body>

@@ -451,6 +451,49 @@
           callbacks.onServerShutdown(message.message);
         }
         break;
+
+      // ========================
+      // RANKED MODE EVENTS
+      // ========================
+      case "ranked_queue_joined":
+        log("Joined ranked queue, players waiting:", message.playersInQueue);
+        if (callbacks.onRankedQueueJoined) {
+          callbacks.onRankedQueueJoined({
+            playerId: message.playerId,
+            playersInQueue: message.playersInQueue,
+          });
+        }
+        break;
+
+      case "ranked_queue_left":
+        log("Left ranked queue");
+        if (callbacks.onRankedQueueLeft) {
+          callbacks.onRankedQueueLeft({ playerId: message.playerId });
+        }
+        break;
+
+      case "ranked_match_found":
+        log("Ranked match found!", message);
+        gameSeed = message.seed;
+        opponent = message.opponent;
+        if (callbacks.onRankedMatchFound) {
+          callbacks.onRankedMatchFound({
+            matchId: message.matchId,
+            seed: message.seed,
+            countdown: message.countdown,
+            you: message.you,
+            opponent: message.opponent,
+            players: message.players,
+          });
+        }
+        break;
+
+      case "ranked_elo_update":
+        log("ELO updated:", message.ratings);
+        if (callbacks.onRankedEloUpdate) {
+          callbacks.onRankedEloUpdate(message.ratings);
+        }
+        break;
     }
   }
 
@@ -624,8 +667,8 @@
   // ========================
 
   // Join ranked matchmaking queue
-  function joinRankedQueue() {
-    send({ type: "ranked_queue_join" });
+  function joinRankedQueue(name) {
+    send({ type: "ranked_queue_join", name: name || playerName });
   }
 
   // Leave ranked matchmaking queue

@@ -17,6 +17,7 @@
     menu: document.getElementById("screen-menu"),
     settings: document.getElementById("screen-settings"),
     singleplayer: document.getElementById("screen-singleplayer"),
+    botSelect: document.getElementById("screen-bot-select"),
     multiplayerSelect: document.getElementById("screen-multiplayer-select"),
     leaderboard: document.getElementById("screen-leaderboard"),
     multiplayer: document.getElementById("screen-multiplayer"),
@@ -26,6 +27,10 @@
 
   let lastMode = "classic";
   let isMultiplayerGame = false;
+  let isBotGame = false;
+  let isRankedGame = false;
+  let currentBotDifficulty = null;
+  let rankedSearching = false;
   let opponentCanvas = null;
   let opponentCtx = null;
   let myPlayerName = null;
@@ -545,8 +550,7 @@
     if (menuRankedBtn) {
       menuRankedBtn.addEventListener("click", () => {
         if (settings.proEnabled) {
-          // Ranked mode functionality - placeholder for now
-          alert("Ranked Mode coming soon!");
+          showRankedMatchmaking();
         }
       });
     }
@@ -1294,6 +1298,16 @@
       return;
     }
 
+    // Handle bot battle game over
+    if (isBotGame && api.bot) {
+      const botState = api.bot.getBotState();
+      api.bot.stopBot();
+      // Player lost to bot
+      showBotResults(false, state.score, botState.score, currentBotDifficulty);
+      isBotGame = false;
+      return;
+    }
+
     // Update final stats
     document.getElementById("final-score").textContent = state.score;
     document.getElementById("final-level").textContent = state.level;
@@ -1456,11 +1470,36 @@
       showScreen("menu");
     });
 
+  // Bot Battle button handler
+  document.getElementById("botBattleBtn").addEventListener("click", () => {
+    if (api.sound) api.sound.menuSelect();
+    showScreen("botSelect");
+  });
+
+  // Bot select back button
+  document.getElementById("botSelectBackBtn").addEventListener("click", () => {
+    showScreen("singleplayer");
+  });
+
+  // Bot difficulty selection
+  document.querySelectorAll(".bot-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      if (api.sound) api.sound.menuSelect();
+      const difficulty = card.dataset.bot;
+      startBotBattle(difficulty);
+    });
+  });
+
   // Mode selection
   document.querySelectorAll(".mode-card").forEach((card) => {
     card.addEventListener("click", () => {
-      // Skip category cards - they have their own handlers
-      if (card.id === "singlePlayerBtn" || card.id === "multiplayerBtn") {
+      // Skip category cards and bot cards - they have their own handlers
+      if (
+        card.id === "singlePlayerBtn" ||
+        card.id === "multiplayerBtn" ||
+        card.id === "botBattleBtn" ||
+        card.classList.contains("bot-card")
+      ) {
         return;
       }
 
@@ -1483,6 +1522,7 @@
 
       lastMode = mode;
       isMultiplayerGame = false;
+      isBotGame = false;
       isRoyaleMode = false;
       hideOpponentBoard();
       showScreen("game");
@@ -1493,6 +1533,280 @@
       });
     });
   });
+
+  // Start bot battle
+  function startBotBattle(difficulty) {
+    if (!api.bot) {
+      alert("Bot system not available");
+      return;
+    }
+
+    const botConfig = api.bot.BOT_CONFIGS[difficulty];
+    if (!botConfig) return;
+
+    currentBotDifficulty = difficulty;
+    isBotGame = true;
+    isMultiplayerGame = false;
+    isRoyaleMode = false;
+
+    // Generate a shared seed for fair play
+    const seed = Date.now();
+
+    // Initialize bot
+    api.bot.initBot(difficulty, seed);
+
+    // Set up bot callbacks
+    api.bot.onUpdate((data) => {
+      // Render bot's board on opponent canvas
+      renderOpponentBoard(data.board);
+      updateOpponentScore(data.score);
+    });
+
+    api.bot.onGameOver((data) => {
+      // Bot lost - player wins!
+      if (!getState().running) return; // Player already lost
+
+      const state = getState();
+      const playerWon = true;
+
+      showBotResults(playerWon, state.score, data.score, difficulty);
+    });
+
+    api.bot.onGarbage((lines) => {
+      // Bot sends garbage to player
+      if (api.game && api.game.addGarbage) {
+        api.game.addGarbage(lines);
+      }
+      showGarbageIndicator(lines);
+    });
+
+    // Show opponent board with bot name
+    showOpponentBoard(botConfig.name);
+    showScreen("game");
+    loadHighScore();
+
+    // Start with countdown
+    runCountdown(3, () => {
+      // Start player's game at bot's level
+      api.game.startGameWithSeed(seed, botConfig.level);
+      api.bot.startBot();
+    });
+  }
+
+  // Show bot battle results
+  function showBotResults(playerWon, playerScore, botScore, difficulty) {
+    const botConfig = api.bot.BOT_CONFIGS[difficulty];
+    const state = getState();
+
+    // Stop bot if still running
+    if (api.bot) {
+      api.bot.stopBot();
+    }
+
+    // Update result banner
+    const banner = document.getElementById("mpResultBanner");
+    const icon = document.getElementById("mpResultIcon");
+    const title = document.getElementById("mpResultTitle");
+
+    if (banner) {
+      banner.className = "mp-result-banner";
+      if (playerWon) {
+        banner.classList.add("win");
+        icon.textContent = "🏆";
+        title.textContent = `You Beat ${botConfig.name}!`;
+      } else {
+        banner.classList.add("lose");
+        icon.textContent = "🤖";
+        title.textContent = `${botConfig.name} Wins!`;
+      }
+    }
+
+    // Update scores
+    document.getElementById("mpPlayer1Name").textContent =
+      myPlayerName || "You";
+    document.getElementById("mpPlayer1Score").textContent = playerScore;
+    document.getElementById("mpPlayer2Name").textContent = botConfig.name;
+    document.getElementById("mpPlayer2Score").textContent = botScore;
+
+    // Update your stats
+    document.getElementById("mpFinalScore").textContent = state.score;
+    document.getElementById("mpFinalLevel").textContent = state.level;
+    document.getElementById("mpFinalLines").textContent = state.lines;
+
+    // Hide rematch button for bot games (use play again)
+    const rematchBtn = document.getElementById("mpRematchBtn");
+    if (rematchBtn) {
+      rematchBtn.style.display = "none";
+    }
+
+    showMpResultsOverlay(true);
+  }
+
+  // Handle player game over during bot battle
+  function handleBotBattleGameOver() {
+    if (!isBotGame) return;
+
+    const state = getState();
+    const botState = api.bot.getBotState();
+
+    // Player lost
+    showBotResults(false, state.score, botState.score, currentBotDifficulty);
+  }
+
+  // ========================
+  // RANKED MODE
+  // ========================
+
+  function showRankedMatchmaking() {
+    // Show ranked matchmaking overlay
+    const overlay = document.getElementById("ranked-overlay");
+    if (overlay) {
+      overlay.classList.add("active");
+      updateRankedStatus("Click 'Find Match' to start searching...");
+    }
+  }
+
+  function hideRankedMatchmaking() {
+    const overlay = document.getElementById("ranked-overlay");
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
+    rankedSearching = false;
+  }
+
+  function updateRankedStatus(message) {
+    const statusEl = document.getElementById("rankedStatus");
+    if (statusEl) {
+      statusEl.textContent = message;
+    }
+  }
+
+  function startRankedSearch() {
+    if (!api.multiplayer) {
+      updateRankedStatus("Multiplayer not available");
+      return;
+    }
+
+    // Connect if not connected
+    if (!api.multiplayer.isConnected()) {
+      api.multiplayer.connect();
+    }
+
+    rankedSearching = true;
+    updateRankedStatus("Searching for opponent...");
+
+    const findBtn = document.getElementById("rankedFindBtn");
+    if (findBtn) {
+      findBtn.textContent = "Cancel Search";
+      findBtn.disabled = false;
+    }
+
+    // Show spinner
+    const spinner = document.getElementById("rankedSpinner");
+    if (spinner) {
+      spinner.classList.add("active");
+    }
+
+    // Join ranked queue
+    api.multiplayer.joinRankedQueue(myPlayerName);
+  }
+
+  function cancelRankedSearch() {
+    if (api.multiplayer && api.multiplayer.isConnected()) {
+      api.multiplayer.leaveRankedQueue();
+    }
+
+    rankedSearching = false;
+    updateRankedStatus("Search cancelled");
+
+    const findBtn = document.getElementById("rankedFindBtn");
+    if (findBtn) {
+      findBtn.textContent = "Find Match";
+      findBtn.disabled = false;
+    }
+
+    // Hide spinner
+    const spinner = document.getElementById("rankedSpinner");
+    if (spinner) {
+      spinner.classList.remove("active");
+    }
+  }
+
+  // Setup ranked mode callbacks
+  function setupRankedCallbacks() {
+    if (!api.multiplayer) return;
+
+    api.multiplayer.on("onRankedQueueJoined", (data) => {
+      updateRankedStatus(
+        `Searching... (${data.playersInQueue} players online)`,
+      );
+    });
+
+    api.multiplayer.on("onRankedQueueLeft", () => {
+      updateRankedStatus("Left queue");
+      rankedSearching = false;
+      const findBtn = document.getElementById("rankedFindBtn");
+      if (findBtn) {
+        findBtn.textContent = "Find Match";
+        findBtn.disabled = false;
+      }
+    });
+
+    api.multiplayer.on("onRankedMatchFound", (data) => {
+      log("Ranked match found!", data);
+
+      // Hide spinner
+      const spinner = document.getElementById("rankedSpinner");
+      if (spinner) {
+        spinner.classList.remove("active");
+      }
+
+      hideRankedMatchmaking();
+
+      isRankedGame = true;
+      isMultiplayerGame = true;
+      isBotGame = false;
+
+      // Show opponent info
+      showOpponentBoard(data.opponent.name);
+      updateRankedStatus(
+        `Matched with ${data.opponent.name} (ELO: ${data.opponent.elo})`,
+      );
+
+      showScreen("game");
+      loadHighScore();
+
+      // Start countdown then game
+      runCountdown(data.countdown || 3, () => {
+        api.game.startGameWithSeed(data.seed);
+      });
+    });
+
+    api.multiplayer.on("onRankedEloUpdate", (ratings) => {
+      log("ELO updated:", ratings);
+      // Could show ELO change in results screen
+    });
+  }
+
+  // Ranked overlay button handlers
+  const rankedFindBtn = document.getElementById("rankedFindBtn");
+  if (rankedFindBtn) {
+    rankedFindBtn.addEventListener("click", () => {
+      if (rankedSearching) {
+        cancelRankedSearch();
+      } else {
+        startRankedSearch();
+      }
+    });
+  }
+
+  const rankedCancelBtn = document.getElementById("rankedCancelBtn");
+  if (rankedCancelBtn) {
+    rankedCancelBtn.addEventListener("click", () => {
+      cancelRankedSearch();
+      hideRankedMatchmaking();
+    });
+  }
 
   // Theme buttons
   document.querySelectorAll("[data-theme]").forEach((btn) => {
@@ -3449,6 +3763,7 @@
   function initMultiplayer() {
     if (api.multiplayer) {
       setupMultiplayerCallbacks();
+      setupRankedCallbacks();
       // Try to reconnect to an existing game session
       tryReconnectToGame();
     } else {
