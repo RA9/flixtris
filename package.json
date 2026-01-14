@@ -7,10 +7,13 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "server": "node server/index.js",
+    "server": "nodemon server/index.js",
     "test": "node tests/run-tests.js",
     "test:analytics": "node tests/analytics.test.js",
     "test:replay": "node tests/replay.test.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   },
   "dependencies": {
     "redis": "^4.6.13",

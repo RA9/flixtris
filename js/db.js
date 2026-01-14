@@ -1,7 +1,7 @@
 // db.js
 (() => {
   const DB_NAME = "flixtris";
-  const DB_VERSION = 3;
+  const DB_VERSION = 4;
   let db;
   let playerCache = null;
 
@@ -261,26 +261,31 @@
     });
   }
 
-  openDB();
-
-  window.Flixtris.api.db = {
-    // Existing
-    addGame,
-    getGames,
-    saveSetting,
-    getSetting,
-    getPlayer,
-    setPlayerName,
-    getDisplayName,
-    updatePlayerStats,
-    hasCustomName,
-    // Premium foundations (Phase 1–2)
-    recordPurchase,
-    getPurchases,
-    addReplay,
-    getReplays,
-    deleteReplay,
-    addGameAnalytics,
-    getGameAnalytics,
-  };
+  window.Flixtris.api.dbReady = (async () => {
+    try {
+      await openDB();
+      window.Flixtris.api.db = {
+        // Existing
+        addGame,
+        getGames,
+        saveSetting,
+        getSetting,
+        getPlayer,
+        setPlayerName,
+        getDisplayName,
+        updatePlayerStats,
+        hasCustomName,
+        // Premium foundations (Phase 1–2)
+        recordPurchase,
+        getPurchases,
+        addReplay,
+        getReplays,
+        deleteReplay,
+        addGameAnalytics,
+        getGameAnalytics,
+      };
+    } catch (error) {
+      console.error("DB init error:", error);
+    }
+  })();
 })();

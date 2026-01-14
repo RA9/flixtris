@@ -222,7 +222,6 @@
   // ========================
   // SETTINGS
   // ========================
-
   const settings = {
     sfxEnabled: true,
     musicEnabled: true,
@@ -498,22 +497,25 @@
     });
 
     // Bind developer Pro toggle if present
-    const devToggle = document.querySelector("[data-dev-pro-toggle]");
-    if (devToggle) {
-      // Initialize button label based on current state
-      devToggle.textContent = settings.proEnabled
-        ? "Disable Pro"
-        : "Enable Pro";
-      devToggle.addEventListener("click", async () => {
+    document.querySelectorAll("[data-dev-pro-toggle]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
         const enabled = !settings.proEnabled;
         settings.proEnabled = enabled;
         await saveSettings();
-        // Update button label and refresh store UI to reflect gating
-        devToggle.textContent = enabled ? "Disable Pro" : "Enable Pro";
+        updateProButtons();
         refreshStoreUI();
+        // Close the pro overlay if open
+        if (proOverlay) proOverlay.style.display = "none";
       });
-    }
+    });
   })();
+
+  // Function to update all Pro toggle buttons
+  function updateProButtons() {
+    document.querySelectorAll("[data-dev-pro-toggle]").forEach((btn) => {
+      btn.textContent = settings.proEnabled ? "Disable Pro" : "Enable Pro";
+    });
+  }
 
   // Pro overlay open helper on trying to purchase when Pro disabled
   const proOverlay = document.getElementById("pro-overlay");
@@ -523,6 +525,7 @@
       proOverlay.classList.add("active");
     }
   }
+
   ["data-store-theme", "data-store-emoji", "data-store-skin"].forEach(
     (attr) => {
       document.querySelectorAll(`[${attr}]`).forEach((btn) => {
@@ -1068,6 +1071,18 @@
   async function initPlayerName() {
     myPlayerName = await api.db.getDisplayName();
   }
+
+  // ========================
+  // MAIN
+  // ========================
+
+  (async () => {
+    await window.Flixtris.api.dbReady;
+    initMultiplayer();
+    await initPlayerName();
+    await loadSettings();
+    updateProButtons();
+  })();
 
   // ========================
   // LEADERBOARD

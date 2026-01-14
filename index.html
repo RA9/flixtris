@@ -64,16 +64,7 @@
 
         <!-- Settings Screen -->
         <div id="screen-settings" class="screen">
-            <div class="settings-header">
-                <button class="btn secondary back" id="settingsBackBtn">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                        />
-                    </svg>
-                </button>
-                <h1 class="brand-header">FLIXTRIS</h1>
-            </div>
+            <h1 class="brand-header">FLIXTRIS</h1>
             <h2 class="menu-title">Settings</h2>
             <div class="settings-container">
                 <div class="settings-section">
@@ -143,7 +134,7 @@
                     <h3>Controls</h3>
                     <div class="controls-info">
                         <div class="control-row">
-                            <span class="key">←→</span>
+                            <span class="key">⬅️➡️</span>
                             <span>Move</span>
                         </div>
                         <div class="control-row">
@@ -166,17 +157,15 @@
                             <span class="key">P</span>
                             <span>Pause</span>
                         </div>
-                        <div id="subscriptionsSection" class="settings-section">
-                            <h3>Subscriptions</h3>
-                            <p style="color: var(--text-secondary)">
-                                Enable Pro to access premium features. This is
-                                free in the current build.
-                            </p>
-                            <button data-dev-pro-toggle class="btn">
-                                Enable Pro
-                            </button>
-                        </div>
                     </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Subscriptions</h3>
+                    <p style="color: var(--text-secondary)">
+                        Enable Pro to access premium features. This is free in
+                        the current build.
+                    </p>
+                    <button data-dev-pro-toggle class="btn">Enable Pro</button>
                 </div>
                 <div class="settings-section">
                     <h3>Profile</h3>
@@ -197,6 +186,20 @@
                     </div>
                 </div>
             </div>
+            <button
+                class="btn secondary back"
+                id="settingsBackBtn"
+                style="display: flex; align-items: center"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    style="width: 16px; height: 16px; margin-right: 8px"
+                >
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg>
+                Back
+            </button>
         </div>
 
         <!-- Single Player Mode Selection -->
@@ -539,7 +542,13 @@
                                 </li>
                             </ul>
                             <div style="margin-top: 1rem">
-                                <button id="proOverlayCloseBtn" class="btn">
+                                <button data-dev-pro-toggle class="btn">
+                                    Enable Pro
+                                </button>
+                                <button
+                                    id="proOverlayCloseBtn"
+                                    class="btn secondary"
+                                >
                                     Close
                                 </button>
                             </div>

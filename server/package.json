@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "nodemon index.js"
   },
   "keywords": [
     "flixtris",
@@ -20,6 +20,9 @@
   "dependencies": {
     "redis": "^4.6.13",
     "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   },
   "engines": {
     "node": ">=16.0.0"
