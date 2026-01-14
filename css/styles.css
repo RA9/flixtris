@@ -204,6 +204,50 @@ body {
     color: var(--accent);
 }
 
+/* Pro menu items in main menu */
+.pro-menu-items {
+    margin-top: 1rem;
+}
+
+/* Pro card styling - gradient accent */
+.mode-card.pro-card {
+    background: linear-gradient(
+        135deg,
+        rgba(168, 85, 247, 0.15),
+        rgba(236, 72, 153, 0.1)
+    );
+    border: 2px solid rgba(168, 85, 247, 0.3);
+}
+
+.mode-card.pro-card:hover,
+.mode-card.pro-card:focus {
+    border-color: #a855f7;
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.mode-card.pro-card h3 {
+    color: #a855f7;
+}
+
+.mode-card.pro-card::before {
+    content: "PRO";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 0.15rem 0.4rem;
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    color: white;
+    border-radius: 4px;
+}
+
+.mode-card.pro-card {
+    position: relative;
+}
+
 .mode-cards {
     display: flex;
     flex-direction: column;

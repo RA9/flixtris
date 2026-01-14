@@ -166,6 +166,7 @@
   let currentHighScore = 0;
 
   async function loadHighScore() {
+    await window.Flixtris.api.dbReady;
     const player = await api.db.getPlayer();
     currentHighScore = player.bestScore || 0;
     updateHighScoreDisplay();
@@ -238,6 +239,7 @@
   }
 
   async function loadSettings() {
+    await window.Flixtris.api.dbReady;
     const saved = await api.db.getSetting("gameSettings");
     if (saved) {
       Object.assign(settings, saved);
@@ -246,6 +248,7 @@
   }
 
   async function saveSettings() {
+    await window.Flixtris.api.dbReady;
     await api.db.saveSetting("gameSettings", settings);
   }
 
@@ -317,6 +320,7 @@
 
   // Load entitlements from DB
   async function loadEntitlements() {
+    await window.Flixtris.api.dbReady;
     const purchases = (await api.db.getPurchases?.()) || [];
     entitlements.themes.clear();
     entitlements.skins.clear();
@@ -344,10 +348,12 @@
   // Basic balance stub (can be extended later or synced with server)
   let playerBalance = 0;
   async function loadBalance() {
+    await window.Flixtris.api.dbReady;
     const saved = await api.db.getSetting("balance");
     playerBalance = typeof saved === "number" ? saved : 0;
   }
   async function saveBalance() {
+    await window.Flixtris.api.dbReady;
     await api.db.saveSetting("balance", playerBalance);
   }
 
@@ -363,6 +369,7 @@
   }
 
   async function grantEntitlement(type, id) {
+    await window.Flixtris.api.dbReady;
     if (type === "theme") entitlements.themes.add(id);
     if (type === "skin") entitlements.skins.add(id);
     if (type === "emoji") entitlements.emojis.add(id);
@@ -377,7 +384,8 @@
       const item = STORE_ITEMS.themes.find((t) => t.id === id);
       const owned = entitlements.themes.has(id);
       const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
-      btn.disabled = owned || !isPro || (item?.price ? false : false);
+      // Disable if already owned OR if Pro is not enabled
+      btn.disabled = owned || !isPro;
       btn.textContent = owned
         ? `Owned: ${item?.name || id}`
         : `Buy: ${item?.name || id} (${item?.price || 0})`;
@@ -389,7 +397,8 @@
       const item = STORE_ITEMS.emojis.find((e) => e.id === id);
       const owned = entitlements.emojis.has(id);
       const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
-      btn.disabled = owned || !isPro || (item?.price ? false : false);
+      // Disable if already owned OR if Pro is not enabled
+      btn.disabled = owned || !isPro;
       btn.textContent = owned
         ? `Owned ${item?.symbol || id}`
         : `Buy ${item?.symbol || id} (${item?.price || 0})`;
@@ -473,57 +482,151 @@
     return true;
   }
 
-  // Initialize store on load
-  (async function initStore() {
-    await loadBalance();
-    await loadEntitlements();
-    refreshStoreUI();
-
-    // Wire up store buttons by data attributes (safe if absent)
-    document.querySelectorAll("[data-store-theme]").forEach((btn) => {
-      btn.addEventListener("click", () =>
-        handlePurchaseTheme(btn.getAttribute("data-store-theme")),
-      );
-    });
-    document.querySelectorAll("[data-store-emoji]").forEach((btn) => {
-      btn.addEventListener("click", () =>
-        handlePurchaseEmoji(btn.getAttribute("data-store-emoji")),
-      );
-    });
-    document.querySelectorAll("[data-store-skin]").forEach((btn) => {
-      btn.addEventListener("click", () =>
-        handlePurchaseSkin(btn.getAttribute("data-store-skin")),
-      );
-    });
-
-    // Bind developer Pro toggle if present
-    document.querySelectorAll("[data-dev-pro-toggle]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const enabled = !settings.proEnabled;
-        settings.proEnabled = enabled;
-        await saveSettings();
-        updateProButtons();
-        refreshStoreUI();
-        // Close the pro overlay if open
-        if (proOverlay) proOverlay.style.display = "none";
-      });
-    });
-  })();
+  // Pro overlay element reference (defined early so it's available in initStore)
+  const proOverlay = document.getElementById("pro-overlay");
 
   // Function to update all Pro toggle buttons
   function updateProButtons() {
     document.querySelectorAll("[data-dev-pro-toggle]").forEach((btn) => {
       btn.textContent = settings.proEnabled ? "Disable Pro" : "Enable Pro";
     });
+    // Also update Pro menu items visibility
+    updateProMenuItems();
   }
 
-  // Pro overlay open helper on trying to purchase when Pro disabled
-  const proOverlay = document.getElementById("pro-overlay");
+  // Function to show/hide Pro menu items in main menu
+  function updateProMenuItems() {
+    const proMenuItems = document.getElementById("proMenuItems");
+    if (proMenuItems) {
+      proMenuItems.style.display = settings.proEnabled ? "flex" : "none";
+    }
+  }
+
+  // Setup Pro menu item event listeners
+  function setupProMenuListeners() {
+    const menuReplaysBtn = document.getElementById("menuReplaysBtn");
+    if (menuReplaysBtn) {
+      menuReplaysBtn.addEventListener("click", () => {
+        if (settings.proEnabled) {
+          const viewer = document.getElementById("replayViewer");
+          if (viewer) {
+            viewer.classList.add("active");
+          }
+          initReplayViewer();
+        }
+      });
+    }
+
+    const menuAnalyticsBtn = document.getElementById("menuAnalyticsBtn");
+    if (menuAnalyticsBtn) {
+      menuAnalyticsBtn.addEventListener("click", () => {
+        if (settings.proEnabled) {
+          // Open side panel and scroll to analytics section
+          const panel = document.getElementById("sidePanel");
+          const panelOverlay = document.getElementById("panelOverlay");
+          if (panel) {
+            panel.classList.add("open");
+          }
+          if (panelOverlay) {
+            panelOverlay.classList.add("active");
+          }
+          // Scroll to analytics section
+          const analyticsSection = document.getElementById("analyticsList");
+          if (analyticsSection) {
+            analyticsSection.scrollIntoView({ behavior: "smooth" });
+          }
+          // Refresh analytics data
+          initAnalyticsPanel();
+        }
+      });
+    }
+
+    const menuRankedBtn = document.getElementById("menuRankedBtn");
+    if (menuRankedBtn) {
+      menuRankedBtn.addEventListener("click", () => {
+        if (settings.proEnabled) {
+          // Ranked mode functionality - placeholder for now
+          alert("Ranked Mode coming soon!");
+        }
+      });
+    }
+  }
+
+  // Initialize store on load
+  (async function initStore() {
+    try {
+      // Wait for database to be ready before loading data
+      await window.Flixtris.api.dbReady;
+      await loadBalance();
+      await loadEntitlements();
+      await loadSettings();
+      refreshStoreUI();
+      updateProButtons();
+      updateProMenuItems();
+      setupProMenuListeners();
+
+      // Wire up store buttons by data attributes (safe if absent)
+      document.querySelectorAll("[data-store-theme]").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          handlePurchaseTheme(btn.getAttribute("data-store-theme")),
+        );
+      });
+      document.querySelectorAll("[data-store-emoji]").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          handlePurchaseEmoji(btn.getAttribute("data-store-emoji")),
+        );
+      });
+      document.querySelectorAll("[data-store-skin]").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          handlePurchaseSkin(btn.getAttribute("data-store-skin")),
+        );
+      });
+
+      // Bind developer Pro toggle if present
+      document.querySelectorAll("[data-dev-pro-toggle]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            const enabled = !settings.proEnabled;
+            settings.proEnabled = enabled;
+            // Update button text immediately for responsiveness
+            btn.textContent = enabled ? "Disable Pro" : "Enable Pro";
+            await saveSettings();
+            updateProButtons();
+            refreshStoreUI();
+            refreshEmojiPanel();
+            // Close the pro overlay if open
+            if (proOverlay) {
+              proOverlay.style.display = "none";
+              proOverlay.classList.remove("active");
+            }
+          } catch (err) {
+            log("Failed to toggle Pro:", err);
+          }
+        });
+      });
+    } catch (err) {
+      log("Failed to initialize store:", err);
+    }
+  })();
+
   function openProOverlay() {
     if (proOverlay) {
       proOverlay.style.display = "flex";
       proOverlay.classList.add("active");
     }
+  }
+
+  function closeProOverlay() {
+    if (proOverlay) {
+      proOverlay.style.display = "none";
+      proOverlay.classList.remove("active");
+    }
+  }
+
+  // Add event listener for pro overlay close button
+  const proOverlayCloseBtn = document.getElementById("proOverlayCloseBtn");
+  if (proOverlayCloseBtn) {
+    proOverlayCloseBtn.addEventListener("click", closeProOverlay);
   }
 
   ["data-store-theme", "data-store-emoji", "data-store-skin"].forEach(
@@ -771,7 +874,7 @@
     }
   }
 
-  function showRoyaleResults(data) {
+  async function showRoyaleResults(data) {
     const { winner, standings, myPlacement, didWin } = data;
     const myId = api.multiplayer.getPlayerId();
     const state = getState();
@@ -780,6 +883,7 @@
     submitScoreToServer(state.score, state.mode, state.seed);
 
     // Update local player stats
+    await window.Flixtris.api.dbReady;
     api.db.updatePlayerStats(state.score, didWin);
 
     // Update banner
@@ -910,7 +1014,12 @@
     );
   }
 
-  function showMultiplayerResults(myId, winner, results, forfeit = false) {
+  async function showMultiplayerResults(
+    myId,
+    winner,
+    results,
+    forfeit = false,
+  ) {
     const state = getState();
     const isWinner = winner === myId;
     const isTie =
@@ -922,6 +1031,7 @@
     submitScoreToServer(state.score, state.mode, state.seed);
 
     // Update local player stats
+    await window.Flixtris.api.dbReady;
     api.db.updatePlayerStats(state.score, isWinner);
 
     // Sort results by score descending
@@ -1002,6 +1112,7 @@
   async function showNameOverlay(show, callback = null) {
     const overlay = document.getElementById("name-overlay");
     if (show) {
+      await window.Flixtris.api.dbReady;
       namePromptCallback = callback;
       overlay.classList.add("active");
       const input = document.getElementById("name-input");
@@ -1027,6 +1138,7 @@
   }
 
   async function handleSaveName() {
+    await window.Flixtris.api.dbReady;
     const input = document.getElementById("name-input");
     const name = input.value.trim();
 
@@ -1054,6 +1166,7 @@
   }
 
   async function handleSkipName() {
+    await window.Flixtris.api.dbReady;
     myPlayerName = await api.db.getDisplayName();
     showNameOverlay(false);
     if (namePromptCallback) {
@@ -1063,12 +1176,14 @@
 
   // Check if we should show name prompt (first visit)
   async function checkFirstVisit() {
+    await window.Flixtris.api.dbReady;
     const hasName = await api.db.hasCustomName();
     return !hasName;
   }
 
   // Initialize player name on load
   async function initPlayerName() {
+    await window.Flixtris.api.dbReady;
     myPlayerName = await api.db.getDisplayName();
   }
 
@@ -1095,6 +1210,8 @@
     if (!listEl) return;
 
     listEl.innerHTML = '<div class="leaderboard-loading">Loading...</div>';
+
+    await window.Flixtris.api.dbReady;
 
     try {
       const response = await fetch(`/api/leaderboard/${type}`);
@@ -1141,6 +1258,7 @@
   }
 
   async function submitScoreToServer(score, mode, seed) {
+    await window.Flixtris.api.dbReady;
     const playerName = await api.db.getDisplayName();
     try {
       await fetch("/api/score", {
@@ -1165,7 +1283,7 @@
     }
   }
 
-  function showGameOver() {
+  async function showGameOver() {
     const state = getState();
 
     // Send game over to multiplayer if in multiplayer mode
@@ -1201,6 +1319,7 @@
     submitScoreToServer(state.score, state.mode, state.seed);
 
     // Update local player stats
+    await window.Flixtris.api.dbReady;
     api.db.updatePlayerStats(state.score);
   }
 
@@ -1284,6 +1403,9 @@
     if (api.sound && api.sound.stopSplashMusic) {
       api.sound.stopSplashMusic();
     }
+
+    // Wait for database to be ready before accessing api.db
+    await window.Flixtris.api.dbReady;
 
     // Check if first visit - show name prompt then tutorial
     const isFirstVisit = await checkFirstVisit();
@@ -1774,6 +1896,25 @@
 
   const emojiPanel = document.getElementById("emojiPanel");
 
+  // Refresh emoji button states (called when Pro status changes)
+  function refreshEmojiPanel() {
+    if (!emojiPanel) return;
+
+    const emojiButtons = emojiPanel.querySelectorAll(".emoji-btn");
+    emojiButtons.forEach((btn) => {
+      const emojiId = btn.dataset.emojiId || btn.dataset.emoji;
+      const owned =
+        window.Flixtris?.api?.ui?.store?.entitlements?.emojis?.has(emojiId) ||
+        false;
+
+      const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
+      // Enable if owned AND Pro is enabled
+      btn.disabled = !owned || !isPro;
+      btn.classList.toggle("owned", owned);
+      btn.classList.toggle("locked", !owned);
+    });
+  }
+
   function setupEmojiPanel() {
     if (!emojiPanel) return;
 
@@ -1786,6 +1927,7 @@
 
       // Reflect ownership in UI
       const isPro = api.ui.getProEnabled ? api.ui.getProEnabled() : false;
+      // Enable if owned AND Pro is enabled
       btn.disabled = !owned || !isPro;
       btn.classList.toggle("owned", owned);
       btn.classList.toggle("locked", !owned);
@@ -3081,8 +3223,10 @@
       if (data.isMe) {
         // We were eliminated - show spectator indicator
         showSpectatorIndicator();
-        // Ensure auto-spectate is running
-        startAutoSpectate();
+        // Ensure auto-spectate is running (only for royale mode)
+        if (isRoyaleMode) {
+          startAutoSpectate();
+        }
       }
     });
 
@@ -3090,8 +3234,10 @@
     mp.on("onSpectating", (data) => {
       log("Now spectating:", data);
       showSpectatorIndicator();
-      // Begin auto-switching between remaining players' boards
-      startAutoSpectate();
+      // Begin auto-switching between remaining players' boards (only for royale mode)
+      if (isRoyaleMode) {
+        startAutoSpectate();
+      }
     });
 
     // Royale game ended
