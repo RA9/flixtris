@@ -1424,7 +1424,8 @@ body {
 
 /* Seed Input Overlay */
 #seed-overlay,
-#name-overlay {
+#name-overlay,
+#wall-of-fame-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -1435,12 +1436,104 @@ body {
 }
 
 #seed-overlay.active,
-#name-overlay.active {
+#name-overlay.active,
+#wall-of-fame-overlay.active {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     animation: fadeIn 0.2s ease-out;
+}
+
+/* Wall of Fame Overlay Styles */
+.wof-banner {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.wof-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.wof-banner h2 {
+    color: var(--accent);
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.wof-message {
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.wof-stats {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.wof-stats .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+}
+
+.wof-stats .stat-row span:last-child {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.wof-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 0.5rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.wof-input:focus {
+    border-color: var(--accent);
+}
+
+.wof-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.wof-char-count {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: right;
+    margin-bottom: 1.5rem;
+}
+
+#wof-char-current {
+    color: var(--accent);
+    font-weight: 600;
 }
 
 .name-input {

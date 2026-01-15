@@ -1192,6 +1192,117 @@
   }
 
   // ========================
+  // WALL OF FAME
+  // ========================
+
+  function showWallOfFameOverlay(level, score) {
+    const overlay = document.getElementById("wall-of-fame-overlay");
+    const levelEl = document.getElementById("wof-level");
+    const scoreEl = document.getElementById("wof-score");
+    const messageInput = document.getElementById("wof-message-input");
+    const charCount = document.getElementById("wof-char-current");
+
+    // Set stats
+    if (levelEl) levelEl.textContent = level;
+    if (scoreEl) scoreEl.textContent = score;
+
+    // Reset input
+    if (messageInput) {
+      messageInput.value = "";
+    }
+    if (charCount) {
+      charCount.textContent = "0";
+    }
+
+    overlay.classList.add("active");
+  }
+
+  function hideWallOfFameOverlay() {
+    const overlay = document.getElementById("wall-of-fame-overlay");
+    overlay.classList.remove("active");
+  }
+
+  async function handleWallOfFameSubmit() {
+    const messageInput = document.getElementById("wof-message-input");
+    const message = messageInput ? messageInput.value.trim() : "";
+
+    if (!message) {
+      // Optionally show a hint that message is required
+      messageInput.focus();
+      return;
+    }
+
+    // Save to local database
+    await window.Flixtris.api.dbReady;
+    const player = await api.db.submitWallOfFame(message);
+
+    // Try to submit to server as well
+    try {
+      const playerName = await api.db.getDisplayName();
+      const state = getState();
+      await fetch("/api/wall-of-fame", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: playerName,
+          level: state.level,
+          score: state.score,
+          message: message,
+        }),
+      });
+    } catch (e) {
+      // Server submission failed, but local is saved
+      console.log("Wall of Fame server submission failed:", e);
+    }
+
+    hideWallOfFameOverlay();
+    // Show the regular game over overlay
+    showGameOverOverlay(true);
+  }
+
+  function handleWallOfFameSkip() {
+    hideWallOfFameOverlay();
+    // Show the regular game over overlay
+    showGameOverOverlay(true);
+  }
+
+  // Setup Wall of Fame event listeners
+  function setupWallOfFameListeners() {
+    const messageInput = document.getElementById("wof-message-input");
+    const charCount = document.getElementById("wof-char-current");
+    const submitBtn = document.getElementById("wofSubmitBtn");
+    const skipBtn = document.getElementById("wofSkipBtn");
+
+    // Character counter
+    if (messageInput && charCount) {
+      messageInput.addEventListener("input", () => {
+        charCount.textContent = messageInput.value.length;
+      });
+    }
+
+    // Submit button
+    if (submitBtn) {
+      submitBtn.addEventListener("click", handleWallOfFameSubmit);
+    }
+
+    // Skip button
+    if (skipBtn) {
+      skipBtn.addEventListener("click", handleWallOfFameSkip);
+    }
+  }
+
+  // Check and show Wall of Fame overlay if eligible
+  async function checkWallOfFameEligibility(level, score) {
+    await window.Flixtris.api.dbReady;
+    const isEligible = await api.db.isEligibleForWallOfFame(level);
+    if (isEligible) {
+      showWallOfFameOverlay(level, score);
+      return true;
+    }
+    return false;
+  }
+
+  // ========================
   // MAIN
   // ========================
 
@@ -1201,6 +1312,7 @@
     await initPlayerName();
     await loadSettings();
     updateProButtons();
+    setupWallOfFameListeners();
   })();
 
   // ========================
@@ -1327,14 +1439,24 @@
     }
 
     lastMode = state.mode;
-    showGameOverOverlay(true);
 
     // Submit score to leaderboard
     submitScoreToServer(state.score, state.mode, state.seed);
 
-    // Update local player stats
+    // Update local player stats (now includes level tracking)
     await window.Flixtris.api.dbReady;
-    api.db.updatePlayerStats(state.score);
+    api.db.updatePlayerStats(state.score, null, state.level);
+
+    // Check if player is eligible for Wall of Fame (level 10+)
+    const showedWallOfFame = await checkWallOfFameEligibility(
+      state.level,
+      state.score,
+    );
+
+    // Only show regular game over if Wall of Fame wasn't shown
+    if (!showedWallOfFame) {
+      showGameOverOverlay(true);
+    }
   }
 
   function shareScore() {

@@ -102,6 +102,9 @@
               totalGames: 0,
               totalScore: 0,
               bestScore: 0,
+              highestLevel: 0,
+              wallOfFameSubmitted: false,
+              wallOfFameMessage: null,
             };
             savePlayer(newPlayer).then(() => {
               playerCache = newPlayer;
@@ -122,7 +125,17 @@
           totalGames: 0,
           totalScore: 0,
           bestScore: 0,
+          highestLevel: 0,
+          wallOfFameSubmitted: false,
+          wallOfFameMessage: null,
         };
+        setToLocalStorage("player", player);
+      }
+      // Ensure existing players have the new fields
+      if (player.highestLevel === undefined) {
+        player.highestLevel = 0;
+        player.wallOfFameSubmitted = false;
+        player.wallOfFameMessage = null;
         setToLocalStorage("player", player);
       }
       playerCache = player;
@@ -164,7 +177,7 @@
   }
 
   // Update player stats after a game
-  async function updatePlayerStats(score, isWin = null) {
+  async function updatePlayerStats(score, isWin = null, level = null) {
     const player = await getPlayer();
     player.totalGames++;
     player.totalScore += score;
@@ -175,8 +188,33 @@
       player.wins = (player.wins || 0) + (isWin ? 1 : 0);
       player.losses = (player.losses || 0) + (isWin ? 0 : 1);
     }
+    // Track highest level reached
+    if (level !== null && level > (player.highestLevel || 0)) {
+      player.highestLevel = level;
+    }
     await savePlayer(player);
     return player;
+  }
+
+  // Check if player is eligible for Wall of Fame (reached level 10+ and hasn't submitted)
+  async function isEligibleForWallOfFame(currentLevel) {
+    const player = await getPlayer();
+    return currentLevel >= 10 && !player.wallOfFameSubmitted;
+  }
+
+  // Submit Wall of Fame entry
+  async function submitWallOfFame(message) {
+    const player = await getPlayer();
+    player.wallOfFameSubmitted = true;
+    player.wallOfFameMessage = message;
+    await savePlayer(player);
+    return player;
+  }
+
+  // Check if player has already submitted to Wall of Fame
+  async function hasSubmittedWallOfFame() {
+    const player = await getPlayer();
+    return player.wallOfFameSubmitted === true;
   }
 
   // Check if player has set a custom name
@@ -388,6 +426,10 @@
       getDisplayName,
       updatePlayerStats,
       hasCustomName,
+      // Wall of Fame
+      isEligibleForWallOfFame,
+      submitWallOfFame,
+      hasSubmittedWallOfFame,
       // Premium foundations (Phase 1–2)
       recordPurchase: dbAvailable ? recordPurchase : () => {},
       getPurchases: dbAvailable ? getPurchases : () => Promise.resolve([]),

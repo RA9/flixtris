@@ -831,6 +831,48 @@
             </div>
         </div>
 
+        <!-- Wall of Fame Overlay -->
+        <div id="wall-of-fame-overlay">
+            <div class="overlay-content">
+                <div class="wof-banner">
+                    <span class="wof-icon">🏆</span>
+                    <h2>Congratulations, Legend!</h2>
+                </div>
+                <p class="wof-message">
+                    You've reached Level 10! You now have a permanent spot on
+                    our Wall of Fame. Please submit a message (up to 100
+                    characters) that reflects our values of respect, joy, or
+                    community spirit to be displayed next to your name.
+                </p>
+                <div class="wof-stats">
+                    <div class="stat-row">
+                        <span>Your Level</span>
+                        <span id="wof-level">10</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Your Score</span>
+                        <span id="wof-score">0</span>
+                    </div>
+                </div>
+                <textarea
+                    id="wof-message-input"
+                    class="wof-input"
+                    placeholder="Share your words of wisdom..."
+                    maxlength="100"
+                    rows="3"
+                ></textarea>
+                <p class="wof-char-count">
+                    <span id="wof-char-current">0</span>/100 characters
+                </p>
+                <button class="btn" id="wofSubmitBtn">
+                    Submit to Wall of Fame
+                </button>
+                <button class="btn secondary" id="wofSkipBtn">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+
         <!-- Multiplayer Results Overlay -->
         <div id="mp-results-overlay">
             <div class="overlay-content mp-results-content">

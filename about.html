@@ -364,8 +364,8 @@
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             }
 
-            /* Team Section */
-            .team {
+            /* Creator Section */
+            .creator {
                 padding: 6rem 2rem;
                 background: linear-gradient(
                     to bottom,
@@ -375,63 +375,87 @@
                 );
             }
 
-            .team-container {
+            .creator-container {
                 max-width: 1200px;
                 margin: 0 auto;
             }
 
-            .team-grid {
+            .creator-content {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 2rem;
-            }
-
-            .team-member {
-                background: var(--bg-card);
-                border-radius: 16px;
-                padding: 2rem;
-                text-align: center;
-                border: 1px solid rgba(148, 163, 184, 0.1);
-                transition: all 0.3s;
-            }
-
-            .team-member:hover {
-                transform: translateY(-8px);
-                border-color: var(--accent);
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            }
-
-            .member-avatar {
-                width: 100px;
-                height: 100px;
-                border-radius: 50%;
-                background: linear-gradient(
-                    135deg,
-                    var(--accent),
-                    var(--accent-secondary)
-                );
-                margin: 0 auto 1rem;
-                display: flex;
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
                 align-items: center;
-                justify-content: center;
-                font-size: 2.5rem;
             }
 
-            .member-name {
-                font-size: 1.25rem;
-                font-weight: 600;
+            .creator-text {
+                font-size: 1.1rem;
+                line-height: 1.8;
+                color: var(--text-secondary);
+            }
+
+            .creator-text p {
+                margin-bottom: 1.5rem;
+            }
+
+            .creator-text .creator-name {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--text-primary);
                 margin-bottom: 0.5rem;
             }
 
-            .member-role {
+            .creator-text .creator-role {
                 color: var(--accent);
                 font-weight: 500;
-                margin-bottom: 1rem;
+                margin-bottom: 1.5rem;
             }
 
-            .member-bio {
-                color: var(--text-secondary);
-                font-size: 0.9rem;
+            .creator-text .opensource-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                background: var(--bg-card);
+                border: 1px solid rgba(148, 163, 184, 0.2);
+                border-radius: 8px;
+                padding: 0.75rem 1rem;
+                margin-top: 1rem;
+                color: var(--text-primary);
+                text-decoration: none;
+                transition: all 0.3s;
+            }
+
+            .creator-text .opensource-badge:hover {
+                border-color: var(--accent);
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .creator-image {
+                text-align: center;
+            }
+
+            .creator-image img {
+                width: 300px;
+                height: 300px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 4px solid var(--accent);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+
+            @media (max-width: 768px) {
+                .creator-content {
+                    grid-template-columns: 1fr;
+                    gap: 2rem;
+                }
+
+                .creator-image {
+                    order: -1;
+                }
+
+                .creator-image img {
+                    width: 200px;
+                    height: 200px;
+                }
             }
 
             /* Mission Section */
@@ -566,141 +590,182 @@
             <ul class="nav-links">
                 <li><a href="landing.html">Home</a></li>
                 <li><a href="#story">Our Story</a></li>
-                <li><a href="#team">Team</a></li>
-                <li><a href="#mission">Mission</a></li>
             </ul>
             <a href="index.html" class="play-btn">Play Now</a>
         </nav>
 
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>About FLIXTRIS</h1>
-                <p class="hero-subtitle">
-                    Discover the passion and innovation behind the ultimate
-                    block puzzle battle game.
-                </p>
-                <div class="hero-cta">
-                    <a href="index.html" class="cta-primary">
-                        🎮 Play Flixtris
-                    </a>
-                    <a href="#story" class="cta-secondary">Our Story</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Story Section -->
-        <section class="story" id="story">
-            <h2 class="section-title fade-in">Our Story</h2>
+        <section class="story" id="about">
+            <h2 class="section-title fade-in">Why Flixtris Exists</h2>
             <p class="section-subtitle fade-in">
-                From a simple idea to a global gaming phenomenon
+                A story of passion, purpose, and play
             </p>
 
             <div class="story-content">
                 <div class="story-text fade-in">
                     <p>
-                        Flixtris was born from a love for the classic Tetris
-                        game that has captivated millions for decades. Our
-                        founder, a passionate developer and puzzle enthusiast,
-                        realized that while the core gameplay was timeless, the
-                        presentation and multiplayer experience could be
-                        revolutionized for the modern web.
+                        Hello, my beautiful Flixtristers! I am beyond thrilled
+                        that you made it past the game and have decided to learn
+                        why this exists! I created this game for Tetris lovers
+                        and those who want a fully immersive experience while
+                        staying true to the classic mechanics of the game. It is
+                        well-thought-out and engaging, designed to give you a
+                        seamless experience.
                     </p>
+
                     <p>
-                        What started as a weekend project in 2023 quickly
-                        evolved into a full-featured gaming platform. We
-                        combined the addictive mechanics of Tetris with
-                        cutting-edge web technologies, real-time multiplayer
-                        capabilities, and innovative game modes that keep
-                        players coming back for more.
+                        I had two special people in mind when making this—you
+                        guys are the real G's. To Tangaye and Coco: you are
+                        loved. I want you to play the game, share your daily
+                        seeded challenges, and don't forget to battle others!
+                        The leaderboard will surely highlight those who are
+                        dominating. I am proud of you and everyone here. The
+                        first person to reach Level 10 will be featured in the
+                        list below, with a special section to say whatever they
+                        want (as long as it aligns with our core values).
                     </p>
+
+                    <h3 style="color: var(--primary); margin-top: 2rem">
+                        The Story of Flixtris
+                    </h3>
                     <p>
-                        Today, Flixtris stands as a testament to how classic
-                        games can be reimagined for the digital age, offering
-                        both nostalgic comfort and fresh excitement to players
-                        worldwide.
+                        Flixtris began with a deep appreciation for the timeless
+                        brilliance of classic block-puzzle games. The
+                        simplicity, the pressure, and the quiet satisfaction of
+                        fitting pieces together inspired more than just
+                        nostalgia—it sparked a vision.
                     </p>
+
+                    <p>
+                        Built by me (Carlos S. Nah, alias RA9), someone who grew
+                        up loving puzzles and later fell in love with modern web
+                        technologies, Flixtris started as a small experiment.
+                        The question was simple:
+                        <strong
+                            >What if a classic game could feel modern, social,
+                            and accessible to everyone?</strong
+                        >
+                    </p>
+
+                    <p>
+                        That experiment grew into a fully playable,
+                        browser-based multiplayer experience—crafted line by
+                        line, tested relentlessly, and refined with care. Every
+                        feature reflects my belief that great games don't need
+                        bloated installs, paywalls, or barriers.
+                    </p>
+
+                    <p>
+                        <strong>Our mission is simple:</strong> to create an
+                        engaging, accessible block-puzzle game that works
+                        everywhere, brings people together, and stays true to
+                        the joy that made us fall in love with gaming in the
+                        first place. Flixtris is open-source and
+                        community-driven—an open invitation to players and
+                        developers alike. Whether you're here to compete, relax,
+                        or contribute, you're part of the story.
+                    </p>
+
+                    <h3 style="color: var(--primary); margin-top: 2rem">
+                        Our Core Values
+                    </h3>
+                    <p>
+                        To keep the Flixtris community a fun and welcoming space
+                        for everyone, we ask our players and contributors to
+                        uphold these principles:
+                    </p>
+                    <ul
+                        style="
+                            color: var(--text-secondary);
+                            line-height: 1.8;
+                            margin-left: 1.5rem;
+                        "
+                    >
+                        <li>
+                            <strong>Inclusivity & Respect:</strong> We welcome
+                            players from all walks of life. We compete hard, but
+                            we remain kind. No hate speech, harassment, or
+                            bullying is tolerated.
+                        </li>
+                        <li>
+                            <strong>Spirit of Play:</strong> We play for the joy
+                            of the game. Whether you win or lose, the goal is to
+                            enjoy the challenge and the flow.
+                        </li>
+                        <li>
+                            <strong>Transparency & Openness:</strong> As an
+                            open-source project, we value honesty and
+                            collaboration. We grow by sharing ideas and helping
+                            one another improve.
+                        </li>
+                        <li>
+                            <strong>Integrity:</strong> We celebrate skill and
+                            hard work. Dominating the leaderboard feels better
+                            when it's done through fair play and dedication.
+                        </li>
+                        <li>
+                            <strong>Community First:</strong> Flixtris exists
+                            because of you. We listen to feedback and build
+                            features that make the experience better for the
+                            whole "Flixtrister" family.
+                        </li>
+                    </ul>
+
+                    <h3 style="color: var(--primary); margin-top: 2rem">
+                        🏆 Wall of Fame
+                    </h3>
+                    <p>
+                        Going forward, the first person to unlock Level 10 and
+                        above will have a section below as a wall of fame (their
+                        rank, level, full name/username, and message or word of
+                        wisdom).
+                    </p>
+                    <p
+                        style="
+                            font-style: italic;
+                            color: var(--secondary);
+                            border-left: 3px solid var(--secondary);
+                            padding-left: 1rem;
+                            margin: 1.5rem 0;
+                        "
+                    >
+                        "Congratulations, Legend! You've reached Level 10. You
+                        now have a permanent spot on our wall of fame. Please
+                        submit a message (up to 100 characters) that reflects
+                        our values of respect, joy, or community spirit to be
+                        displayed next to your name."
+                    </p>
+                    <div
+                        style="
+                            background: rgba(255, 255, 255, 0.05);
+                            border-radius: 12px;
+                            padding: 1.5rem;
+                            margin-top: 1rem;
+                        "
+                    >
+                        <p
+                            style="
+                                text-align: center;
+                                color: var(--text-muted);
+                                font-style: italic;
+                            "
+                        >
+                            No legends yet... Will you be the first?
+                        </p>
+                    </div>
+
+                    <a
+                        href="https://github.com"
+                        target="_blank"
+                        class="opensource-badge"
+                        style="margin-top: 2rem"
+                    >
+                        ⭐ Open Source on GitHub
+                    </a>
                 </div>
+
                 <div class="story-image fade-in">
-                    <img src="icons/icon-192.png" alt="Flixtris Logo" />
+                    <img src="icons/icon-512.png" alt="Flixtris Creator" />
                 </div>
-            </div>
-        </section>
-
-        <!-- Team Section -->
-        <section class="team" id="team">
-            <div class="team-container">
-                <h2 class="section-title fade-in">Meet the Team</h2>
-                <p class="section-subtitle fade-in">
-                    The creative minds behind Flixtris
-                </p>
-
-                <div class="team-grid">
-                    <div class="team-member fade-in">
-                        <div class="member-avatar">👨‍💻</div>
-                        <h3 class="member-name">Alex Chen</h3>
-                        <p class="member-role">Founder & Lead Developer</p>
-                        <p class="member-bio">
-                            Passionate about game development and web
-                            technologies. Alex brings over 10 years of
-                            experience in creating engaging user experiences.
-                        </p>
-                    </div>
-
-                    <div class="team-member fade-in">
-                        <div class="member-avatar">🎨</div>
-                        <h3 class="member-name">Sarah Kim</h3>
-                        <p class="member-role">UI/UX Designer</p>
-                        <p class="member-bio">
-                            Creative designer focused on intuitive interfaces
-                            and beautiful aesthetics. Sarah ensures Flixtris
-                            looks as good as it plays.
-                        </p>
-                    </div>
-
-                    <div class="team-member fade-in">
-                        <div class="member-avatar">⚡</div>
-                        <h3 class="member-name">Mike Rodriguez</h3>
-                        <p class="member-role">Backend Engineer</p>
-                        <p class="member-bio">
-                            Expert in scalable systems and real-time
-                            communication. Mike keeps the multiplayer experience
-                            smooth and reliable.
-                        </p>
-                    </div>
-
-                    <div class="team-member fade-in">
-                        <div class="member-avatar">🎵</div>
-                        <h3 class="member-name">Emma Thompson</h3>
-                        <p class="member-role">Sound Designer</p>
-                        <p class="member-bio">
-                            Audio enthusiast who creates the perfect soundscape
-                            for intense gaming sessions and celebratory
-                            victories.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Mission Section -->
-        <section class="mission" id="mission">
-            <div class="mission-card fade-in">
-                <div class="mission-icon">🎯</div>
-                <h2 class="mission-title">Our Mission</h2>
-                <p class="mission-text">
-                    To create the most accessible, engaging, and innovative
-                    block puzzle game that brings people together through the
-                    universal language of gaming. We believe that great games
-                    should be free to play, work on any device, and provide
-                    endless hours of fun for players of all skill levels.
-                </p>
-                <p class="mission-text">
-                    We're committed to continuous improvement, listening to our
-                    community, and pushing the boundaries of what's possible in
-                    browser-based gaming. Join us in stacking blocks and
-                    building memories!
-                </p>
             </div>
         </section>
 
@@ -712,7 +777,7 @@
                 <a href="index.html">Play</a>
                 <a href="about.html">About</a>
                 <a href="#story">Our Story</a>
-                <a href="#team">Team</a>
+                <a href="#creator">Creator</a>
                 <a href="#mission">Mission</a>
                 <a href="https://github.com" target="_blank">GitHub</a>
             </div>
