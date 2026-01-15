@@ -92,6 +92,10 @@ const KEYS = {
   leaderboardGlobal: "flixtris:leaderboard:global",
   leaderboardDaily: (date) => `flixtris:leaderboard:daily:${date}`,
   leaderboardWeekly: "flixtris:leaderboard:weekly",
+  // Global stats tracking
+  globalTotalGames: "flixtris:stats:total_games",
+  globalDailyGames: (date) => `flixtris:stats:daily_games:${date}`,
+  globalUniquePlayers: "flixtris:stats:unique_players",
 };
 
 // ========================
@@ -318,6 +322,9 @@ async function submitScore(playerName, score, mode, seed = null) {
     // Update player stats
     await updatePlayerStats(playerName, score);
 
+    // Track global game stats
+    await trackGamePlayed(playerName);
+
     return true;
   } catch (err) {
     console.error("Redis: Failed to submit score:", err.message);
@@ -383,6 +390,66 @@ async function getRoomHistory(roomCode) {
 }
 
 // Reset weekly leaderboard (should be called by cron on Sunday)
+// ========================
+// GLOBAL STATS TRACKING
+// ========================
+
+async function trackGamePlayed(playerName) {
+  if (!redisConnected) return;
+
+  try {
+    const dateKey = getDateKey();
+
+    // Increment total games played (all time)
+    await redisClient.incr(KEYS.globalTotalGames);
+
+    // Increment daily games played
+    await redisClient.incr(KEYS.globalDailyGames(dateKey));
+    // Set TTL of 48 hours on daily counter
+    await redisClient.expire(KEYS.globalDailyGames(dateKey), 48 * 60 * 60);
+
+    // Add player to unique players set (active players)
+    if (playerName) {
+      await redisClient.sAdd(KEYS.globalUniquePlayers, playerName);
+    }
+  } catch (err) {
+    console.error("Redis: Failed to track game:", err.message);
+  }
+}
+
+async function getGlobalStats() {
+  if (!redisConnected) {
+    return {
+      totalGames: 0,
+      dailyGames: 0,
+      activePlayers: 0,
+    };
+  }
+
+  try {
+    const dateKey = getDateKey();
+
+    const [totalGames, dailyGames, activePlayers] = await Promise.all([
+      redisClient.get(KEYS.globalTotalGames),
+      redisClient.get(KEYS.globalDailyGames(dateKey)),
+      redisClient.sCard(KEYS.globalUniquePlayers),
+    ]);
+
+    return {
+      totalGames: parseInt(totalGames) || 0,
+      dailyGames: parseInt(dailyGames) || 0,
+      activePlayers: activePlayers || 0,
+    };
+  } catch (err) {
+    console.error("Redis: Failed to get global stats:", err.message);
+    return {
+      totalGames: 0,
+      dailyGames: 0,
+      activePlayers: 0,
+    };
+  }
+}
+
 async function resetWeeklyLeaderboard() {
   if (!redisConnected) return;
 
@@ -452,6 +519,17 @@ const server = http.createServer(async (req, res) => {
       rooms: rooms && typeof rooms.size === "number" ? rooms.size : 0,
       uptime: process.uptime(),
     });
+    return;
+  }
+
+  // ========================
+  // GLOBAL STATS API
+  // ========================
+
+  // GET /api/stats - Get global game statistics
+  if (pathname === "/api/stats" && req.method === "GET") {
+    const stats = await getGlobalStats();
+    sendJSON(res, stats);
     return;
   }
 

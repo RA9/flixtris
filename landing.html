@@ -547,10 +547,10 @@
             .pro-card {
                 background: linear-gradient(
                     135deg,
-                    rgba(168, 85, 247, 0.15),
-                    rgba(236, 72, 153, 0.1)
+                    rgba(45, 212, 191, 0.08),
+                    rgba(20, 184, 166, 0.05)
                 );
-                border: 2px solid rgba(168, 85, 247, 0.3);
+                border: 2px solid rgba(45, 212, 191, 0.2);
                 border-radius: 24px;
                 padding: 3rem;
                 text-align: center;
@@ -567,7 +567,7 @@
                 height: 200%;
                 background: radial-gradient(
                     circle at center,
-                    rgba(168, 85, 247, 0.1) 0%,
+                    rgba(45, 212, 191, 0.06) 0%,
                     transparent 50%
                 );
                 animation: proGlow 10s ease-in-out infinite;
@@ -586,8 +586,8 @@
             .pro-badge {
                 display: inline-block;
                 padding: 0.5rem 1rem;
-                background: linear-gradient(135deg, #a855f7, #ec4899);
-                color: white;
+                background: linear-gradient(135deg, var(--accent), #0d9488);
+                color: var(--bg-primary);
                 font-weight: 700;
                 border-radius: 20px;
                 font-size: 0.85rem;
@@ -617,16 +617,16 @@
 
             .pro-feature::before {
                 content: "✓";
-                color: #a855f7;
+                color: var(--accent);
                 font-weight: bold;
             }
 
             .pro-cta {
                 padding: 1rem 2.5rem;
-                background: linear-gradient(135deg, #a855f7, #ec4899);
+                background: linear-gradient(135deg, var(--accent), #0d9488);
                 border: none;
                 border-radius: 12px;
-                color: white;
+                color: var(--bg-primary);
                 font-weight: 700;
                 font-size: 1.1rem;
                 cursor: pointer;
@@ -637,7 +637,7 @@
 
             .pro-cta:hover {
                 transform: translateY(-4px);
-                box-shadow: 0 20px 60px rgba(168, 85, 247, 0.4);
+                box-shadow: 0 20px 60px rgba(45, 212, 191, 0.3);
             }
 
             .pro-free {
@@ -702,11 +702,32 @@
 
                 .hero-cta {
                     flex-direction: column;
-                    align-items: center;
+                    align-items: stretch;
+                    width: 100%;
+                    max-width: 320px;
+                    margin: 0 auto 3rem auto;
+                    gap: 0.75rem;
+                }
+
+                .cta-primary,
+                .cta-secondary {
+                    width: 100%;
+                    padding: 1rem 1.5rem;
+                    font-size: 1.1rem;
+                    text-align: center;
+                    justify-content: center;
+                    min-height: 52px;
+                    touch-action: manipulation;
+                    -webkit-tap-highlight-color: transparent;
+                }
+
+                .cta-primary {
+                    padding: 1.1rem 1.5rem;
                 }
 
                 .stats-bar {
                     gap: 1.5rem;
+                    flex-wrap: wrap;
                 }
 
                 .stat-value {
@@ -719,12 +740,73 @@
                 }
 
                 .pro-card {
-                    padding: 2rem;
+                    padding: 2rem 1.5rem;
                 }
 
                 .pro-features {
                     flex-direction: column;
                     align-items: center;
+                }
+
+                .pro-cta {
+                    width: 100%;
+                    max-width: 280px;
+                    padding: 1rem 2rem;
+                    min-height: 52px;
+                    touch-action: manipulation;
+                    -webkit-tap-highlight-color: transparent;
+                }
+
+                .mode-card {
+                    padding: 1.5rem;
+                    min-height: auto;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .hero h1 {
+                    font-size: 2rem;
+                }
+
+                .hero-subtitle {
+                    font-size: 1rem;
+                    padding: 0 0.5rem;
+                }
+
+                .hero-cta {
+                    max-width: 100%;
+                    padding: 0 1rem;
+                }
+
+                .cta-primary,
+                .cta-secondary {
+                    font-size: 1rem;
+                    padding: 1rem 1rem;
+                }
+
+                .stats-bar {
+                    gap: 1rem;
+                    padding: 0 1rem;
+                }
+
+                .stat-value {
+                    font-size: 1.5rem;
+                }
+
+                .stat-label {
+                    font-size: 0.75rem;
+                }
+
+                .section-title {
+                    font-size: 1.75rem;
+                }
+
+                .pro-card {
+                    padding: 1.5rem 1rem;
+                }
+
+                .pro-title {
+                    font-size: 1.5rem;
                 }
             }
 
@@ -778,20 +860,20 @@
 
             <div class="stats-bar fade-in">
                 <div class="stat">
-                    <div class="stat-value">1M+</div>
-                    <div class="stat-label">Games Played</div>
+                    <div class="stat-value" id="stat-total-games">0</div>
+                    <div class="stat-label">Total Games</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">50K+</div>
+                    <div class="stat-value" id="stat-daily-games">0</div>
+                    <div class="stat-label">Games Today</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="stat-active-players">0</div>
                     <div class="stat-label">Active Players</div>
                 </div>
                 <div class="stat">
                     <div class="stat-value">6</div>
                     <div class="stat-label">Game Modes</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">∞</div>
-                    <div class="stat-label">Fun Factor</div>
                 </div>
             </div>
         </section>
@@ -1017,11 +1099,66 @@
                             }
                         });
                     },
-                    { threshold: 0.1 },
+                    {
+                        threshold: 0.1,
+                    },
                 );
 
                 elements.forEach((el) => observer.observe(el));
             }
+
+            // Format large numbers with K, M suffix
+            function formatNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+                }
+                if (num >= 1000) {
+                    return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+                }
+                return num.toString();
+            }
+
+            // Fetch and display global stats
+            async function loadGlobalStats() {
+                try {
+                    const response = await fetch("/api/stats");
+                    if (!response.ok) throw new Error("Failed to fetch stats");
+                    const stats = await response.json();
+
+                    const totalGamesEl =
+                        document.getElementById("stat-total-games");
+                    const dailyGamesEl =
+                        document.getElementById("stat-daily-games");
+                    const activePlayersEl = document.getElementById(
+                        "stat-active-players",
+                    );
+
+                    if (totalGamesEl) {
+                        totalGamesEl.textContent = formatNumber(
+                            stats.totalGames || 0,
+                        );
+                    }
+                    if (dailyGamesEl) {
+                        dailyGamesEl.textContent = formatNumber(
+                            stats.dailyGames || 0,
+                        );
+                    }
+                    if (activePlayersEl) {
+                        activePlayersEl.textContent = formatNumber(
+                            stats.activePlayers || 0,
+                        );
+                    }
+                } catch (err) {
+                    console.log("Stats not available:", err.message);
+                    // Keep showing 0 or set fallback values
+                }
+            }
+
+            // Load stats on page load
+            loadGlobalStats();
+
+            // Refresh stats every 30 seconds
+            setInterval(loadGlobalStats, 30000);
 
             // Mode card clicks
             document.querySelectorAll(".mode-card").forEach((card) => {
