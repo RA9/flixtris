@@ -221,6 +221,233 @@
             </button>
         </div>
 
+        <!-- Analytics Dashboard Screen -->
+        <div id="screen-analytics" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">📊 Analytics Dashboard</h2>
+
+            <!-- Performance Grade Section -->
+            <div class="analytics-grade-section">
+                <div class="grade-card">
+                    <h3>Your Performance Grade</h3>
+                    <div class="grade-display">
+                        <span class="grade-letter" id="analytics-grade">-</span>
+                        <span class="grade-label" id="analytics-grade-label"
+                            >Play some games to get graded!</span
+                        >
+                    </div>
+                    <div class="grade-breakdown">
+                        <div class="grade-stat">
+                            <span class="grade-stat-label"
+                                >Efficiency (APM)</span
+                            >
+                            <div class="grade-bar">
+                                <div
+                                    class="grade-bar-fill"
+                                    id="grade-apm-bar"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                            <span class="grade-stat-value" id="grade-apm-value"
+                                >0</span
+                            >
+                        </div>
+                        <div class="grade-stat">
+                            <span class="grade-stat-label"
+                                >Line Clears (LPM)</span
+                            >
+                            <div class="grade-bar">
+                                <div
+                                    class="grade-bar-fill"
+                                    id="grade-lpm-bar"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                            <span class="grade-stat-value" id="grade-lpm-value"
+                                >0</span
+                            >
+                        </div>
+                        <div class="grade-stat">
+                            <span class="grade-stat-label">Tetris Rate</span>
+                            <div class="grade-bar">
+                                <div
+                                    class="grade-bar-fill"
+                                    id="grade-tetris-bar"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                            <span
+                                class="grade-stat-value"
+                                id="grade-tetris-value"
+                                >0%</span
+                            >
+                        </div>
+                        <div class="grade-stat">
+                            <span class="grade-stat-label">Board Control</span>
+                            <div class="grade-bar">
+                                <div
+                                    class="grade-bar-fill"
+                                    id="grade-control-bar"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                            <span
+                                class="grade-stat-value"
+                                id="grade-control-value"
+                                >-</span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grading Explanation -->
+            <div class="analytics-explanation">
+                <h3>📖 How Grading Works</h3>
+                <div class="explanation-content">
+                    <div class="explanation-item">
+                        <span class="explanation-icon">⚡</span>
+                        <div>
+                            <strong>APM (Actions Per Minute)</strong>
+                            <p>
+                                Measures how quickly you move and rotate pieces.
+                                Higher APM shows faster decision-making and
+                                execution.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="explanation-item">
+                        <span class="explanation-icon">📈</span>
+                        <div>
+                            <strong>LPM (Lines Per Minute)</strong>
+                            <p>
+                                How efficiently you clear lines. Skilled players
+                                maintain high LPM by consistently setting up
+                                clears.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="explanation-item">
+                        <span class="explanation-icon">🎯</span>
+                        <div>
+                            <strong>Tetris Rate</strong>
+                            <p>
+                                Percentage of line clears that are Tetrises (4
+                                lines at once). Tetrises score significantly
+                                more points!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="explanation-item">
+                        <span class="explanation-icon">🧱</span>
+                        <div>
+                            <strong>Board Control</strong>
+                            <p>
+                                Based on average stack height and holes created.
+                                Lower heights and fewer holes = better control.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Improvement Tips -->
+            <div class="analytics-tips">
+                <h3>💡 Tips to Improve</h3>
+                <div class="tips-list" id="analytics-tips-list">
+                    <div class="tip-item">
+                        <span class="tip-icon">🎮</span>
+                        <p>
+                            Keep your stack low and flat to have more time to
+                            react to new pieces.
+                        </p>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">📐</span>
+                        <p>
+                            Build with a well on one side (usually right) to set
+                            up Tetrises with the I-piece.
+                        </p>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">🔄</span>
+                        <p>
+                            Use the Hold feature to save I-pieces for Tetris
+                            opportunities.
+                        </p>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">⏱️</span>
+                        <p>
+                            Practice looking ahead at the Next piece to plan
+                            placements faster.
+                        </p>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">🚫</span>
+                        <p>
+                            Avoid creating holes under pieces—they're hard to
+                            clear and waste lines.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="analytics-charts-section">
+                <h3>📉 Performance Trends</h3>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4>Stack Height Over Time</h4>
+                        <canvas
+                            id="dashboardChartHeight"
+                            width="280"
+                            height="140"
+                        ></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Holes Created</h4>
+                        <canvas
+                            id="dashboardChartHoles"
+                            width="280"
+                            height="140"
+                        ></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Combo Streaks</h4>
+                        <canvas
+                            id="dashboardChartCombos"
+                            width="280"
+                            height="140"
+                        ></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Score Progression</h4>
+                        <canvas
+                            id="dashboardChartScores"
+                            width="280"
+                            height="140"
+                        ></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Games -->
+            <div class="analytics-recent">
+                <h3>🕹️ Recent Games</h3>
+                <div id="analytics-recent-list" class="recent-games-list">
+                    <p class="analytics-empty">
+                        No games recorded yet. Play some games to see your
+                        stats!
+                    </p>
+                </div>
+            </div>
+
+            <button class="btn secondary back" id="analyticsBackBtn">
+                Back to Menu
+            </button>
+        </div>
+
         <!-- Single Player Mode Selection -->
         <div id="screen-singleplayer" class="screen">
             <h1 class="brand-header">FLIXTRIS</h1>

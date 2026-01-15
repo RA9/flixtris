@@ -16,6 +16,7 @@
     splash: document.getElementById("screen-splash"),
     menu: document.getElementById("screen-menu"),
     settings: document.getElementById("screen-settings"),
+    analytics: document.getElementById("screen-analytics"),
     singleplayer: document.getElementById("screen-singleplayer"),
     botSelect: document.getElementById("screen-bot-select"),
     multiplayerSelect: document.getElementById("screen-multiplayer-select"),
@@ -526,22 +527,19 @@
     if (menuAnalyticsBtn) {
       menuAnalyticsBtn.addEventListener("click", () => {
         if (settings.proEnabled) {
-          // Open side panel and scroll to analytics section
-          const panel = document.getElementById("sidePanel");
-          const panelOverlay = document.getElementById("panelOverlay");
-          if (panel) {
-            panel.classList.add("open");
+          // Stop any running game first
+          if (api.game && api.game.stop) {
+            api.game.stop();
           }
-          if (panelOverlay) {
-            panelOverlay.classList.add("active");
+          const state = getState();
+          if (state) {
+            state.paused = false;
           }
-          // Scroll to analytics section
-          const analyticsSection = document.getElementById("analyticsList");
-          if (analyticsSection) {
-            analyticsSection.scrollIntoView({ behavior: "smooth" });
-          }
-          // Refresh analytics data
-          initAnalyticsPanel();
+
+          // Navigate to the full analytics dashboard screen
+          showScreen("analytics");
+          // Load and display analytics data
+          loadAnalyticsDashboard();
         }
       });
     }
@@ -2887,6 +2885,335 @@
     const ctxPieces = getCtx("chartPieceDistribution");
     clear(ctxPieces);
     drawBars(ctxPieces, pieceLabels, pieceValues, "#a78bfa");
+  }
+
+  // ========================
+  // ANALYTICS DASHBOARD
+  // ========================
+
+  async function loadAnalyticsDashboard() {
+    if (!window.Flixtris?.api?.db?.getGameAnalytics) return;
+
+    const rows = await window.Flixtris.api.db.getGameAnalytics(50);
+
+    // Calculate overall grade and stats
+    updateAnalyticsGrade(rows);
+    updateAnalyticsTips(rows);
+    renderDashboardCharts(rows);
+    updateRecentGamesList(rows);
+  }
+
+  function calculateGrade(rows) {
+    if (!rows || rows.length === 0) {
+      return { letter: "-", label: "Play some games to get graded!", score: 0 };
+    }
+
+    // Calculate averages from recent games
+    const recentGames = rows.slice(0, 20);
+    const avgApm =
+      recentGames.reduce((sum, r) => sum + (r.apm || 0), 0) /
+      recentGames.length;
+    const avgLpm =
+      recentGames.reduce((sum, r) => sum + (r.lpm || 0), 0) /
+      recentGames.length;
+    const totalTetrises = recentGames.reduce(
+      (sum, r) => sum + (r.tetrises || 0),
+      0,
+    );
+    const totalLines = recentGames.reduce(
+      (sum, r) => sum + ((r.tetrises || 0) * 4 + (r.lpm || 0)),
+      0,
+    );
+    const tetrisRate =
+      totalLines > 0
+        ? ((totalTetrises * 4) / Math.max(1, totalLines)) * 100
+        : 0;
+    const avgHoles =
+      recentGames.reduce((sum, r) => sum + (r.holes || 0), 0) /
+      recentGames.length;
+    const avgHeight =
+      recentGames.reduce((sum, r) => sum + (r.avgHeight || 0), 0) /
+      recentGames.length;
+
+    // Calculate component scores (0-100)
+    const apmScore = Math.min(100, (avgApm / 120) * 100); // 120 APM = perfect
+    const lpmScore = Math.min(100, (avgLpm / 3) * 100); // 3 LPM = perfect
+    const tetrisScore = Math.min(100, tetrisRate); // 100% = perfect
+    const controlScore = Math.max(0, 100 - avgHoles * 10 - avgHeight * 3); // Penalize holes and height
+
+    // Overall score (weighted average)
+    const overallScore =
+      apmScore * 0.2 +
+      lpmScore * 0.3 +
+      tetrisScore * 0.25 +
+      controlScore * 0.25;
+
+    // Determine letter grade
+    let letter, label;
+    if (overallScore >= 90) {
+      letter = "S";
+      label = "Legendary! You're a Tetris master!";
+    } else if (overallScore >= 80) {
+      letter = "A";
+      label = "Excellent! Your skills are top-tier.";
+    } else if (overallScore >= 70) {
+      letter = "B";
+      label = "Great job! You're above average.";
+    } else if (overallScore >= 60) {
+      letter = "C";
+      label = "Good progress! Keep practicing.";
+    } else if (overallScore >= 50) {
+      letter = "D";
+      label = "Getting there! Focus on the tips below.";
+    } else {
+      letter = "F";
+      label = "Keep playing! Everyone starts somewhere.";
+    }
+
+    return {
+      letter,
+      label,
+      score: overallScore,
+      apm: { value: Math.round(avgApm), percent: apmScore },
+      lpm: { value: avgLpm.toFixed(1), percent: lpmScore },
+      tetris: { value: Math.round(tetrisRate) + "%", percent: tetrisScore },
+      control: {
+        value: avgHoles < 3 ? "Good" : avgHoles < 6 ? "Fair" : "Poor",
+        percent: controlScore,
+      },
+    };
+  }
+
+  function updateAnalyticsGrade(rows) {
+    const grade = calculateGrade(rows);
+
+    const gradeEl = document.getElementById("analytics-grade");
+    const labelEl = document.getElementById("analytics-grade-label");
+
+    if (gradeEl) gradeEl.textContent = grade.letter;
+    if (labelEl) labelEl.textContent = grade.label;
+
+    // Update bars
+    if (grade.apm) {
+      const apmBar = document.getElementById("grade-apm-bar");
+      const apmValue = document.getElementById("grade-apm-value");
+      if (apmBar) apmBar.style.width = grade.apm.percent + "%";
+      if (apmValue) apmValue.textContent = grade.apm.value;
+    }
+
+    if (grade.lpm) {
+      const lpmBar = document.getElementById("grade-lpm-bar");
+      const lpmValue = document.getElementById("grade-lpm-value");
+      if (lpmBar) lpmBar.style.width = grade.lpm.percent + "%";
+      if (lpmValue) lpmValue.textContent = grade.lpm.value;
+    }
+
+    if (grade.tetris) {
+      const tetrisBar = document.getElementById("grade-tetris-bar");
+      const tetrisValue = document.getElementById("grade-tetris-value");
+      if (tetrisBar) tetrisBar.style.width = grade.tetris.percent + "%";
+      if (tetrisValue) tetrisValue.textContent = grade.tetris.value;
+    }
+
+    if (grade.control) {
+      const controlBar = document.getElementById("grade-control-bar");
+      const controlValue = document.getElementById("grade-control-value");
+      if (controlBar)
+        controlBar.style.width = Math.max(0, grade.control.percent) + "%";
+      if (controlValue) controlValue.textContent = grade.control.value;
+    }
+  }
+
+  function updateAnalyticsTips(rows) {
+    const tipsList = document.getElementById("analytics-tips-list");
+    if (!tipsList || !rows || rows.length === 0) return;
+
+    const grade = calculateGrade(rows);
+
+    // Dynamic tips based on weakest areas
+    const tips = [];
+
+    if (grade.apm && grade.apm.percent < 50) {
+      tips.push({
+        icon: "⚡",
+        text: "Try to move and rotate pieces faster. Use hard drop (Space) to speed up gameplay.",
+      });
+    }
+
+    if (grade.lpm && grade.lpm.percent < 50) {
+      tips.push({
+        icon: "📈",
+        text: "Focus on clearing lines consistently. Don't let the stack build too high.",
+      });
+    }
+
+    if (grade.tetris && grade.tetris.percent < 40) {
+      tips.push({
+        icon: "🎯",
+        text: "Build a well on one side and save I-pieces for Tetrises. They're worth way more points!",
+      });
+    }
+
+    if (grade.control && grade.control.percent < 50) {
+      tips.push({
+        icon: "🧱",
+        text: "Avoid creating holes! Place pieces flat and fill gaps before they get buried.",
+      });
+    }
+
+    // If doing well, show encouragement
+    if (tips.length === 0) {
+      tips.push({
+        icon: "🌟",
+        text: "You're doing great! Keep up the excellent work and aim for that S rank!",
+      });
+    }
+
+    // Add general tips
+    tips.push({
+      icon: "🔄",
+      text: "Use the Hold feature to save I-pieces for Tetris opportunities.",
+    });
+    tips.push({
+      icon: "⏱️",
+      text: "Practice looking ahead at the Next piece to plan placements faster.",
+    });
+
+    // Update the tips list (keep first 5)
+    tipsList.innerHTML = tips
+      .slice(0, 5)
+      .map(
+        (tip) => `
+      <div class="tip-item">
+        <span class="tip-icon">${tip.icon}</span>
+        <p>${tip.text}</p>
+      </div>
+    `,
+      )
+      .join("");
+  }
+
+  function renderDashboardCharts(rows) {
+    function getCtx(id) {
+      const c = document.getElementById(id);
+      return c ? c.getContext("2d") : null;
+    }
+
+    function clear(ctx) {
+      if (!ctx) return;
+      const c = ctx.canvas;
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.fillStyle = "rgba(148,163,184,0.06)";
+      ctx.fillRect(0, 0, c.width, c.height);
+    }
+
+    function drawLine(ctx, data, color) {
+      if (!ctx || !data.length) return;
+      const c = ctx.canvas;
+      const max = Math.max(...data, 1);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = (i / Math.max(1, data.length - 1)) * (c.width - 10) + 5;
+        const y = c.height - (data[i] / max) * (c.height - 10) - 5;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    function drawBars(ctx, values, color) {
+      if (!ctx || !values.length) return;
+      const c = ctx.canvas;
+      const max = Math.max(...values, 1);
+      const bw = Math.max(
+        4,
+        Math.floor(c.width / Math.max(1, values.length * 2)),
+      );
+      for (let i = 0; i < values.length; i++) {
+        const x = (i / values.length) * (c.width - 10) + 5;
+        const h = (values[i] / max) * (c.height - 10);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, c.height - h - 5, bw, h);
+      }
+    }
+
+    if (!rows || rows.length === 0) {
+      // Clear all charts
+      [
+        "dashboardChartHeight",
+        "dashboardChartHoles",
+        "dashboardChartCombos",
+        "dashboardChartScores",
+      ].forEach((id) => {
+        clear(getCtx(id));
+      });
+      return;
+    }
+
+    const N = Math.min(20, rows.length);
+    const recent = rows.slice(0, N).reverse();
+
+    const heights = recent.map((r) => r.avgHeight || 0);
+    const holes = recent.map((r) => r.holes || 0);
+    const combos = recent.map((r) => r.comboMax || 0);
+
+    // Get scores from games database
+    const scores = recent.map(
+      (r, i) => (i + 1) * 1000 + (r.tetrises || 0) * 500,
+    ); // Approximation
+
+    const ctxHeight = getCtx("dashboardChartHeight");
+    clear(ctxHeight);
+    drawLine(ctxHeight, heights, "#3b82f6");
+
+    const ctxHoles = getCtx("dashboardChartHoles");
+    clear(ctxHoles);
+    drawLine(ctxHoles, holes, "#f43f5e");
+
+    const ctxCombos = getCtx("dashboardChartCombos");
+    clear(ctxCombos);
+    drawBars(ctxCombos, combos, "#22d3ee");
+
+    const ctxScores = getCtx("dashboardChartScores");
+    clear(ctxScores);
+    drawLine(ctxScores, scores, "#a78bfa");
+  }
+
+  function updateRecentGamesList(rows) {
+    const container = document.getElementById("analytics-recent-list");
+    if (!container) return;
+
+    if (!rows || rows.length === 0) {
+      container.innerHTML =
+        '<p class="analytics-empty">No games recorded yet. Play some games to see your stats!</p>';
+      return;
+    }
+
+    const recentGames = rows.slice(0, 10);
+    container.innerHTML = recentGames
+      .map(
+        (game) => `
+      <div class="recent-game-item">
+        <span class="recent-game-mode">${game.mode || "classic"}</span>
+        <div class="recent-game-stats">
+          <span>⚡ ${game.apm || 0} APM</span>
+          <span>📈 ${(game.lpm || 0).toFixed(1)} LPM</span>
+          <span>🎯 ${game.tetrises || 0} Tetrises</span>
+        </div>
+      </div>
+    `,
+      )
+      .join("");
+  }
+
+  // Analytics back button
+  const analyticsBackBtn = document.getElementById("analyticsBackBtn");
+  if (analyticsBackBtn) {
+    analyticsBackBtn.addEventListener("click", () => {
+      showScreen("menu");
+    });
   }
 
   function initAnalyticsPanel() {

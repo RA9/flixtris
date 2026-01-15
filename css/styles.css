@@ -774,6 +774,312 @@ body {
     font-size: 0.9rem;
 }
 
+/* ========================
+   Analytics Dashboard Screen
+   ======================== */
+
+#screen-analytics {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    overflow-y: auto;
+}
+
+#screen-analytics .menu-title {
+    margin-bottom: 1.5rem;
+}
+
+/* Grade Section */
+.analytics-grade-section {
+    margin-bottom: 2rem;
+}
+
+.grade-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.grade-card h3 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.grade-display {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.grade-letter {
+    display: block;
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.grade-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.grade-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.grade-stat {
+    display: grid;
+    grid-template-columns: 120px 1fr 50px;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.grade-stat-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.grade-bar {
+    height: 8px;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.grade-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.grade-stat-value {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+/* Explanation Section */
+.analytics-explanation {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.analytics-explanation h3 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.explanation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.explanation-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.explanation-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+}
+
+.explanation-item strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.explanation-item p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Tips Section */
+.analytics-tips {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.analytics-tips h3 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tip-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.75rem;
+    background: rgba(148, 163, 184, 0.05);
+    border-radius: 10px;
+}
+
+.tip-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.tip-item p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Charts Section */
+.analytics-charts-section {
+    margin-bottom: 2rem;
+}
+
+.analytics-charts-section h3 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.chart-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.chart-card h4 {
+    color: var(--text-secondary);
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.chart-card canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Recent Games */
+.analytics-recent {
+    margin-bottom: 2rem;
+}
+
+.analytics-recent h3 {
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.recent-games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.recent-game-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.recent-game-mode {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.recent-game-stats {
+    display: flex;
+    gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.recent-game-stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+#screen-analytics .analytics-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+    background: var(--bg-card);
+    border-radius: 12px;
+}
+
+/* Analytics Dashboard Responsive */
+@media (max-width: 600px) {
+    .grade-stat {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .grade-stat-label {
+        font-size: 0.8rem;
+    }
+
+    .grade-bar {
+        order: 2;
+    }
+
+    .grade-stat-value {
+        text-align: left;
+        order: 1;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .explanation-item {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .explanation-icon {
+        width: auto;
+        text-align: left;
+    }
+}
+
 /* Pro Overlay */
 #pro-overlay.overlay {
     display: none;
