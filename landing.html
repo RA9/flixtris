@@ -761,6 +761,27 @@
                     padding: 1.5rem;
                     min-height: auto;
                 }
+
+                /* Ready to Stack section */
+                .final-cta-section {
+                    padding: 5rem 2rem;
+                }
+
+                .final-cta-section .section-title {
+                    font-size: 2.5rem;
+                }
+
+                .final-cta-section .cta-primary {
+                    font-size: 1.2rem;
+                    padding: 1rem 2.5rem;
+                    max-width: 300px;
+                    width: 100%;
+                    display: block;
+                    margin: 0 auto;
+                    min-height: 52px;
+                    touch-action: manipulation;
+                    -webkit-tap-highlight-color: transparent;
+                }
             }
 
             @media (max-width: 480px) {
@@ -807,6 +828,25 @@
 
                 .pro-title {
                     font-size: 1.5rem;
+                }
+
+                /* Ready to Stack section */
+                .final-cta-section {
+                    padding: 4rem 1.5rem;
+                }
+
+                .final-cta-section .section-title {
+                    font-size: 2rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                .final-cta-section .cta-primary {
+                    font-size: 1.1rem;
+                    padding: 1rem 2rem;
+                    width: 100%;
+                    max-width: 280px;
+                    display: block;
+                    margin: 0 auto;
                 }
             }
 
@@ -1029,17 +1069,23 @@
         </section>
 
         <!-- Final CTA -->
-        <section style="padding: 6rem 2rem; text-align: center">
+        <section
+            class="final-cta-section"
+            style="padding: 6rem 2rem; text-align: center"
+        >
             <h2
                 class="section-title fade-in"
-                style="margin-bottom: 2rem; font-size: 3rem"
+                style="margin-bottom: 2rem; font-size: clamp(2rem, 5vw, 3rem)"
             >
                 Ready to Stack?
             </h2>
             <a
                 href="index.html"
                 class="cta-primary fade-in"
-                style="font-size: 1.5rem; padding: 1.25rem 3rem"
+                style="
+                    font-size: clamp(1.1rem, 3vw, 1.5rem);
+                    padding: clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem);
+                "
             >
                 🚀 Start Playing Now
             </a>
