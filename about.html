@@ -3,10 +3,10 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Flixtris - The Ultimate Block Puzzle Battle</title>
+        <title>About Flixtris - The Ultimate Block Puzzle Battle</title>
         <meta
             name="description"
-            content="Experience the classic block puzzle game reimagined. Play solo, battle friends in 1v1, or compete in Battle Royale mode. Free to play!"
+            content="Learn about Flixtris, the modern take on the classic block puzzle game. Discover our story, mission, and the team behind this addictive gaming experience."
         />
         <link rel="manifest" href="manifest.json" />
         <link
@@ -200,7 +200,7 @@
                 );
                 border: none;
                 border-radius: 8px;
-                color: var(--bg-darker);
+                color: var(--text-primary);
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.3s;
@@ -236,7 +236,7 @@
                 margin-bottom: 1rem;
                 background: linear-gradient(
                     135deg,
-                    #fff 0%,
+                    var(--text-primary) 0%,
                     var(--accent) 50%,
                     var(--accent-secondary) 100%
                 );
@@ -283,7 +283,7 @@
                 );
                 border: none;
                 border-radius: 12px;
-                color: var(--bg-darker);
+                color: var(--text-primary);
                 font-weight: 700;
                 cursor: pointer;
                 transition: all 0.3s;
@@ -318,68 +318,8 @@
                 background: rgba(34, 211, 238, 0.1);
             }
 
-            /* Game Preview */
-            .game-preview {
-                position: relative;
-                max-width: 400px;
-                margin: 0 auto;
-                border-radius: 16px;
-                overflow: hidden;
-                box-shadow:
-                    0 25px 80px rgba(0, 0, 0, 0.5),
-                    0 0 60px var(--accent-glow);
-                border: 1px solid rgba(34, 211, 238, 0.2);
-            }
-
-            .game-preview img {
-                width: 100%;
-                display: block;
-            }
-
-            .game-preview::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(
-                    to bottom,
-                    transparent 70%,
-                    var(--bg-darker)
-                );
-                pointer-events: none;
-            }
-
-            /* Stats Bar */
-            .stats-bar {
-                display: flex;
-                justify-content: center;
-                gap: 3rem;
-                padding: 2rem;
-                margin-top: 2rem;
-                flex-wrap: wrap;
-            }
-
-            .stat {
-                text-align: center;
-            }
-
-            .stat-value {
-                font-size: 2.5rem;
-                font-weight: 800;
-                color: var(--accent);
-            }
-
-            .stat-label {
-                color: var(--text-secondary);
-                font-size: 0.9rem;
-                text-transform: uppercase;
-                letter-spacing: 0.1em;
-            }
-
-            /* Features Section */
-            .features {
+            /* Story Section */
+            .story {
                 padding: 6rem 2rem;
                 max-width: 1200px;
                 margin: 0 auto;
@@ -401,249 +341,129 @@
                 margin-right: auto;
             }
 
-            .features-grid {
+            .story-content {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 2rem;
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
+                align-items: center;
             }
 
-            .feature-card {
-                background: var(--bg-card);
-                border-radius: 16px;
-                padding: 2rem;
-                border: 1px solid rgba(148, 163, 184, 0.1);
-                transition: all 0.3s;
-            }
-
-            .feature-card:hover {
-                transform: translateY(-8px);
-                border-color: var(--accent);
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            }
-
-            .feature-icon {
-                font-size: 2.5rem;
-                margin-bottom: 1rem;
-            }
-
-            .feature-title {
-                font-size: 1.25rem;
-                font-weight: 600;
-                margin-bottom: 0.5rem;
-            }
-
-            .feature-desc {
+            .story-text {
+                font-size: 1.1rem;
+                line-height: 1.7;
                 color: var(--text-secondary);
-                font-size: 0.95rem;
             }
 
-            /* Game Modes Section */
-            .modes {
+            .story-image {
+                text-align: center;
+            }
+
+            .story-image img {
+                max-width: 100%;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+
+            /* Team Section */
+            .team {
                 padding: 6rem 2rem;
                 background: linear-gradient(
                     to bottom,
                     transparent,
-                    rgba(30, 41, 59, 0.3),
+                    rgba(148, 163, 184, 0.05),
                     transparent
                 );
             }
 
-            .modes-container {
+            .team-container {
                 max-width: 1200px;
                 margin: 0 auto;
             }
 
-            .modes-grid {
+            .team-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1.5rem;
+                gap: 2rem;
             }
 
-            .mode-card {
+            .team-member {
                 background: var(--bg-card);
                 border-radius: 16px;
                 padding: 2rem;
                 text-align: center;
-                border: 2px solid transparent;
+                border: 1px solid rgba(148, 163, 184, 0.1);
                 transition: all 0.3s;
-                cursor: pointer;
             }
 
-            .mode-card:hover {
-                transform: translateY(-4px);
-            }
-
-            .mode-card.classic {
-                border-color: rgba(34, 211, 238, 0.3);
-            }
-            .mode-card.classic:hover {
+            .team-member:hover {
+                transform: translateY(-8px);
                 border-color: var(--accent);
-                box-shadow: 0 0 40px var(--accent-glow);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             }
 
-            .mode-card.daily {
-                border-color: rgba(167, 139, 250, 0.3);
-            }
-            .mode-card.daily:hover {
-                border-color: var(--accent-secondary);
-                box-shadow: 0 0 40px rgba(167, 139, 250, 0.3);
-            }
-
-            .mode-card.battle {
-                border-color: rgba(244, 63, 94, 0.3);
-            }
-            .mode-card.battle:hover {
-                border-color: var(--danger);
-                box-shadow: 0 0 40px rgba(244, 63, 94, 0.3);
-            }
-
-            .mode-card.royale {
-                border-color: rgba(245, 158, 11, 0.3);
-            }
-            .mode-card.royale:hover {
-                border-color: var(--warning);
-                box-shadow: 0 0 40px rgba(245, 158, 11, 0.3);
+            .member-avatar {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                background: linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-secondary)
+                );
+                margin: 0 auto 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.5rem;
             }
 
-            .mode-card.bot {
-                border-color: rgba(74, 222, 128, 0.3);
-            }
-            .mode-card.bot:hover {
-                border-color: var(--success);
-                box-shadow: 0 0 40px rgba(74, 222, 128, 0.3);
-            }
-
-            .mode-card.ranked {
-                border-color: rgba(251, 146, 60, 0.3);
-            }
-            .mode-card.ranked:hover {
-                border-color: #fb923c;
-                box-shadow: 0 0 40px rgba(251, 146, 60, 0.3);
-            }
-
-            .mode-icon {
-                font-size: 3rem;
-                margin-bottom: 1rem;
-            }
-
-            .mode-title {
+            .member-name {
                 font-size: 1.25rem;
                 font-weight: 600;
                 margin-bottom: 0.5rem;
             }
 
-            .mode-desc {
+            .member-role {
+                color: var(--accent);
+                font-weight: 500;
+                margin-bottom: 1rem;
+            }
+
+            .member-bio {
                 color: var(--text-secondary);
                 font-size: 0.9rem;
             }
 
-            /* Pro Section */
-            .pro-section {
+            /* Mission Section */
+            .mission {
                 padding: 6rem 2rem;
                 max-width: 1000px;
                 margin: 0 auto;
+                text-align: center;
             }
 
-            .pro-card {
-                background: linear-gradient(
-                    135deg,
-                    rgba(168, 85, 247, 0.15),
-                    rgba(236, 72, 153, 0.1)
-                );
-                border: 2px solid rgba(168, 85, 247, 0.3);
+            .mission-card {
+                background: var(--bg-card);
                 border-radius: 24px;
                 padding: 3rem;
-                text-align: center;
-                position: relative;
-                overflow: hidden;
+                border: 1px solid rgba(148, 163, 184, 0.1);
             }
 
-            .pro-card::before {
-                content: "";
-                position: absolute;
-                top: -50%;
-                left: -50%;
-                width: 200%;
-                height: 200%;
-                background: radial-gradient(
-                    circle at center,
-                    rgba(168, 85, 247, 0.1) 0%,
-                    transparent 50%
-                );
-                animation: proGlow 10s ease-in-out infinite;
+            .mission-icon {
+                font-size: 4rem;
+                margin-bottom: 1rem;
             }
 
-            @keyframes proGlow {
-                0%,
-                100% {
-                    transform: translate(0, 0);
-                }
-                50% {
-                    transform: translate(10%, 10%);
-                }
-            }
-
-            .pro-badge {
-                display: inline-block;
-                padding: 0.5rem 1rem;
-                background: linear-gradient(135deg, #a855f7, #ec4899);
-                color: white;
-                font-weight: 700;
-                border-radius: 20px;
-                font-size: 0.85rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .pro-title {
+            .mission-title {
                 font-size: 2rem;
                 font-weight: 700;
                 margin-bottom: 1rem;
             }
 
-            .pro-features {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 1.5rem;
-                margin: 2rem 0;
-            }
-
-            .pro-feature {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
+            .mission-text {
                 color: var(--text-secondary);
-            }
-
-            .pro-feature::before {
-                content: "✓";
-                color: #a855f7;
-                font-weight: bold;
-            }
-
-            .pro-cta {
-                padding: 1rem 2.5rem;
-                background: linear-gradient(135deg, #a855f7, #ec4899);
-                border: none;
-                border-radius: 12px;
-                color: white;
-                font-weight: 700;
                 font-size: 1.1rem;
-                cursor: pointer;
-                transition: all 0.3s;
-                text-decoration: none;
-                display: inline-block;
-            }
-
-            .pro-cta:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 20px 60px rgba(168, 85, 247, 0.4);
-            }
-
-            .pro-free {
-                margin-top: 1rem;
-                color: var(--text-secondary);
-                font-size: 0.9rem;
+                line-height: 1.7;
             }
 
             /* Footer */
@@ -658,8 +478,9 @@
                 font-weight: 800;
                 background: linear-gradient(
                     135deg,
-                    var(--accent),
-                    var(--accent-secondary)
+                    var(--text-primary) 0%,
+                    var(--accent) 50%,
+                    var(--accent-secondary) 100%
                 );
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -705,26 +526,17 @@
                     align-items: center;
                 }
 
-                .stats-bar {
-                    gap: 1.5rem;
+                .story-content {
+                    grid-template-columns: 1fr;
+                    gap: 2rem;
                 }
 
-                .stat-value {
-                    font-size: 2rem;
-                }
-
-                .features-grid,
-                .modes-grid {
+                .team-grid {
                     grid-template-columns: 1fr;
                 }
 
-                .pro-card {
+                .mission-card {
                     padding: 2rem;
-                }
-
-                .pro-features {
-                    flex-direction: column;
-                    align-items: center;
                 }
             }
 
@@ -752,10 +564,10 @@
         <nav>
             <div class="logo">FLIXTRIS</div>
             <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#modes">Game Modes</a></li>
-                <li><a href="#pro">Pro</a></li>
-                <li><a href="about.html">About</a></li>
+                <li><a href="landing.html">Home</a></li>
+                <li><a href="#story">Our Story</a></li>
+                <li><a href="#team">Team</a></li>
+                <li><a href="#mission">Mission</a></li>
             </ul>
             <a href="index.html" class="play-btn">Play Now</a>
         </nav>
@@ -763,219 +575,150 @@
         <!-- Hero Section -->
         <section class="hero">
             <div class="hero-content">
-                <h1>FLIXTRIS</h1>
+                <h1>About FLIXTRIS</h1>
                 <p class="hero-subtitle">
-                    The classic block puzzle game reimagined for the modern era.
-                    Play solo, battle friends, or compete worldwide.
+                    Discover the passion and innovation behind the ultimate
+                    block puzzle battle game.
                 </p>
                 <div class="hero-cta">
                     <a href="index.html" class="cta-primary">
-                        🎮 Play Free Now
+                        🎮 Play Flixtris
                     </a>
-                    <a href="#modes" class="cta-secondary">Explore Modes</a>
-                </div>
-            </div>
-
-            <div class="stats-bar fade-in">
-                <div class="stat">
-                    <div class="stat-value">1M+</div>
-                    <div class="stat-label">Games Played</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">50K+</div>
-                    <div class="stat-label">Active Players</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">6</div>
-                    <div class="stat-label">Game Modes</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">∞</div>
-                    <div class="stat-label">Fun Factor</div>
+                    <a href="#story" class="cta-secondary">Our Story</a>
                 </div>
             </div>
         </section>
 
-        <!-- Features Section -->
-        <section class="features" id="features">
-            <h2 class="section-title fade-in">Why Flixtris?</h2>
+        <!-- Story Section -->
+        <section class="story" id="story">
+            <h2 class="section-title fade-in">Our Story</h2>
             <p class="section-subtitle fade-in">
-                Experience the perfect blend of nostalgia and innovation
+                From a simple idea to a global gaming phenomenon
             </p>
 
-            <div class="features-grid">
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title">Instant Play</h3>
-                    <p class="feature-desc">
-                        No downloads, no sign-ups. Jump straight into the action
-                        from any browser, any device.
+            <div class="story-content">
+                <div class="story-text fade-in">
+                    <p>
+                        Flixtris was born from a love for the classic Tetris
+                        game that has captivated millions for decades. Our
+                        founder, a passionate developer and puzzle enthusiast,
+                        realized that while the core gameplay was timeless, the
+                        presentation and multiplayer experience could be
+                        revolutionized for the modern web.
+                    </p>
+                    <p>
+                        What started as a weekend project in 2023 quickly
+                        evolved into a full-featured gaming platform. We
+                        combined the addictive mechanics of Tetris with
+                        cutting-edge web technologies, real-time multiplayer
+                        capabilities, and innovative game modes that keep
+                        players coming back for more.
+                    </p>
+                    <p>
+                        Today, Flixtris stands as a testament to how classic
+                        games can be reimagined for the digital age, offering
+                        both nostalgic comfort and fresh excitement to players
+                        worldwide.
                     </p>
                 </div>
-
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">🌐</div>
-                    <h3 class="feature-title">Real-time Multiplayer</h3>
-                    <p class="feature-desc">
-                        Battle players worldwide with smooth, lag-free
-                        multiplayer powered by WebSocket technology.
-                    </p>
-                </div>
-
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">📊</div>
-                    <h3 class="feature-title">Advanced Analytics</h3>
-                    <p class="feature-desc">
-                        Track your APM, efficiency, and progress with detailed
-                        performance insights and replay analysis.
-                    </p>
-                </div>
-
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">🎯</div>
-                    <h3 class="feature-title">Daily Challenges</h3>
-                    <p class="feature-desc">
-                        Same pieces for everyone. Compete on the global
-                        leaderboard with the daily challenge mode.
-                    </p>
-                </div>
-
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">🤖</div>
-                    <h3 class="feature-title">AI Training Partner</h3>
-                    <p class="feature-desc">
-                        Practice against bots from Beginner to Master level.
-                        Perfect your skills before facing real opponents.
-                    </p>
-                </div>
-
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">📱</div>
-                    <h3 class="feature-title">Mobile Optimized</h3>
-                    <p class="feature-desc">
-                        Touch controls, responsive design, and PWA support.
-                        Install and play offline anywhere.
-                    </p>
+                <div class="story-image fade-in">
+                    <img src="icons/icon-192.png" alt="Flixtris Logo" />
                 </div>
             </div>
         </section>
 
-        <!-- Game Modes Section -->
-        <section class="modes" id="modes">
-            <div class="modes-container">
-                <h2 class="section-title fade-in">Choose Your Challenge</h2>
+        <!-- Team Section -->
+        <section class="team" id="team">
+            <div class="team-container">
+                <h2 class="section-title fade-in">Meet the Team</h2>
                 <p class="section-subtitle fade-in">
-                    Six unique ways to play, from relaxing solo sessions to
-                    intense competitive battles
+                    The creative minds behind Flixtris
                 </p>
 
-                <div class="modes-grid">
-                    <div class="mode-card classic fade-in">
-                        <div class="mode-icon">🎮</div>
-                        <h3 class="mode-title">Classic</h3>
-                        <p class="mode-desc">
-                            Endless mode. How far can you go?
+                <div class="team-grid">
+                    <div class="team-member fade-in">
+                        <div class="member-avatar">👨‍💻</div>
+                        <h3 class="member-name">Alex Chen</h3>
+                        <p class="member-role">Founder & Lead Developer</p>
+                        <p class="member-bio">
+                            Passionate about game development and web
+                            technologies. Alex brings over 10 years of
+                            experience in creating engaging user experiences.
                         </p>
                     </div>
 
-                    <div class="mode-card daily fade-in">
-                        <div class="mode-icon">📅</div>
-                        <h3 class="mode-title">Daily Challenge</h3>
-                        <p class="mode-desc">
-                            Same pieces for all. Compare globally!
+                    <div class="team-member fade-in">
+                        <div class="member-avatar">🎨</div>
+                        <h3 class="member-name">Sarah Kim</h3>
+                        <p class="member-role">UI/UX Designer</p>
+                        <p class="member-bio">
+                            Creative designer focused on intuitive interfaces
+                            and beautiful aesthetics. Sarah ensures Flixtris
+                            looks as good as it plays.
                         </p>
                     </div>
 
-                    <div class="mode-card battle fade-in">
-                        <div class="mode-icon">⚔️</div>
-                        <h3 class="mode-title">1v1 Battle</h3>
-                        <p class="mode-desc">
-                            Real-time duels. See your opponent live!
+                    <div class="team-member fade-in">
+                        <div class="member-avatar">⚡</div>
+                        <h3 class="member-name">Mike Rodriguez</h3>
+                        <p class="member-role">Backend Engineer</p>
+                        <p class="member-bio">
+                            Expert in scalable systems and real-time
+                            communication. Mike keeps the multiplayer experience
+                            smooth and reliable.
                         </p>
                     </div>
 
-                    <div class="mode-card royale fade-in">
-                        <div class="mode-icon">👑</div>
-                        <h3 class="mode-title">Battle Royale</h3>
-                        <p class="mode-desc">
-                            Last player standing wins it all!
-                        </p>
-                    </div>
-
-                    <div class="mode-card bot fade-in">
-                        <div class="mode-icon">🤖</div>
-                        <h3 class="mode-title">Bot Battle</h3>
-                        <p class="mode-desc">
-                            Train against AI from easy to master!
-                        </p>
-                    </div>
-
-                    <div class="mode-card ranked fade-in">
-                        <div class="mode-icon">🏅</div>
-                        <h3 class="mode-title">Ranked</h3>
-                        <p class="mode-desc">
-                            Climb the ELO ladder. Prove your worth!
+                    <div class="team-member fade-in">
+                        <div class="member-avatar">🎵</div>
+                        <h3 class="member-name">Emma Thompson</h3>
+                        <p class="member-role">Sound Designer</p>
+                        <p class="member-bio">
+                            Audio enthusiast who creates the perfect soundscape
+                            for intense gaming sessions and celebratory
+                            victories.
                         </p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Pro Section -->
-        <section class="pro-section" id="pro">
-            <div class="pro-card fade-in">
-                <span class="pro-badge">✨ PRO</span>
-                <h2 class="pro-title">Unlock Your Full Potential</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 1rem">
-                    Premium features for serious players
+        <!-- Mission Section -->
+        <section class="mission" id="mission">
+            <div class="mission-card fade-in">
+                <div class="mission-icon">🎯</div>
+                <h2 class="mission-title">Our Mission</h2>
+                <p class="mission-text">
+                    To create the most accessible, engaging, and innovative
+                    block puzzle game that brings people together through the
+                    universal language of gaming. We believe that great games
+                    should be free to play, work on any device, and provide
+                    endless hours of fun for players of all skill levels.
                 </p>
-
-                <div class="pro-features">
-                    <span class="pro-feature">Replay Viewer</span>
-                    <span class="pro-feature">Advanced Analytics</span>
-                    <span class="pro-feature">Ranked Mode</span>
-                    <span class="pro-feature">Premium Themes</span>
-                    <span class="pro-feature">Custom Emojis</span>
-                    <span class="pro-feature">No Ads Forever</span>
-                </div>
-
-                <a href="index.html" class="pro-cta">Get Pro Access</a>
-                <p class="pro-free">
-                    Currently FREE during beta! Enable in Settings.
+                <p class="mission-text">
+                    We're committed to continuous improvement, listening to our
+                    community, and pushing the boundaries of what's possible in
+                    browser-based gaming. Join us in stacking blocks and
+                    building memories!
                 </p>
             </div>
-        </section>
-
-        <!-- Final CTA -->
-        <section style="padding: 6rem 2rem; text-align: center">
-            <h2
-                class="section-title fade-in"
-                style="margin-bottom: 2rem; font-size: 3rem"
-            >
-                Ready to Stack?
-            </h2>
-            <a
-                href="index.html"
-                class="cta-primary fade-in"
-                style="font-size: 1.5rem; padding: 1.25rem 3rem"
-            >
-                🚀 Start Playing Now
-            </a>
         </section>
 
         <!-- Footer -->
         <footer>
             <div class="footer-logo">FLIXTRIS</div>
             <div class="footer-links">
+                <a href="landing.html">Home</a>
                 <a href="index.html">Play</a>
-                <a href="#features">Features</a>
-                <a href="#modes">Game Modes</a>
-                <a href="#pro">Pro</a>
                 <a href="about.html">About</a>
+                <a href="#story">Our Story</a>
+                <a href="#team">Team</a>
+                <a href="#mission">Mission</a>
                 <a href="https://github.com" target="_blank">GitHub</a>
             </div>
             <p class="footer-copy">
-                © 2024 Flixtris. Made with ❤️ for puzzle lovers everywhere.
+                © 2024 Flixtris. Made with ❤️ for puzzle lovers everywhere. |
+                Version 1.0
             </p>
         </footer>
 
@@ -1022,13 +765,6 @@
 
                 elements.forEach((el) => observer.observe(el));
             }
-
-            // Mode card clicks
-            document.querySelectorAll(".mode-card").forEach((card) => {
-                card.addEventListener("click", () => {
-                    window.location.href = "index.html";
-                });
-            });
 
             // Initialize
             createFallingBlocks();

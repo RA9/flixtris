@@ -528,7 +528,12 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Serve static files
-  let filePath = pathname === "/" ? "/index.html" : pathname;
+  let filePath;
+  if (pathname === "/about") {
+    filePath = "/about.html";
+  } else {
+    filePath = pathname === "/" ? "/landing.html" : pathname;
+  }
   filePath = path.join(STATIC_DIR, filePath);
 
   // Security: prevent directory traversal

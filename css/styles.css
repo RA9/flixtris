@@ -2670,14 +2670,22 @@ body {
 
 @media (min-width: 601px) and (max-width: 900px) {
     :root {
-        --canvas-width: 280px;
-        --canvas-height: 467px;
+        --canvas-width: 360px;
+        --canvas-height: 600px;
+    }
+
+    .panel {
+        max-width: 220px;
     }
 }
 
 @media (min-width: 901px) {
     :root {
-        --canvas-width: 300px;
-        --canvas-height: 500px;
+        --canvas-width: 400px;
+        --canvas-height: 667px;
+    }
+
+    .panel {
+        max-width: 250px;
     }
 }

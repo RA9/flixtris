@@ -4,9 +4,15 @@
   const DB_VERSION = 4;
   let db;
   let playerCache = null;
+  let dbAvailable = false;
 
   function openDB() {
     return new Promise((resolve, reject) => {
+      if (!window.indexedDB) {
+        reject(new Error("IndexedDB not supported"));
+        return;
+      }
+
       const req = indexedDB.open(DB_NAME, DB_VERSION);
 
       req.onupgradeneeded = (e) => {
@@ -34,11 +40,34 @@
 
       req.onsuccess = (e) => {
         db = e.target.result;
+        dbAvailable = true;
         resolve();
       };
 
       req.onerror = () => reject(req.error);
     });
+  }
+
+  // Fallback storage using localStorage
+  function getLocalStorageKey(key) {
+    return `flixtris_${key}`;
+  }
+
+  function getFromLocalStorage(key) {
+    try {
+      const item = localStorage.getItem(getLocalStorageKey(key));
+      return item ? JSON.parse(item) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setToLocalStorage(key, value) {
+    try {
+      localStorage.setItem(getLocalStorageKey(key), JSON.stringify(value));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
   }
 
   // Generate anonymous player name
@@ -55,42 +84,68 @@
   async function getPlayer() {
     if (playerCache) return playerCache;
 
-    return new Promise((resolve) => {
-      const tx = db.transaction("player", "readonly");
-      const req = tx.objectStore("player").get("profile");
-      req.onsuccess = () => {
-        if (req.result) {
-          playerCache = req.result;
-          resolve(req.result);
-        } else {
-          // Create new player profile
-          const newPlayer = {
-            id: "profile",
-            name: null,
-            generatedName: generatePlayerName(),
-            createdAt: Date.now(),
-            totalGames: 0,
-            totalScore: 0,
-            bestScore: 0,
-          };
-          savePlayer(newPlayer).then(() => {
-            playerCache = newPlayer;
-            resolve(newPlayer);
-          });
-        }
-      };
-    });
+    if (dbAvailable) {
+      return new Promise((resolve) => {
+        const tx = db.transaction("player", "readonly");
+        const req = tx.objectStore("player").get("profile");
+        req.onsuccess = () => {
+          if (req.result) {
+            playerCache = req.result;
+            resolve(req.result);
+          } else {
+            // Create new player profile
+            const newPlayer = {
+              id: "profile",
+              name: null,
+              generatedName: generatePlayerName(),
+              createdAt: Date.now(),
+              totalGames: 0,
+              totalScore: 0,
+              bestScore: 0,
+            };
+            savePlayer(newPlayer).then(() => {
+              playerCache = newPlayer;
+              resolve(newPlayer);
+            });
+          }
+        };
+      });
+    } else {
+      // Fallback to localStorage
+      let player = getFromLocalStorage("player");
+      if (!player) {
+        player = {
+          id: "profile",
+          name: null,
+          generatedName: generatePlayerName(),
+          createdAt: Date.now(),
+          totalGames: 0,
+          totalScore: 0,
+          bestScore: 0,
+        };
+        setToLocalStorage("player", player);
+      }
+      playerCache = player;
+      return player;
+    }
   }
 
   // Save player profile
   function savePlayer(player) {
     return new Promise((resolve) => {
-      const tx = db.transaction("player", "readwrite");
-      tx.objectStore("player").put(player);
-      tx.oncomplete = () => {
+      if (dbAvailable) {
+        const tx = db.transaction("player", "readwrite");
+        tx.objectStore("player").put(player);
+        tx.oncomplete = () => {
+          playerCache = player;
+          resolve();
+        };
+      } else {
+        // Fallback to localStorage
+        setToLocalStorage("player", player);
         playerCache = player;
         resolve();
-      };
+      }
     });
   }
 
@@ -128,6 +183,59 @@
   async function hasCustomName() {
     const player = await getPlayer();
     return player.name !== null;
+  }
+
+  // Fallback implementations for other functions
+  function addGame(record) {
+    if (dbAvailable) {
+      const tx = db.transaction("games", "readwrite");
+      tx.objectStore("games").add(record);
+    }
+    // No fallback for games
+  }
+
+  function getGames(limit = 20) {
+    if (dbAvailable) {
+      return new Promise((resolve) => {
+        const tx = db.transaction("games", "readonly");
+        const store = tx.objectStore("games");
+        const req = store.openCursor(null, "prev");
+        const res = [];
+
+        req.onsuccess = (e) => {
+          const cursor = e.target.result;
+          if (cursor && res.length < limit) {
+            res.push(cursor.value);
+            cursor.continue();
+          } else {
+            resolve(res);
+          }
+        };
+      });
+    } else {
+      return Promise.resolve([]);
+    }
+  }
+
+  function saveSetting(key, value) {
+    if (dbAvailable) {
+      const tx = db.transaction("settings", "readwrite");
+      tx.objectStore("settings").put({ id: key, value });
+    } else {
+      setToLocalStorage(`setting_${key}`, value);
+    }
+  }
+
+  function getSetting(key) {
+    if (dbAvailable) {
+      return new Promise((resolve) => {
+        const tx = db.transaction("settings", "readonly");
+        const req = tx.objectStore("settings").get(key);
+        req.onsuccess = () => resolve(req.result?.value);
+      });
+    } else {
+      return Promise.resolve(getFromLocalStorage(`setting_${key}`));
+    }
   }
 
   function addGame(record) {
@@ -264,28 +372,32 @@
   window.Flixtris.api.dbReady = (async () => {
     try {
       await openDB();
-      window.Flixtris.api.db = {
-        // Existing
-        addGame,
-        getGames,
-        saveSetting,
-        getSetting,
-        getPlayer,
-        setPlayerName,
-        getDisplayName,
-        updatePlayerStats,
-        hasCustomName,
-        // Premium foundations (Phase 1–2)
-        recordPurchase,
-        getPurchases,
-        addReplay,
-        getReplays,
-        deleteReplay,
-        addGameAnalytics,
-        getGameAnalytics,
-      };
     } catch (error) {
       console.error("DB init error:", error);
+      dbAvailable = false;
     }
+
+    window.Flixtris.api.db = {
+      // Existing
+      addGame,
+      getGames,
+      saveSetting,
+      getSetting,
+      getPlayer,
+      setPlayerName,
+      getDisplayName,
+      updatePlayerStats,
+      hasCustomName,
+      // Premium foundations (Phase 1–2)
+      recordPurchase: dbAvailable ? recordPurchase : () => {},
+      getPurchases: dbAvailable ? getPurchases : () => Promise.resolve([]),
+      addReplay: dbAvailable ? addReplay : () => {},
+      getReplays: dbAvailable ? getReplays : () => Promise.resolve([]),
+      deleteReplay: dbAvailable ? deleteReplay : () => Promise.resolve(),
+      addGameAnalytics: dbAvailable ? addGameAnalytics : () => {},
+      getGameAnalytics: dbAvailable
+        ? getGameAnalytics
+        : () => Promise.resolve([]),
+    };
   })();
 })();

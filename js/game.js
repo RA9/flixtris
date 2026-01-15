@@ -851,6 +851,7 @@
         }
         render();
       }
+      e.preventDefault();
       return;
     }
 
@@ -859,22 +860,28 @@
     switch (e.key) {
       case "ArrowLeft":
         moveLeft();
+        e.preventDefault();
         break;
       case "ArrowRight":
         moveRight();
+        e.preventDefault();
         break;
       case "ArrowDown":
         moveDown();
+        e.preventDefault();
         break;
       case "ArrowUp":
         tryRotate();
+        e.preventDefault();
         break;
       case " ":
         hardDrop();
+        e.preventDefault();
         break;
       case "c":
       case "C":
         holdPiece();
+        e.preventDefault();
         break;
     }
     // Telemetry: record input for replay (Phase 2)
