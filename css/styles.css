@@ -3130,13 +3130,9 @@ body {
 /* Responsive */
 @media (max-width: 767px) {
     :root {
-        --canvas-width: min(90vw, 280px);
+        /* Default: Fill available space for solo play */
+        --canvas-width: 90vw;
         --canvas-height: calc(var(--canvas-width) * 2);
-    }
-
-    /* Smaller board when opponent is visible (multiplayer) */
-    .game-container:has(.opponent-container.active) {
-        --canvas-width: min(60vw, 180px);
     }
 
     #screen-game {
@@ -3194,18 +3190,32 @@ body {
         overflow: hidden;
     }
 
+    /* Solo play: maximize board size */
+    .game-center:not(:has(.opponent-container.active)) {
+        padding: 5px;
+    }
+
     .game-board-wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100%;
+        width: 100%;
     }
 
+    /* Default canvas sizing for solo play - fills available space */
     #game {
-        width: var(--canvas-width);
-        height: var(--canvas-height);
-        max-height: 100%;
+        width: auto;
+        height: 100%;
+        max-width: 90vw;
         object-fit: contain;
+    }
+
+    /* When opponent is visible (multiplayer/bot), constrain the board */
+    .game-center:has(.opponent-container.active) #game {
+        width: 55vw;
+        height: auto;
+        max-height: 100%;
     }
 
     /* Hide sidebars on mobile */
