@@ -158,14 +158,30 @@
     const count = parseInt(playerCount.value);
 
     // Create tournament
-    const tournament = api.tournament.create(name, selectedTournamentType, count);
+    const tournament = api.tournament.create(
+      name,
+      selectedTournamentType,
+      count,
+    );
 
     // Generate AI players for demo (in real app, you'd have a player registration flow)
     const playerNames = [
-      "Alpha", "Bravo", "Charlie", "Delta",
-      "Echo", "Foxtrot", "Golf", "Hotel",
-      "India", "Juliet", "Kilo", "Lima",
-      "Mike", "November", "Oscar", "Papa"
+      "Alpha",
+      "Bravo",
+      "Charlie",
+      "Delta",
+      "Echo",
+      "Foxtrot",
+      "Golf",
+      "Hotel",
+      "India",
+      "Juliet",
+      "Kilo",
+      "Lima",
+      "Mike",
+      "November",
+      "Oscar",
+      "Papa",
     ];
 
     for (let i = 0; i < count; i++) {
@@ -199,36 +215,77 @@
 
     if (!matchesContainer) return;
 
-    // Get current round matches
-    const roundMatches = tournament.matches.filter(
-      (m) => m.round === tournament.currentRound
-    );
-
     matchesContainer.innerHTML = "";
 
-    if (roundMatches.length === 0) {
-      matchesContainer.innerHTML =
+    // Show winner banner if tournament is completed
+    if (tournament.status === "completed" && tournament.winner) {
+      const winnerBanner = document.createElement("div");
+      winnerBanner.className = "tournament-winner-banner";
+      winnerBanner.innerHTML = `
+        <span class="trophy-icon">🏆</span>
+        <h3>Tournament Champion</h3>
+        <span class="winner-name">${tournament.winner.name}</span>
+      `;
+      matchesContainer.appendChild(winnerBanner);
+    }
+
+    // Get current round matches
+    const roundMatches = tournament.matches.filter(
+      (m) => m.round === tournament.currentRound,
+    );
+
+    if (roundMatches.length === 0 && tournament.status !== "completed") {
+      matchesContainer.innerHTML +=
         '<p style="text-align: center; color: var(--text-secondary);">No matches in current round</p>';
       return;
     }
 
+    // Add round header
+    if (roundMatches.length > 0) {
+      const totalRounds = Math.ceil(Math.log2(tournament.playerCount));
+      const roundName = getRoundName(tournament.currentRound, totalRounds);
+
+      const roundHeader = document.createElement("div");
+      roundHeader.className = "tournament-round-header";
+      roundHeader.innerHTML = `
+        <h4>${roundName}</h4>
+        <span class="round-badge">${roundMatches.length} match${roundMatches.length > 1 ? "es" : ""}</span>
+      `;
+      matchesContainer.appendChild(roundHeader);
+    }
+
     roundMatches.forEach((match, index) => {
       const matchEl = document.createElement("div");
-      matchEl.className = `tournament-match ${match.status}`;
+      const isFinal = roundMatches.length === 1 && activePlayers.length <= 2;
+      matchEl.className = `tournament-match ${match.status}${isFinal ? " final" : ""}`;
+
+      const player1Class =
+        match.winner === match.player1.id
+          ? "winner"
+          : match.winner && match.winner !== match.player1.id
+            ? "eliminated"
+            : "";
+      const player2Class =
+        match.winner === match.player2.id
+          ? "winner"
+          : match.winner && match.winner !== match.player2.id
+            ? "eliminated"
+            : "";
 
       matchEl.innerHTML = `
         <div class="tournament-match-header">
           <span class="tournament-match-number">Match ${index + 1}</span>
-          <span class="tournament-match-status">${match.status}</span>
+          <span class="tournament-match-status">${formatMatchStatus(match.status)}</span>
         </div>
         <div class="tournament-match-players">
-          <div class="tournament-player ${match.winner === match.player1.id ? "winner" : ""}">
+          <div class="tournament-player ${player1Class}">
             <span class="tournament-player-name">${match.player1.name}</span>
-            <span class="tournament-player-score">${match.player1Score}</span>
+            <span class="tournament-player-score">${match.player1Score || 0}</span>
           </div>
-          <div class="tournament-player ${match.winner === match.player2.id ? "winner" : ""}">
+          <span class="tournament-vs">VS</span>
+          <div class="tournament-player ${player2Class}">
             <span class="tournament-player-name">${match.player2.name}</span>
-            <span class="tournament-player-score">${match.player2Score}</span>
+            <span class="tournament-player-score">${match.player2Score || 0}</span>
           </div>
         </div>
       `;
@@ -245,12 +302,29 @@
         playNextMatchBtn.textContent = "Play Next Match";
       } else if (tournament.status === "completed") {
         playNextMatchBtn.disabled = true;
-        playNextMatchBtn.textContent = `🏆 Winner: ${tournament.winner.name}`;
+        playNextMatchBtn.textContent = "Tournament Complete";
       } else {
         playNextMatchBtn.disabled = true;
         playNextMatchBtn.textContent = "No Matches Available";
       }
     }
+  }
+
+  function getRoundName(round, totalRounds) {
+    const roundsFromEnd = totalRounds - round + 1;
+    if (roundsFromEnd === 1) return "Finals";
+    if (roundsFromEnd === 2) return "Semi-Finals";
+    if (roundsFromEnd === 3) return "Quarter-Finals";
+    return `Round ${round}`;
+  }
+
+  function formatMatchStatus(status) {
+    const statusMap = {
+      pending: "Upcoming",
+      in_progress: "In Progress",
+      completed: "Completed",
+    };
+    return statusMap[status] || status;
   }
 
   function playNextMatch() {
@@ -264,7 +338,7 @@
     }
 
     alert(
-      `Starting match: ${nextMatch.player1.name} vs ${nextMatch.player2.name}\n\nThis would start a game. For demo purposes, we'll simulate results.`
+      `Starting match: ${nextMatch.player1.name} vs ${nextMatch.player2.name}\n\nThis would start a game. For demo purposes, we'll simulate results.`,
     );
 
     // Simulate match results (in real app, this would start an actual game)
@@ -277,7 +351,7 @@
       nextMatch.id,
       winnerId,
       player1Score,
-      player2Score
+      player2Score,
     );
 
     // Reload bracket
@@ -293,12 +367,65 @@
       return b.score - a.score;
     });
 
-    let standingsText = "Tournament Standings:\n\n";
+    // Create standings overlay
+    let overlay = document.getElementById("standings-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "standings-overlay";
+      overlay.className = "overlay";
+      overlay.innerHTML = `
+        <div class="overlay-content" style="max-width: 500px;">
+          <h2 style="color: var(--accent); margin-bottom: 1rem;">Tournament Standings</h2>
+          <div class="tournament-standings" id="standings-table"></div>
+          <button class="btn secondary" id="closeStandingsBtn" style="margin-top: 1rem;">Close</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      document
+        .getElementById("closeStandingsBtn")
+        .addEventListener("click", () => {
+          overlay.classList.remove("active");
+        });
+
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.classList.remove("active");
+      });
+    }
+
+    const table = document.getElementById("standings-table");
+    table.innerHTML = `
+      <div class="standings-header">
+        <span>#</span>
+        <span>Player</span>
+        <span>W</span>
+        <span>L</span>
+        <span>Score</span>
+      </div>
+    `;
+
     players.forEach((player, index) => {
-      standingsText += `${index + 1}. ${player.name} - ${player.wins}W/${player.losses}L - ${player.score} pts${player.eliminated ? " (Eliminated)" : ""}\n`;
+      const rankClass =
+        index === 0
+          ? "gold"
+          : index === 1
+            ? "silver"
+            : index === 2
+              ? "bronze"
+              : "";
+      const row = document.createElement("div");
+      row.className = "standings-row";
+      row.innerHTML = `
+        <span class="standings-rank ${rankClass}">${index + 1}</span>
+        <span class="standings-name ${player.eliminated ? "eliminated" : ""}">${player.name}</span>
+        <span class="standings-wins">${player.wins}</span>
+        <span class="standings-losses">${player.losses}</span>
+        <span class="standings-score">${player.score}</span>
+      `;
+      table.appendChild(row);
     });
 
-    alert(standingsText);
+    overlay.classList.add("active");
   }
 
   // Export API

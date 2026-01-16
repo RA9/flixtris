@@ -3835,3 +3835,440 @@ body {
         width: 100%;
     }
 }
+
+/* ========================
+   Tournament Enhanced Styles
+   ======================== */
+
+/* Tournament screen title styling */
+#screen-tournament .menu-title,
+#screen-create-tournament .menu-title,
+#screen-tournament-bracket .menu-title {
+    color: #f59e0b;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+/* Tournament card hover glow effect */
+.tournament-item {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.tournament-item:hover {
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+/* Bracket visualization - connecting lines */
+.tournament-matches {
+    position: relative;
+}
+
+.tournament-match {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.tournament-match:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Match connector lines (for bracket feel) */
+.tournament-match::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent));
+    opacity: 0.5;
+}
+
+.tournament-match:first-child::before {
+    display: none;
+}
+
+/* Round indicator badge */
+.tournament-round {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.1rem;
+}
+
+/* Winner styling */
+.tournament-player.winner {
+    animation: winnerPulse 2s ease-in-out infinite;
+}
+
+@keyframes winnerPulse {
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(74, 222, 128, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+    }
+}
+
+.tournament-player.winner .tournament-player-name {
+    color: #4ade80;
+}
+
+.tournament-player.winner .tournament-player-score {
+    color: #4ade80;
+}
+
+/* Eliminated player styling */
+.tournament-player.eliminated {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+/* Trophy/Winner celebration */
+.tournament-winner-banner {
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(
+        135deg,
+        rgba(245, 158, 11, 0.15),
+        rgba(234, 179, 8, 0.1)
+    );
+    border: 2px solid rgba(245, 158, 11, 0.4);
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    animation: winnerBannerGlow 3s ease-in-out infinite;
+}
+
+@keyframes winnerBannerGlow {
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(245, 158, 11, 0.4);
+    }
+}
+
+.tournament-winner-banner .trophy-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    animation: trophyBounce 1s ease-in-out infinite;
+}
+
+@keyframes trophyBounce {
+    0%,
+    100% {
+        transform: translateY(0) rotate(-5deg);
+    }
+    50% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+}
+
+.tournament-winner-banner h3 {
+    color: #f59e0b;
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.tournament-winner-banner .winner-name {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Status badge animations */
+.tournament-status-badge.in_progress {
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Match status colors */
+.tournament-match.in_progress {
+    border-color: #f59e0b;
+    background: linear-gradient(
+        135deg,
+        var(--bg-card),
+        rgba(245, 158, 11, 0.05)
+    );
+}
+
+.tournament-match.in_progress .tournament-match-status {
+    color: #f59e0b;
+}
+
+/* VS indicator between players */
+.tournament-match-players {
+    position: relative;
+}
+
+.tournament-vs {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+/* Create tournament form enhancements */
+.tournament-create-form .form-group {
+    animation: formSlideIn 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.tournament-create-form .form-group:nth-child(1) {
+    animation-delay: 0.05s;
+}
+.tournament-create-form .form-group:nth-child(2) {
+    animation-delay: 0.1s;
+}
+.tournament-create-form .form-group:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+@keyframes formSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tournament type button icons */
+.tournament-type-btn[data-type="single_elimination"]::before {
+    content: "🏆 ";
+}
+
+.tournament-type-btn[data-type="round_robin"]::before {
+    content: "🔄 ";
+}
+
+/* Loading skeleton for tournament list */
+.tournament-skeleton {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.tournament-skeleton-line {
+    height: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.tournament-skeleton-line:last-child {
+    margin-bottom: 0;
+    width: 60%;
+}
+
+@keyframes skeletonPulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Bracket round headers */
+.tournament-round-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--bg-card);
+}
+
+.tournament-round-header h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.tournament-round-header .round-badge {
+    background: var(--accent);
+    color: var(--bg-primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Final match highlight */
+.tournament-match.final {
+    border: 2px solid #f59e0b;
+    background: linear-gradient(
+        135deg,
+        var(--bg-card),
+        rgba(245, 158, 11, 0.08)
+    );
+}
+
+.tournament-match.final::after {
+    content: "FINAL";
+    position: absolute;
+    top: -10px;
+    right: 1rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+/* Standings table */
+.tournament-standings {
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.standings-header,
+.standings-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 60px 60px 80px;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    align-items: center;
+}
+
+.standings-header {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.standings-row {
+    border-bottom: 1px solid var(--bg-secondary);
+    transition: background 0.15s;
+}
+
+.standings-row:last-child {
+    border-bottom: none;
+}
+
+.standings-row:hover {
+    background: var(--bg-secondary);
+}
+
+.standings-rank {
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.standings-rank.gold {
+    color: #f59e0b;
+}
+.standings-rank.silver {
+    color: #94a3b8;
+}
+.standings-rank.bronze {
+    color: #cd7f32;
+}
+
+.standings-name {
+    font-weight: 600;
+}
+
+.standings-name.eliminated {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.standings-wins {
+    color: #4ade80;
+    font-weight: 600;
+}
+
+.standings-losses {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.standings-score {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Standings overlay */
+#standings-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.95);
+    z-index: 100;
+    padding: 24px;
+    overflow: auto;
+}
+
+#standings-overlay.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Mobile bracket view improvements */
+@media (max-width: 600px) {
+    .tournament-match::before {
+        display: none;
+    }
+
+    .tournament-winner-banner {
+        padding: 1.5rem 1rem;
+    }
+
+    .tournament-winner-banner .trophy-icon {
+        font-size: 3rem;
+    }
+
+    .tournament-winner-banner .winner-name {
+        font-size: 1.5rem;
+    }
+
+    .standings-header,
+    .standings-row {
+        grid-template-columns: 40px 1fr 50px 50px;
+        font-size: 0.85rem;
+    }
+
+    .standings-score {
+        display: none;
+    }
+}
