@@ -1167,7 +1167,9 @@
     if (name) {
       // Check name uniqueness
       try {
-        const response = await fetch(`/api/check-name?name=${encodeURIComponent(name)}`);
+        const response = await fetch(
+          `/api/check-name?name=${encodeURIComponent(name)}`,
+        );
         if (!response.ok) throw new Error("Server error");
         const data = await response.json();
         if (!data.available) {
@@ -1335,17 +1337,16 @@
   // ========================
 
   (async () => {
-     (async () => {
-       await window.Flixtris.api.dbReady;
-       initMultiplayer();
-       await initPlayerName();
-       await loadSettings();
-       // Sync settings from server
-       await api.db.syncSettings();
-       updateProButtons();
-       setupWallOfFameListeners();
-       setupDesktopSidebar();
-     })();
+    await window.Flixtris.api.dbReady;
+    initMultiplayer();
+    await initPlayerName();
+    await loadSettings();
+    // Sync settings from server
+    await api.db.syncSettings();
+    updateProButtons();
+    setupWallOfFameListeners();
+    setupDesktopSidebar();
+  })();
 
   // ========================
   // DESKTOP SIDEBAR SETUP
@@ -1672,8 +1673,8 @@
         await checkShowTutorial();
       });
     } else {
-      // If player name is available, go directly to mode selection
-      showScreen("singleplayer");
+      // If player name is available, go directly to menu
+      showScreen("menu");
     }
   }
 
