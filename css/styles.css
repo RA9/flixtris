@@ -505,6 +505,11 @@ body {
     width: var(--canvas-width);
     height: var(--canvas-height);
     border: 2px solid rgba(148, 163, 184, 0.1);
+    display: none;
+}
+
+#screen-game.active #game {
+    display: block;
 }
 
 /* Legacy panel - hidden on desktop, shown on mobile */
@@ -1483,6 +1488,10 @@ body {
     z-index: 10;
 }
 
+#screen-game.active .garbage-indicator {
+    display: flex;
+}
+
 .garbage-indicator.active {
     display: flex;
 }
@@ -1966,6 +1975,10 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
+}
+
+#screen-game.active .opponent-container.active {
+    display: flex;
 }
 
 .opponent-container.active {
@@ -2843,6 +2856,11 @@ body {
     pointer-events: none;
     z-index: 50;
     opacity: 0;
+    display: none;
+}
+
+#screen-game.active .action-indicator {
+    display: block;
 }
 
 .action-indicator.show {

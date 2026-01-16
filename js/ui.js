@@ -61,10 +61,14 @@
 
   function showScreen(name) {
     Object.values(screens).forEach((s) => {
-      if (s) s.classList.remove("active");
+      if (s) {
+        s.classList.remove("active");
+        s.style.display = "none";
+      }
     });
     if (screens[name]) {
       screens[name].classList.add("active");
+      screens[name].style.display = "flex";
     }
   }
 
@@ -4372,6 +4376,9 @@
 
   // Load settings on initialization
   loadSettings();
+
+  // Show splash screen by default
+  showScreen("splash");
 
   // Expose UI API
   api.ui = {
