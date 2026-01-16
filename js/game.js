@@ -975,9 +975,11 @@
     state.running = false;
   }
 
-  function gameOver() {
+  async function gameOver() {
     state.running = false;
     window.Flixtris.api.sound.gameOver();
+
+    const playerName = await window.Flixtris.api.db.getDisplayName();
 
     window.Flixtris.api.db.addGame({
       score: state.score,
@@ -990,6 +992,7 @@
       triples: state.triples,
       tetrises: state.tetrises,
       date: Date.now(),
+      playerName: playerName,
     });
 
     // Phase 2: persist analytics and replay

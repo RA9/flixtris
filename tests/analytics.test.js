@@ -135,6 +135,7 @@ window.Flixtris = {
       },
       saveSetting: () => {},
       getSetting: async () => null,
+      getDisplayName: async () => "TestPlayer",
     },
     multiplayer: {
       isConnected: () => false,
@@ -152,86 +153,91 @@ vm.runInThisContext(gameJsCode, { filename: gameJsPath });
 // Convenience references
 const gameApi = window.Flixtris.api.game;
 
-// Start a game (classic mode)
-gameApi.startGame("classic");
+(async () => {
+  // Start a game (classic mode)
+  gameApi.startGame("classic");
 
-// Manipulate state to create a deterministic board configuration to exercise analytics
-const state = window.Flixtris.state;
+  // Manipulate state to create a deterministic board configuration to exercise analytics
+  const state = window.Flixtris.state;
 
-// Helper to fill a cell with a color
-function fillCell(r, c, color = "#fff") {
-  if (r >= 0 && r < 20 && c >= 0 && c < 10) {
-    state.board[r][c] = color;
+  // Helper to fill a cell with a color
+  function fillCell(r, c, color = "#fff") {
+    if (r >= 0 && r < 20 && c >= 0 && c < 10) {
+      state.board[r][c] = color;
+    }
   }
-}
 
-// Create varying column heights and holes:
-// - Column 0: height ~5, with holes below
-fillCell(15, 0);
-fillCell(16, 0);
-fillCell(17, 0);
-fillCell(18, 0);
-fillCell(19, 0); // top-most fill in our coordinate system (r=19 is bottom visually; but scanning logic uses r=0 as top)
-fillCell(18, 0, null); // introduce a hole
+  // Create varying column heights and holes:
+  // - Column 0: height ~5, with holes below
+  fillCell(15, 0);
+  fillCell(16, 0);
+  fillCell(17, 0);
+  fillCell(18, 0);
+  fillCell(19, 0); // top-most fill in our coordinate system (r=19 is bottom visually; but scanning logic uses r=0 as top)
+  fillCell(18, 0, null); // introduce a hole
 
-// - Column 1: height ~8, no holes
-for (let r = 12; r <= 19; r++) fillCell(r, 1);
+  // - Column 1: height ~8, no holes
+  for (let r = 12; r <= 19; r++) fillCell(r, 1);
 
-// - Column 2: height ~3, holes below
-fillCell(17, 2);
-fillCell(18, 2);
-fillCell(19, 2);
-fillCell(18, 2, null); // hole
+  // - Column 2: height ~3, holes below
+  fillCell(17, 2);
+  fillCell(18, 2);
+  fillCell(19, 2);
+  fillCell(18, 2, null); // hole
 
-// - Column 3: empty (height 0)
-// - Column 4: fully filled to bottom (max height)
-for (let r = 0; r <= 19; r++) fillCell(r, 4);
+  // - Column 3: empty (height 0)
+  // - Column 4: fully filled to bottom (max height)
+  for (let r = 0; r <= 19; r++) fillCell(r, 4);
 
-// Increment lines/level minimally for stats, combo tracking
-state.lines = 12;
-state.level = Math.floor(state.lines / 10) + 1;
+  // Increment lines/level minimally for stats, combo tracking
+  state.lines = 12;
+  state.level = Math.floor(state.lines / 10) + 1;
 
-// Simulate some combo and t-spin/misdrops counters
-state.combo = 3;
-state.comboMax = 4;
-state.tSpins = 2;
-state.misdrops = 1;
+  // Simulate some combo and t-spin/misdrops counters
+  state.combo = 3;
+  state.comboMax = 4;
+  state.tSpins = 2;
+  state.misdrops = 1;
 
-// Drought tracking (simulate some counts)
-state.droughtCount = 7;
-state.droughtMax = 9;
+  // Drought tracking (simulate some counts)
+  state.droughtCount = 7;
+  state.droughtMax = 9;
 
-// Score a bit
-state.score = 4200;
+  // Score a bit
+  state.score = 4200;
 
-// Invoke game over to persist analytics and a game record
-gameApi.gameOver();
+  // Invoke game over to persist analytics and a game record
+  await gameApi.gameOver();
 
-// Assertions
-const analytics = window.Flixtris.api.db.__analytics;
-const games = window.Flixtris.api.db.__games;
+  // Assertions
+  const analytics = window.Flixtris.api.db.__analytics;
+  const games = window.Flixtris.api.db.__games;
 
-assert(analytics.length > 0, "Expected at least one analytics record");
-const last = analytics[analytics.length - 1];
+  assert(analytics.length > 0, "Expected at least one analytics record");
+  const last = analytics[analytics.length - 1];
 
-assert(typeof last.apm === "number", "APM should be a number");
-assert(typeof last.lpm === "number", "LPM should be a number");
-assert(typeof last.holes === "number", "holes should be computed as a number");
-assert(last.avgHeight >= 0, "avgHeight should be non-negative");
+  assert(typeof last.apm === "number", "APM should be a number");
+  assert(typeof last.lpm === "number", "LPM should be a number");
+  assert(
+    typeof last.holes === "number",
+    "holes should be computed as a number",
+  );
+  assert(last.avgHeight >= 0, "avgHeight should be non-negative");
 
-assert(last.comboMax === 4, "comboMax should reflect tracked maximum");
-assert(last.tSpins === 2, "tSpins should reflect tracked t-spin clears");
-assert(last.misdrops === 1, "misdrops should reflect tracked misdrops");
-assert(last.droughtMax === 9, "droughtMax should reflect tracked drought");
+  assert(last.comboMax === 4, "comboMax should reflect tracked maximum");
+  assert(last.tSpins === 2, "tSpins should reflect tracked t-spin clears");
+  assert(last.misdrops === 1, "misdrops should reflect tracked misdrops");
+  assert(last.droughtMax === 9, "droughtMax should reflect tracked drought");
 
-assert(games.length > 0, "Expected a game record on game over");
+  assert(games.length > 0, "Expected a game record on game over");
 
-// Log results
-logPass(`Analytics rows: ${analytics.length}`);
-logPass(`Games recorded: ${games.length}`);
-logPass(
-  `Analytics summary: holes=${last.holes}, avgHeight=${last.avgHeight}, comboMax=${last.comboMax}, tSpins=${last.tSpins}, misdrops=${last.misdrops}, droughtMax=${last.droughtMax}`,
-);
+  // Log results
+  logPass(`Analytics rows: ${analytics.length}`);
+  logPass(`Games recorded: ${games.length}`);
+  logPass(
+    `Analytics summary: holes=${last.holes}, avgHeight=${last.avgHeight}, comboMax=${last.comboMax}, tSpins=${last.tSpins}, misdrops=${last.misdrops}, droughtMax=${last.droughtMax}`,
+  );
 
-console.log("All analytics tests passed.");
-process.exit(0);
+  console.log("All analytics tests passed.");
+  process.exit(0);
+})();

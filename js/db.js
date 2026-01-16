@@ -531,7 +531,8 @@
       return getGames().then((games) => {
         const today = new Date().toISOString().split("T")[0];
         return games.filter((game) => {
-          const gameDate = new Date(game.timestamp).toISOString().split("T")[0];
+          if (!game.date) return false;
+          const gameDate = new Date(game.date).toISOString().split("T")[0];
           return gameDate === today;
         });
       });
@@ -541,7 +542,10 @@
       return getGames().then((games) => {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        return games.filter((game) => new Date(game.timestamp) >= weekAgo);
+        return games.filter((game) => {
+          if (!game.date) return false;
+          return new Date(game.date) >= weekAgo;
+        });
       });
     }
 

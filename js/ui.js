@@ -2923,9 +2923,6 @@
 
         container.appendChild(item);
       });
-
-      // Render dashboards
-      renderAnalyticsCharts(rows);
     });
   }
 

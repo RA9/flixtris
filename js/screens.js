@@ -23,13 +23,17 @@
   function showScreen(screenName) {
     // Hide all screens
     Object.values(screens).forEach((screen) => {
-      if (screen) screen.classList.remove("active");
+      if (screen) {
+        screen.classList.remove("active");
+        screen.style.display = "none";
+      }
     });
 
     // Show requested screen
     const screen = screens[screenName];
     if (screen) {
       screen.classList.add("active");
+      screen.style.display = "flex";
       currentScreen = screenName;
     }
   }
