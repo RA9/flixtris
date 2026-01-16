@@ -892,7 +892,7 @@
     const state = getState();
 
     // Submit score to leaderboard for royale games
-    submitScoreToServer(state.score, state.mode, state.seed);
+    submitScoreToServer(state.score, state.mode, state.seed, state.level);
 
     // Update local player stats
     await window.Flixtris.api.dbReady;
@@ -1040,7 +1040,7 @@
       forfeit && results.some((r) => r.forfeited && r.id !== myId);
 
     // Submit score to leaderboard for multiplayer games
-    submitScoreToServer(state.score, state.mode, state.seed);
+    submitScoreToServer(state.score, state.mode, state.seed, state.level);
 
     // Update local player stats
     await window.Flixtris.api.dbReady;
@@ -1481,14 +1481,14 @@
     return div.innerHTML;
   }
 
-  async function submitScoreToServer(score, mode, seed) {
+  async function submitScoreToServer(score, mode, seed, level) {
     await window.Flixtris.api.dbReady;
     const playerName = await api.db.getDisplayName();
     try {
       await fetch("/api/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerName, score, mode, seed }),
+        body: JSON.stringify({ playerName, score, mode, seed, level }),
       });
     } catch (err) {
       log("Failed to submit score:", err);
@@ -1560,7 +1560,7 @@
     lastMode = state.mode;
 
     // Submit score to leaderboard
-    submitScoreToServer(state.score, state.mode, state.seed);
+    submitScoreToServer(state.score, state.mode, state.seed, state.level);
 
     // Update local player stats (now includes level tracking)
     await window.Flixtris.api.dbReady;

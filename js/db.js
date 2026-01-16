@@ -231,13 +231,17 @@
   async function syncPlayer(name) {
     if (!name) return;
     try {
-      const response = await fetch(`/api/player/${encodeURIComponent(name)}`);
+      const response = await fetch(
+        `/api/player/${encodeURIComponent(name)}/stats`,
+      );
       if (response.ok) {
-        const serverPlayer = await response.json();
+        const data = await response.json();
+        const serverPlayer = data.stats;
+        if (!serverPlayer) return;
         const local = await getPlayer();
         // Merge server data into local, preferring higher values for stats
-        if (serverPlayer.totalGames > local.totalGames) {
-          local.totalGames = serverPlayer.totalGames;
+        if (serverPlayer.games > local.totalGames) {
+          local.totalGames = serverPlayer.games;
         }
         if (serverPlayer.totalScore > local.totalScore) {
           local.totalScore = serverPlayer.totalScore;
@@ -245,8 +249,14 @@
         if (serverPlayer.bestScore > local.bestScore) {
           local.bestScore = serverPlayer.bestScore;
         }
-        if (serverPlayer.highestLevel > local.highestLevel) {
+        if (serverPlayer.highestLevel > (local.highestLevel || 0)) {
           local.highestLevel = serverPlayer.highestLevel;
+        }
+        if (serverPlayer.wins > (local.wins || 0)) {
+          local.wins = serverPlayer.wins;
+        }
+        if (serverPlayer.losses > (local.losses || 0)) {
+          local.losses = serverPlayer.losses;
         }
         await savePlayer(local);
       }

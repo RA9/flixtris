@@ -88,6 +88,7 @@ const KEYS = {
   activeRooms: "flixtris:rooms:active",
   // Player stats
   playerStats: (name) => `flixtris:player:${name}:stats`,
+  playerSettings: (name) => `flixtris:settings:${name}`,
   // Leaderboards
   leaderboardGlobal: "flixtris:leaderboard:global",
   leaderboardDaily: (date) => `flixtris:leaderboard:daily:${date}`,
@@ -237,7 +238,12 @@ async function getAllActiveRoomCodes() {
 // PLAYER STATS & LEADERBOARDS
 // ========================
 
-async function updatePlayerStats(playerName, score, isWin = null) {
+async function updatePlayerStats(
+  playerName,
+  score,
+  isWin = null,
+  level = null,
+) {
   if (!redisConnected || !playerName) return;
 
   try {
@@ -256,6 +262,14 @@ async function updatePlayerStats(playerName, score, isWin = null) {
     } else if (isWin === false) {
       await redisClient.hIncrBy(key, "losses", 1);
     }
+
+    // Update highest level if higher
+    if (level !== null) {
+      const currentHighest = await redisClient.hGet(key, "highestLevel");
+      if (!currentHighest || level > parseInt(currentHighest)) {
+        await redisClient.hSet(key, "highestLevel", level);
+      }
+    }
   } catch (err) {
     console.error("Redis: Failed to update player stats:", err.message);
   }
@@ -273,6 +287,7 @@ async function getPlayerStats(playerName) {
       bestScore: parseInt(stats.bestScore) || 0,
       wins: parseInt(stats.wins) || 0,
       losses: parseInt(stats.losses) || 0,
+      highestLevel: parseInt(stats.highestLevel) || 0,
     };
   } catch (err) {
     console.error("Redis: Failed to get player stats:", err.message);
@@ -285,7 +300,7 @@ function getDateKey() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-async function submitScore(playerName, score, mode, seed = null) {
+async function submitScore(playerName, score, mode, seed = null, level = null) {
   if (!redisConnected || !playerName) return false;
 
   try {
@@ -320,7 +335,7 @@ async function submitScore(playerName, score, mode, seed = null) {
     });
 
     // Update player stats
-    await updatePlayerStats(playerName, score);
+    await updatePlayerStats(playerName, score, null, level);
 
     // Track global game stats
     await trackGamePlayed(playerName);
@@ -566,14 +581,14 @@ const server = http.createServer(async (req, res) => {
   if (pathname === "/api/score" && req.method === "POST") {
     try {
       const body = await parseBody(req);
-      const { playerName, score, mode, seed } = body;
+      const { playerName, score, mode, seed, level } = body;
 
       if (!playerName || typeof score !== "number") {
         sendJSON(res, { error: "Invalid request" }, 400);
         return;
       }
 
-      const success = await submitScore(playerName, score, mode, seed);
+      const success = await submitScore(playerName, score, mode, seed, level);
       sendJSON(res, { success });
     } catch (err) {
       sendJSON(res, { error: "Invalid JSON" }, 400);
@@ -590,6 +605,33 @@ const server = http.createServer(async (req, res) => {
     const playerName = decodeURIComponent(pathname.split("/")[3]);
     const stats = await getPlayerStats(playerName);
     sendJSON(res, { stats });
+    return;
+  }
+
+  // GET /api/settings/:name
+  if (pathname.startsWith("/api/settings/") && req.method === "GET") {
+    const playerName = decodeURIComponent(pathname.split("/")[3]);
+    const settings = redisConnected
+      ? await redisClient.hGetAll(KEYS.playerSettings(playerName))
+      : {};
+    sendJSON(res, settings);
+    return;
+  }
+
+  // POST /api/settings/:name
+  if (pathname.startsWith("/api/settings/") && req.method === "POST") {
+    const playerName = decodeURIComponent(pathname.split("/")[3]);
+    try {
+      const body = await parseBody(req);
+      if (redisConnected) {
+        for (const [key, value] of Object.entries(body)) {
+          await redisClient.hSet(KEYS.playerSettings(playerName), key, value);
+        }
+      }
+      sendJSON(res, { success: true });
+    } catch (err) {
+      sendJSON(res, { error: "Invalid JSON" }, 400);
+    }
     return;
   }
 
