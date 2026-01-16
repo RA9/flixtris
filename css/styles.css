@@ -342,6 +342,10 @@ body {
     overflow: hidden;
 }
 
+#screen-game.battle .game-layout {
+    max-width: 1200px;
+}
+
 /* Sidebars */
 .game-sidebar {
     display: flex;

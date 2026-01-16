@@ -1730,18 +1730,19 @@
         return;
       }
 
-      if (mode === "royale") {
-        // Show multiplayer lobby for royale
-        isRoyaleMode = true;
-        showScreen("multiplayer");
-        return;
-      }
+if (mode === "royale") {
+// Show multiplayer lobby for royale
+isRoyaleMode = true;
+showScreen("multiplayer");
+return;
+}
 
       lastMode = mode;
       isMultiplayerGame = false;
       isBotGame = false;
       isRoyaleMode = false;
       hideOpponentBoard();
+      screens.game.classList.remove("battle");
       showScreen("game");
       loadHighScore();
       // Start with countdown for single player
@@ -1800,6 +1801,7 @@
     // Show opponent board with bot name
     showOpponentBoard(botConfig.name);
     showScreen("game");
+    screens.game.classList.add("battle");
     loadHighScore();
 
     // Start with countdown
@@ -1991,6 +1993,7 @@
       );
 
       showScreen("game");
+      screens.game.classList.add("battle");
       loadHighScore();
 
       // Start countdown then game
