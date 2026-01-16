@@ -1,7 +1,7 @@
 // db.js
 (() => {
   const DB_NAME = "flixtris";
-  const DB_VERSION = 4;
+  const DB_VERSION = 5;
   let db;
   let playerCache = null;
   let dbAvailable = false;
@@ -35,6 +35,10 @@
         }
         if (!db.objectStoreNames.contains("analytics")) {
           db.createObjectStore("analytics", { autoIncrement: true });
+        }
+        // Tournaments
+        if (!db.objectStoreNames.contains("tournaments")) {
+          db.createObjectStore("tournaments", { keyPath: "id" });
         }
       };
 
@@ -477,6 +481,74 @@
       dbAvailable = false;
     }
 
+    // Tournament methods
+    function saveTournament(tournament) {
+      if (!dbAvailable) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("tournaments", "readwrite");
+        const req = tx.objectStore("tournaments").put(tournament);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function getTournament(tournamentId) {
+      if (!dbAvailable) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        const tx = db.transaction("tournaments", "readonly");
+        const req = tx.objectStore("tournaments").get(tournamentId);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    function getAllTournaments() {
+      if (!dbAvailable) return Promise.resolve([]);
+      return new Promise((resolve) => {
+        const tx = db.transaction("tournaments", "readonly");
+        const req = tx.objectStore("tournaments").getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    }
+
+    function deleteTournament(tournamentId) {
+      if (!dbAvailable) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("tournaments", "readwrite");
+        const req = tx.objectStore("tournaments").delete(tournamentId);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    // Helper methods for leaderboard
+    function getAllScores() {
+      return getGames();
+    }
+
+    function getDailyScores() {
+      return getGames().then((games) => {
+        const today = new Date().toISOString().split("T")[0];
+        return games.filter((game) => {
+          const gameDate = new Date(game.timestamp).toISOString().split("T")[0];
+          return gameDate === today;
+        });
+      });
+    }
+
+    function getWeeklyScores() {
+      return getGames().then((games) => {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return games.filter((game) => new Date(game.timestamp) >= weekAgo);
+      });
+    }
+
+    function getPlayerName() {
+      return getDisplayName();
+    }
+
     window.Flixtris.api.db = {
       // Existing
       addGame,
@@ -506,6 +578,20 @@
       getGameAnalytics: dbAvailable
         ? getGameAnalytics
         : () => Promise.resolve([]),
+      // Tournaments
+      saveTournament: dbAvailable ? saveTournament : () => Promise.resolve(),
+      getTournament: dbAvailable ? getTournament : () => Promise.resolve(null),
+      getAllTournaments: dbAvailable
+        ? getAllTournaments
+        : () => Promise.resolve([]),
+      deleteTournament: dbAvailable
+        ? deleteTournament
+        : () => Promise.resolve(),
+      // Leaderboard helpers
+      getAllScores,
+      getDailyScores,
+      getWeeklyScores,
+      getPlayerName,
     };
   })();
 })();

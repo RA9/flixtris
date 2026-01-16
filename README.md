@@ -2,17 +2,32 @@
 
 **Stack blocks. Send garbage. Crush your friends.**
 
-The classic puzzle game reimagined for the modern web. Play solo, compete in daily challenges, or battle friends in real-time multiplayer — all in your browser, no downloads required. Pure JavaScript, zero dependencies, instant fun.
+The classic puzzle game reimagined for the modern web. Play solo, compete in daily challenges, battle friends in real-time multiplayer, or organize tournaments — all in your browser, no downloads required. Pure JavaScript, modular architecture, instant fun.
 
 **Created by [Carlos S. Nah](https://github.com/ra9)**
 
+## Version 1.1.0 - Latest Updates
+
+- **Mobile Optimized** - Fixed game board display issues on mobile devices
+- **Modular Architecture** - Refactored codebase into focused, maintainable modules
+- **Tournament Mode** - Create and manage tournaments with single elimination or round-robin formats
+- **Auto-Update System** - PWA users receive notifications when updates are available
+- **Enhanced Leaderboards** - Global, daily, and weekly leaderboards with improved UI
+
 ## Features
 
-- **Four Game Modes**
+- **Five Game Modes**
   - **Classic** - Endless mode with increasing difficulty
   - **Daily Challenge** - Same piece sequence for everyone, compare scores
   - **Hardcore** - No pause, no ghost piece, no mercy
   - **Multiplayer** - Real-time 1v1 battles with live opponent board view
+  - **Battle Royale** - 2-16 players, last one standing wins!
+
+- **Tournament System** 🆕
+  - Single Elimination and Round Robin formats
+  - Support for 4, 8, or 16 players
+  - Track match results and standings
+  - Persistent tournament data
 
 - **Play Custom Seeds** - Enter a shared seed code to challenge friends
 
@@ -25,11 +40,11 @@ The classic puzzle game reimagined for the modern web. Play solo, compete in dai
 
 - **Retro Sound Effects** - 8-bit style sounds generated with Web Audio API
 
-- **Mobile Responsive** - Touch controls, hamburger menu, works on any device
+- **Fully Mobile Responsive** - Optimized touch controls and layout for all screen sizes
 
-- **PWA Support** - Install as an app, works offline
+- **PWA Support** - Install as an app, works offline, auto-updates when online
 
-- **Local Leaderboard** - Game history stored in IndexedDB
+- **Leaderboards** - Global, daily, and weekly leaderboards with persistent storage
 
 ## Controls
 
@@ -252,22 +267,58 @@ docker run -d --name flixtris-server \
 - Use Redis Cloud, Upstash, or AWS ElastiCache for managed Redis
 - Scale horizontally - multiple server instances can share the same Redis
 
+## Tournament Mode
+
+Create and manage competitive tournaments:
+
+1. **Create Tournament** - Choose between Single Elimination or Round Robin
+2. **Add Players** - Support for 4, 8, or 16 players
+3. **Track Matches** - View bracket, match results, and player standings
+4. **Play Matches** - Each match uses the game engine with score tracking
+5. **Determine Winner** - Automatic advancement and winner declaration
+
+**Tournament Types:**
+- **Single Elimination** - Lose once and you're out
+- **Round Robin** - Everyone plays everyone, highest score wins
+
+## Auto-Update System
+
+Flixtris includes an intelligent update system for PWA users:
+
+- **Automatic Checks** - Checks for updates every minute when online
+- **User-Friendly Notifications** - Update banner at bottom of screen
+- **One-Click Updates** - Click "Update Now" to refresh with latest version
+- **Offline Support** - Skips checks when offline, resumes when back online
+- **Service Worker Integration** - Seamless PWA cache updates
+
+The update system ensures you always have the latest features and bug fixes without manual intervention.
+
 ## Project Structure
 
 ```
 flixtris/
-├── index.html          # Main HTML with embedded CSS
+├── index.html          # Main HTML
 ├── manifest.json       # PWA manifest
+├── version.json        # Version info for update system
+├── sw.js              # Service Worker for PWA and caching
+├── css/
+│   └── styles.css     # All application styles
 ├── js/
-│   ├── db.js           # IndexedDB storage
-│   ├── sound.js        # Web Audio sound effects
-│   ├── game.js         # Game logic and rendering
-│   ├── multiplayer.js  # WebSocket multiplayer client
-│   └── ui.js           # UI and screen management
+│   ├── db.js          # IndexedDB storage and data management
+│   ├── sound.js       # Web Audio sound effects
+│   ├── screens.js     # Screen navigation and state 🆕
+│   ├── settings.js    # Settings management 🆕
+│   ├── leaderboard.js # Leaderboard display and management 🆕
+│   ├── tournament.js  # Tournament system 🆕
+│   ├── updates.js     # Auto-update system 🆕
+│   ├── game.js        # Core game logic and rendering
+│   ├── bot.js         # AI bot implementation
+│   ├── multiplayer.js # WebSocket multiplayer client
+│   └── ui.js          # UI coordination and event handling
 ├── server/
-│   ├── index.js        # WebSocket multiplayer server (Redis-backed)
-│   ├── package.json    # Server dependencies (ws, redis)
-│   └── .gitignore      # Ignore node_modules and env files
+│   ├── index.js       # WebSocket multiplayer server (Redis-backed)
+│   ├── package.json   # Server dependencies (ws, redis)
+│   └── .gitignore     # Ignore node_modules and env files
 └── icons/
     ├── icon.svg
     ├── icon-192.png
@@ -276,17 +327,17 @@ flixtris/
 
 ## Tech Stack
 
-- Vanilla JavaScript (ES6+)
-- HTML5 Canvas
-- Web Audio API
-- IndexedDB
-- CSS Variables & Flexbox
-- PWA (manifest + icons)
-- WebSocket (multiplayer)
+- Vanilla JavaScript (ES6+) with modular architecture
+- HTML5 Canvas for game rendering
+- Web Audio API for sound effects
+- IndexedDB for persistent storage
+- CSS Variables & Flexbox for responsive design
+- Service Workers for PWA functionality
+- WebSocket for real-time multiplayer
 - Node.js (server)
-- Redis (persistence)
+- Redis (server persistence)
 
-No frameworks. No build tools. Minimal dependencies (`ws` and `redis` for the server).
+**Philosophy:** No frameworks. No build tools. Minimal dependencies. Maximum performance and maintainability through clean, modular code.
 
 ## Multiplayer Protocol
 

@@ -78,7 +78,108 @@
             <button class="menu-link" id="leaderboardBtn">
                 🏆 Leaderboards
             </button>
+            <button class="menu-link" id="tournamentBtn">🏆 Tournaments</button>
             <button class="menu-link" id="settingsBtn">⚙️ Settings</button>
+        </div>
+
+        <!-- Tournament Screen -->
+        <div id="screen-tournament" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Tournaments</h2>
+            <div class="tournament-container">
+                <button class="btn" id="createTournamentBtn">
+                    Create Tournament
+                </button>
+                <div class="tournament-list" id="tournamentList">
+                    <p class="tournament-empty">
+                        No tournaments yet. Create one to get started!
+                    </p>
+                </div>
+            </div>
+            <button class="btn secondary back" id="tournamentBackBtn">
+                Back to Menu
+            </button>
+        </div>
+
+        <!-- Create Tournament Screen -->
+        <div id="screen-create-tournament" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title">Create Tournament</h2>
+            <div class="tournament-create-form">
+                <div class="form-group">
+                    <label for="tournamentName">Tournament Name</label>
+                    <input
+                        type="text"
+                        id="tournamentName"
+                        class="form-input"
+                        placeholder="My Awesome Tournament"
+                    />
+                </div>
+                <div class="form-group">
+                    <label>Tournament Type</label>
+                    <div class="tournament-type-selector">
+                        <button
+                            class="tournament-type-btn active"
+                            data-type="single_elimination"
+                        >
+                            Single Elimination
+                        </button>
+                        <button
+                            class="tournament-type-btn"
+                            data-type="round_robin"
+                        >
+                            Round Robin
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="playerCount">Number of Players</label>
+                    <select id="playerCount" class="form-select">
+                        <option value="4">4 Players</option>
+                        <option value="8" selected>8 Players</option>
+                        <option value="16">16 Players</option>
+                    </select>
+                </div>
+                <button class="btn" id="startTournamentBtn">
+                    Create & Start
+                </button>
+                <button class="btn secondary" id="cancelTournamentBtn">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- Tournament Bracket Screen -->
+        <div id="screen-tournament-bracket" class="screen">
+            <h1 class="brand-header">FLIXTRIS</h1>
+            <h2 class="menu-title" id="tournamentBracketTitle">
+                Tournament Bracket
+            </h2>
+            <div class="tournament-bracket-container">
+                <div class="tournament-status">
+                    <span class="tournament-round"
+                        >Round <span id="currentRound">1</span></span
+                    >
+                    <span class="tournament-players-remaining"
+                        ><span id="playersRemaining">8</span> players
+                        remaining</span
+                    >
+                </div>
+                <div class="tournament-matches" id="tournamentMatches">
+                    <!-- Matches will be dynamically populated -->
+                </div>
+                <div class="tournament-actions">
+                    <button class="btn" id="playNextMatchBtn">
+                        Play Next Match
+                    </button>
+                    <button class="btn secondary" id="viewStandingsBtn">
+                        View Standings
+                    </button>
+                    <button class="btn secondary" id="exitTournamentBtn">
+                        Exit Tournament
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Settings Screen -->
@@ -1383,6 +1484,11 @@
         </script>
         <script src="js/db.js"></script>
         <script src="js/sound.js"></script>
+        <script src="js/screens.js"></script>
+        <script src="js/settings.js"></script>
+        <script src="js/leaderboard.js"></script>
+        <script src="js/tournament.js"></script>
+        <script src="js/updates.js"></script>
         <script src="js/game.js"></script>
         <script src="js/bot.js"></script>
         <script src="js/multiplayer.js"></script>
