@@ -181,6 +181,7 @@
   function updateHighScoreDisplay() {
     const desktopEl = document.getElementById("high-score-display");
     const mobileEl = document.getElementById("mobile-high-score");
+    const desktopSidebarEl = document.getElementById("desktop-high-score");
 
     if (currentHighScore > 0) {
       if (desktopEl) {
@@ -189,9 +190,13 @@
       if (mobileEl) {
         mobileEl.textContent = `Best: ${currentHighScore.toLocaleString()}`;
       }
+      if (desktopSidebarEl) {
+        desktopSidebarEl.textContent = currentHighScore.toLocaleString();
+      }
     } else {
       if (desktopEl) desktopEl.innerHTML = "";
       if (mobileEl) mobileEl.textContent = "";
+      if (desktopSidebarEl) desktopSidebarEl.textContent = "0";
     }
   }
 
@@ -655,6 +660,7 @@
   api.ui.setProEnabled = async (val) => {
     settings.proEnabled = !!val;
     await saveSettings();
+    updateProSidebarVisibility();
   };
 
   function setupSettingsListeners() {
@@ -1311,7 +1317,83 @@
     await loadSettings();
     updateProButtons();
     setupWallOfFameListeners();
+    setupDesktopSidebar();
   })();
+
+  // ========================
+  // DESKTOP SIDEBAR SETUP
+  // ========================
+
+  async function setupDesktopSidebar() {
+    // Update player name display
+    await updatePlayerNameDisplay();
+
+    // Show/hide pro section based on settings
+    updateProSidebarVisibility();
+
+    // Setup sidebar button listeners
+    const sidebarReplaysBtn = document.getElementById("sidebarReplaysBtn");
+    const sidebarAnalyticsBtn = document.getElementById("sidebarAnalyticsBtn");
+    const sidebarRankedBtn = document.getElementById("sidebarRankedBtn");
+
+    if (sidebarReplaysBtn) {
+      sidebarReplaysBtn.addEventListener("click", () => {
+        if (settings.proEnabled) {
+          // Stop game and show replay viewer
+          if (api.game && api.game.stop) api.game.stop();
+          const state = getState();
+          if (state) state.paused = false;
+          // Open replay viewer overlay
+          const viewer = document.getElementById("replayViewer");
+          if (viewer) viewer.classList.add("active");
+        }
+      });
+    }
+
+    if (sidebarAnalyticsBtn) {
+      sidebarAnalyticsBtn.addEventListener("click", () => {
+        if (settings.proEnabled) {
+          // Stop game and go to analytics
+          if (api.game && api.game.stop) api.game.stop();
+          const state = getState();
+          if (state) state.paused = false;
+          showScreen("analytics");
+          loadAnalyticsDashboard();
+        }
+      });
+    }
+
+    if (sidebarRankedBtn) {
+      sidebarRankedBtn.addEventListener("click", () => {
+        if (settings.proEnabled) {
+          showRankedMatchmaking();
+        }
+      });
+    }
+  }
+
+  async function updatePlayerNameDisplay() {
+    const displayEl = document.getElementById("player-name-display");
+    if (!displayEl) return;
+
+    try {
+      const name = await api.db.getDisplayName();
+      displayEl.textContent = name || "Player";
+    } catch (e) {
+      displayEl.textContent = "Player";
+    }
+  }
+
+  function updateProSidebarVisibility() {
+    const proSection = document.getElementById("proSidebarSection");
+    if (proSection) {
+      if (settings.proEnabled) {
+        proSection.classList.add("active");
+      } else {
+        proSection.classList.remove("active");
+      }
+    }
+  }
 
   // ========================
   // LEADERBOARD
@@ -1388,13 +1470,24 @@
   function updateStats() {
     const state = getState();
     const statsEl = document.getElementById("stats");
-    statsEl.textContent = `Score: ${state.score}\nLevel: ${state.level}\nLines: ${state.lines}`;
+    if (statsEl) {
+      statsEl.textContent = `Score: ${state.score}\nLevel: ${state.level}\nLines: ${state.lines}`;
+    }
 
     // Update mobile score
     const mobileScore = document.getElementById("mobile-score");
     if (mobileScore) {
       mobileScore.textContent = state.score;
     }
+
+    // Update desktop sidebar stats
+    const desktopScore = document.getElementById("desktop-score");
+    const desktopLevel = document.getElementById("desktop-level");
+    const desktopLines = document.getElementById("desktop-lines");
+
+    if (desktopScore) desktopScore.textContent = state.score;
+    if (desktopLevel) desktopLevel.textContent = state.level;
+    if (desktopLines) desktopLines.textContent = state.lines;
   }
 
   async function showGameOver() {

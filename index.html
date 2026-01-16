@@ -610,6 +610,11 @@
 
         <!-- Game Screen -->
         <div id="screen-game" class="screen">
+            <!-- Desktop navbar -->
+            <nav class="game-navbar">
+                <div class="game-navbar-brand">FLIXTRIS</div>
+            </nav>
+
             <!-- Mobile header with hamburger -->
             <div class="mobile-header">
                 <div class="mobile-stats">
@@ -649,217 +654,305 @@
             <div id="action-indicator" class="action-indicator"></div>
 
             <div class="panel-overlay" id="panelOverlay"></div>
-            <div class="game-container">
-                <!-- Garbage indicator -->
-                <div class="garbage-indicator" id="garbageIndicator">
-                    <div class="garbage-bar" id="garbageBar"></div>
-                    <span class="garbage-count" id="garbageCount">0</span>
-                </div>
-                <canvas id="game" width="300" height="500"></canvas>
-                <div class="opponent-container" id="opponentContainer">
-                    <span class="opponent-name" id="opponentName"
-                        >Opponent</span
-                    >
-                    <span class="opponent-score" id="opponentScore">0</span>
-                    <canvas
-                        id="opponent-board"
-                        width="150"
-                        height="250"
-                    ></canvas>
-                    <!-- Emoji panel for multiplayer -->
-                    <div class="emoji-panel" id="emojiPanel">
-                        <button class="emoji-btn" data-emoji="👍">👍</button>
-                        <button class="emoji-btn" data-emoji="🔥">🔥</button>
-                        <button class="emoji-btn" data-emoji="😀">😀</button>
-                        <button class="emoji-btn" data-emoji="💀">💀</button>
-                    </div>
-                </div>
-                <div class="panel" id="sidePanel">
-                    <button
-                        class="panel-close"
-                        id="panelCloseBtn"
-                        aria-label="Close"
-                    >
-                        &times;
-                    </button>
-                    <h1>Flixtris</h1>
-                    <div style="margin: 0.5rem 0 1rem 0">
-                        <button id="yourReplaysBtn" class="btn secondary">
-                            Your Replays
-                        </button>
-                        <button
-                            id="rankedModeBtn"
-                            class="btn secondary"
-                            style="margin-left: 0.5rem"
+
+            <!-- Desktop 3-Column Layout -->
+            <div class="game-layout">
+                <!-- Left Sidebar: Player Stats -->
+                <div class="game-sidebar game-sidebar-left">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Player</h4>
+                        <div
+                            class="player-name-display"
+                            id="player-name-display"
                         >
-                            Ranked Mode
-                        </button>
-                    </div>
-                    <!-- Store: Themes -->
-                    <div id="storeThemes">
-                        <h3>Themes</h3>
-                        <div>
-                            <button data-store-theme="light">
-                                Buy Light Theme
-                            </button>
-                            <button data-store-theme="neon">
-                                Buy Neon Theme
-                            </button>
-                            <button data-store-theme="retro">
-                                Buy Retro Theme
-                            </button>
+                            Player
                         </div>
                     </div>
-                    <!-- Store: Skins -->
-                    <div id="storeSkins">
-                        <h3>Piece Skins</h3>
-                        <div>
-                            <button data-store-skin="outline">
-                                Buy Outline Pieces
-                            </button>
-                            <button data-store-skin="pixel">
-                                Buy Pixel Pieces
-                            </button>
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Stats</h4>
+                        <div class="stat-item">
+                            <span class="stat-label">Score</span>
+                            <span class="stat-value" id="desktop-score">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Level</span>
+                            <span class="stat-value" id="desktop-level">1</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Lines</span>
+                            <span class="stat-value" id="desktop-lines">0</span>
                         </div>
                     </div>
-                    <!-- Store: Emojis -->
-                    <div id="storeEmojis">
-                        <h3>Premium Emojis</h3>
-                        <div>
-                            <button data-store-emoji="fire">Buy 🔥</button>
-                            <button data-store-emoji="grin">Buy 😀</button>
-                            <button data-store-emoji="skull">Buy 💀</button>
-                        </div>
-                    </div>
-                    <!-- Replay Viewer -->
-                    <div id="replayViewer" class="overlay">
-                        <div class="overlay-content">
-                            <h3>Replay Viewer</h3>
-
-                            <!-- Playback Controls -->
-                            <div class="replay-controls">
-                                <button id="replayPlayBtn">Play</button>
-                                <button id="replayPauseBtn">Pause</button>
-                                <button id="replayStopBtn">Stop</button>
-                                <input
-                                    id="replaySeek"
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value="0"
-                                />
-                                <span id="replayProgressLabel">0%</span>
-                            </div>
-
-                            <!-- Timeline of input events -->
-                            <ul id="replayTimeline"></ul>
-
-                            <button id="replayCloseBtn">Close</button>
-                        </div>
-                    </div>
-
-                    <div id="replayList" class="panel-section">
-                        <h3>Your Replays</h3>
-                        <!-- Populated by initReplayViewer() -->
-                    </div>
-
-                    <!-- Analytics Panel -->
-                    <div id="analyticsList" class="panel-section">
-                        <h3>Recent Analytics</h3>
-                        <!-- Populated by initAnalyticsPanel() -->
-                    </div>
-
-                    <!-- Analytics Dashboard (Phase 2 Completion) -->
-                    <div id="analyticsDashboard" class="panel-section">
-                        <h3>Analytics Dashboard</h3>
-                        <div class="dashboard-row">
-                            <div class="dashboard-chart">
-                                <h4>Height Over Time</h4>
-                                <canvas
-                                    id="chartHeightOverTime"
-                                    width="320"
-                                    height="160"
-                                ></canvas>
-                            </div>
-                            <div class="dashboard-chart">
-                                <h4>Holes Over Time</h4>
-                                <canvas
-                                    id="chartHolesOverTime"
-                                    width="320"
-                                    height="160"
-                                ></canvas>
-                            </div>
-                        </div>
-                        <div class="dashboard-row" style="margin-top: 0.75rem">
-                            <div class="dashboard-chart">
-                                <h4>Combo Streak Timeline</h4>
-                                <canvas
-                                    id="chartComboTimeline"
-                                    width="320"
-                                    height="160"
-                                ></canvas>
-                            </div>
-                            <div class="dashboard-chart">
-                                <h4>Piece Distribution</h4>
-                                <canvas
-                                    id="chartPieceDistribution"
-                                    width="320"
-                                    height="160"
-                                ></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Subscriptions (Enable Pro - Free) -->
-                    <!-- Moved into Settings screen container: find #screen-settings and place this block inside its settings content -->
-
-                    <div id="stats">Score: 0 Level: 1 Lines: 0</div>
-
-                    <!-- Pro Entitlement Overlay -->
-                    <div id="pro-overlay" class="overlay" style="display: none">
-                        <div class="overlay-content">
-                            <h3>Pro Features</h3>
-                            <p>
-                                Unlock Pro to access premium cosmetics, emojis,
-                                and upcoming advanced features.
-                            </p>
-                            <ul>
-                                <li>Premium Themes and Piece Skins</li>
-                                <li>Premium Emojis in Multiplayer</li>
-                                <li>
-                                    Replay Viewer and Advanced Analytics
-                                    foundations
-                                </li>
-                            </ul>
-                            <div style="margin-top: 1rem">
-                                <button data-dev-pro-toggle class="btn">
-                                    Enable Pro
-                                </button>
-                                <button
-                                    id="proOverlayCloseBtn"
-                                    class="btn secondary"
-                                >
-                                    Close
-                                </button>
-                            </div>
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">High Score</h4>
+                        <div class="high-score-value" id="desktop-high-score">
+                            0
                         </div>
                     </div>
                     <div
-                        id="high-score-display"
-                        class="high-score-display"
-                    ></div>
-                    <h4>Hold <span class="hold-hint">(C)</span></h4>
-                    <canvas id="hold" width="80" height="80"></canvas>
-                    <h4>Next</h4>
-                    <canvas id="next" width="80" height="80"></canvas>
-                    <button class="btn secondary" id="helpBtn">Help</button>
-                    <button class="btn secondary" id="soundBtn">
-                        Sound: On
+                        class="sidebar-section pro-section-sidebar"
+                        id="proSidebarSection"
+                    >
+                        <h4 class="sidebar-title">Pro Features</h4>
+                        <button class="btn-sidebar" id="sidebarReplaysBtn">
+                            🎬 Replays
+                        </button>
+                        <button class="btn-sidebar" id="sidebarAnalyticsBtn">
+                            📊 Analytics
+                        </button>
+                        <button class="btn-sidebar" id="sidebarRankedBtn">
+                            🏅 Ranked
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Center: Game Board -->
+                <div class="game-center">
+                    <!-- Garbage indicator -->
+                    <div class="garbage-indicator" id="garbageIndicator">
+                        <div class="garbage-bar" id="garbageBar"></div>
+                        <span class="garbage-count" id="garbageCount">0</span>
+                    </div>
+                    <div class="game-board-wrapper">
+                        <canvas id="game" width="300" height="600"></canvas>
+                    </div>
+                    <!-- Opponent container for multiplayer -->
+                    <div class="opponent-container" id="opponentContainer">
+                        <span class="opponent-name" id="opponentName"
+                            >Opponent</span
+                        >
+                        <span class="opponent-score" id="opponentScore">0</span>
+                        <canvas
+                            id="opponent-board"
+                            width="150"
+                            height="300"
+                        ></canvas>
+                        <!-- Emoji panel for multiplayer -->
+                        <div class="emoji-panel" id="emojiPanel">
+                            <button class="emoji-btn" data-emoji="👍">
+                                👍
+                            </button>
+                            <button class="emoji-btn" data-emoji="🔥">
+                                🔥
+                            </button>
+                            <button class="emoji-btn" data-emoji="😀">
+                                😀
+                            </button>
+                            <button class="emoji-btn" data-emoji="💀">
+                                💀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar: Hold, Next, Controls -->
+                <div class="game-sidebar game-sidebar-right">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">
+                            Hold <span class="hold-hint">(C)</span>
+                        </h4>
+                        <div class="piece-preview-box">
+                            <canvas id="hold" width="80" height="80"></canvas>
+                        </div>
+                    </div>
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Next</h4>
+                        <div class="piece-preview-box">
+                            <canvas id="next" width="80" height="80"></canvas>
+                        </div>
+                    </div>
+                    <div class="sidebar-section sidebar-controls">
+                        <h4 class="sidebar-title">Controls</h4>
+                        <button class="btn-sidebar" id="helpBtn">
+                            ❓ Help
+                        </button>
+                        <button class="btn-sidebar" id="soundBtn">
+                            🔊 Sound: On
+                        </button>
+                        <button class="btn-sidebar btn-menu" id="mainMenuBtn">
+                            🏠 Main Menu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hidden side panel for mobile (legacy support) -->
+            <div class="panel" id="sidePanel">
+                <button
+                    class="panel-close"
+                    id="panelCloseBtn"
+                    aria-label="Close"
+                >
+                    &times;
+                </button>
+                <h1>Flixtris</h1>
+                <div style="margin: 0.5rem 0 1rem 0">
+                    <button id="yourReplaysBtn" class="btn secondary">
+                        Your Replays
                     </button>
-                    <button class="btn secondary" id="mainMenuBtn">
-                        Main Menu
+                    <button
+                        id="rankedModeBtn"
+                        class="btn secondary"
+                        style="margin-left: 0.5rem"
+                    >
+                        Ranked Mode
                     </button>
                 </div>
+                <!-- Store: Themes -->
+                <div id="storeThemes">
+                    <h3>Themes</h3>
+                    <div>
+                        <button data-store-theme="light">
+                            Buy Light Theme
+                        </button>
+                        <button data-store-theme="neon">Buy Neon Theme</button>
+                        <button data-store-theme="retro">
+                            Buy Retro Theme
+                        </button>
+                    </div>
+                </div>
+                <!-- Store: Skins -->
+                <div id="storeSkins">
+                    <h3>Piece Skins</h3>
+                    <div>
+                        <button data-store-skin="outline">
+                            Buy Outline Pieces
+                        </button>
+                        <button data-store-skin="pixel">
+                            Buy Pixel Pieces
+                        </button>
+                    </div>
+                </div>
+                <!-- Store: Emojis -->
+                <div id="storeEmojis">
+                    <h3>Premium Emojis</h3>
+                    <div>
+                        <button data-store-emoji="fire">Buy 🔥</button>
+                        <button data-store-emoji="grin">Buy 😀</button>
+                        <button data-store-emoji="skull">Buy 💀</button>
+                    </div>
+                </div>
+                <!-- Replay Viewer -->
+                <div id="replayViewer" class="overlay">
+                    <div class="overlay-content">
+                        <h3>Replay Viewer</h3>
+
+                        <!-- Playback Controls -->
+                        <div class="replay-controls">
+                            <button id="replayPlayBtn">Play</button>
+                            <button id="replayPauseBtn">Pause</button>
+                            <button id="replayStopBtn">Stop</button>
+                            <input
+                                id="replaySeek"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="0"
+                            />
+                            <span id="replayProgressLabel">0%</span>
+                        </div>
+
+                        <!-- Timeline of input events -->
+                        <ul id="replayTimeline"></ul>
+
+                        <button id="replayCloseBtn">Close</button>
+                    </div>
+                </div>
+
+                <div id="replayList" class="panel-section">
+                    <h3>Your Replays</h3>
+                    <!-- Populated by initReplayViewer() -->
+                </div>
+
+                <!-- Analytics Panel -->
+                <div id="analyticsList" class="panel-section">
+                    <h3>Recent Analytics</h3>
+                    <!-- Populated by initAnalyticsPanel() -->
+                </div>
+
+                <!-- Analytics Dashboard (Phase 2 Completion) -->
+                <div id="analyticsDashboard" class="panel-section">
+                    <h3>Analytics Dashboard</h3>
+                    <div class="dashboard-row">
+                        <div class="dashboard-chart">
+                            <h4>Height Over Time</h4>
+                            <canvas
+                                id="chartHeightOverTime"
+                                width="320"
+                                height="160"
+                            ></canvas>
+                        </div>
+                        <div class="dashboard-chart">
+                            <h4>Holes Over Time</h4>
+                            <canvas
+                                id="chartHolesOverTime"
+                                width="320"
+                                height="160"
+                            ></canvas>
+                        </div>
+                    </div>
+                    <div class="dashboard-row" style="margin-top: 0.75rem">
+                        <div class="dashboard-chart">
+                            <h4>Combo Streak Timeline</h4>
+                            <canvas
+                                id="chartComboTimeline"
+                                width="320"
+                                height="160"
+                            ></canvas>
+                        </div>
+                        <div class="dashboard-chart">
+                            <h4>Piece Distribution</h4>
+                            <canvas
+                                id="chartPieceDistribution"
+                                width="320"
+                                height="160"
+                            ></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stats">Score: 0 Level: 1 Lines: 0</div>
+
+                <!-- Pro Entitlement Overlay -->
+                <div id="pro-overlay" class="overlay" style="display: none">
+                    <div class="overlay-content">
+                        <h3>Pro Features</h3>
+                        <p>
+                            Unlock Pro to access premium cosmetics, emojis, and
+                            upcoming advanced features.
+                        </p>
+                        <ul>
+                            <li>Premium Themes and Piece Skins</li>
+                            <li>Premium Emojis in Multiplayer</li>
+                            <li>
+                                Replay Viewer and Advanced Analytics foundations
+                            </li>
+                        </ul>
+                        <div style="margin-top: 1rem">
+                            <button data-dev-pro-toggle class="btn">
+                                Enable Pro
+                            </button>
+                            <button
+                                id="proOverlayCloseBtn"
+                                class="btn secondary"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="high-score-display" class="high-score-display"></div>
+                <h4>Hold <span class="hold-hint">(C)</span></h4>
+                <canvas id="hold-panel" width="80" height="80"></canvas>
+                <h4>Next</h4>
+                <canvas id="next-panel" width="80" height="80"></canvas>
+                <button class="btn secondary" id="helpBtnPanel">Help</button>
+                <button class="btn secondary" id="soundBtnPanel">
+                    Sound: On
+                </button>
+                <button class="btn secondary" id="mainMenuBtnPanel">
+                    Main Menu
+                </button>
             </div>
 
             <!-- Mobile touch controls -->
