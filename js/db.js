@@ -223,6 +223,68 @@
     return player.name !== null;
   }
 
+  // Sync player data from server
+  async function syncPlayer(name) {
+    if (!name) return;
+    try {
+      const response = await fetch(`/api/player/${encodeURIComponent(name)}`);
+      if (response.ok) {
+        const serverPlayer = await response.json();
+        const local = await getPlayer();
+        // Merge server data into local, preferring higher values for stats
+        if (serverPlayer.totalGames > local.totalGames) {
+          local.totalGames = serverPlayer.totalGames;
+        }
+        if (serverPlayer.totalScore > local.totalScore) {
+          local.totalScore = serverPlayer.totalScore;
+        }
+        if (serverPlayer.bestScore > local.bestScore) {
+          local.bestScore = serverPlayer.bestScore;
+        }
+        if (serverPlayer.highestLevel > local.highestLevel) {
+          local.highestLevel = serverPlayer.highestLevel;
+        }
+        await savePlayer(local);
+      }
+    } catch (e) {
+      console.log("Sync failed:", e);
+    }
+  }
+
+  // Upload player data to server
+  async function uploadPlayer() {
+    const player = await getPlayer();
+    try {
+      await fetch("/api/player", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(player),
+      });
+    } catch (e) {
+      console.log("Upload failed:", e);
+    }
+  }
+
+  // Sync settings from server
+  async function syncSettings() {
+    const playerName = await getDisplayName();
+    if (!playerName) return;
+    try {
+      const response = await fetch(
+        `/api/settings/${encodeURIComponent(playerName)}`,
+      );
+      if (response.ok) {
+        const serverSettings = await response.json();
+        // Update local settings
+        for (const key in serverSettings) {
+          await saveSetting(key, serverSettings[key]);
+        }
+      }
+    } catch (e) {
+      console.log("Settings sync failed:", e);
+    }
+  }
+
   // Fallback implementations for other functions
   function addGame(record) {
     if (dbAvailable) {
@@ -430,6 +492,10 @@
       isEligibleForWallOfFame,
       submitWallOfFame,
       hasSubmittedWallOfFame,
+      // Syncing
+      syncPlayer,
+      uploadPlayer,
+      syncSettings,
       // Premium foundations (Phase 1–2)
       recordPurchase: dbAvailable ? recordPurchase : () => {},
       getPurchases: dbAvailable ? getPurchases : () => Promise.resolve([]),

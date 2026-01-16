@@ -1165,8 +1165,24 @@
     }
 
     if (name) {
+      // Check name uniqueness
+      try {
+        const response = await fetch(`/api/check-name?name=${encodeURIComponent(name)}`);
+        if (!response.ok) throw new Error("Server error");
+        const data = await response.json();
+        if (!data.available) {
+          alert("Name already taken. Please choose another.");
+          return;
+        }
+      } catch (e) {
+        alert("Unable to check name availability. Please try again.");
+        return;
+      }
+
       await api.db.setPlayerName(name);
       myPlayerName = name;
+      // Upload player data to server
+      await api.db.uploadPlayer();
     } else {
       myPlayerName = await api.db.getDisplayName();
     }
@@ -1180,6 +1196,8 @@
   async function handleSkipName() {
     await window.Flixtris.api.dbReady;
     myPlayerName = await api.db.getDisplayName();
+    // Upload player data to server
+    await api.db.uploadPlayer();
     showNameOverlay(false);
     if (namePromptCallback) {
       namePromptCallback();
@@ -1197,6 +1215,8 @@
   async function initPlayerName() {
     await window.Flixtris.api.dbReady;
     myPlayerName = await api.db.getDisplayName();
+    // Sync player data from server
+    await api.db.syncPlayer(myPlayerName);
   }
 
   // ========================
@@ -1315,14 +1335,17 @@
   // ========================
 
   (async () => {
-    await window.Flixtris.api.dbReady;
-    initMultiplayer();
-    await initPlayerName();
-    await loadSettings();
-    updateProButtons();
-    setupWallOfFameListeners();
-    setupDesktopSidebar();
-  })();
+     (async () => {
+       await window.Flixtris.api.dbReady;
+       initMultiplayer();
+       await initPlayerName();
+       await loadSettings();
+       // Sync settings from server
+       await api.db.syncSettings();
+       updateProButtons();
+       setupWallOfFameListeners();
+       setupDesktopSidebar();
+     })();
 
   // ========================
   // DESKTOP SIDEBAR SETUP
@@ -1541,6 +1564,8 @@
     // Update local player stats (now includes level tracking)
     await window.Flixtris.api.dbReady;
     api.db.updatePlayerStats(state.score, null, state.level);
+    // Upload updated player data to server
+    await api.db.uploadPlayer();
 
     // Check if player is eligible for Wall of Fame (level 10+)
     const showedWallOfFame = await checkWallOfFameEligibility(
@@ -1629,7 +1654,7 @@
     }
   });
 
-  // Splash screen - any key or click advances to menu
+  // Splash screen - any key or click advances to menu or mode selection
   async function handleSplashInteraction() {
     if (api.sound && api.sound.stopSplashMusic) {
       api.sound.stopSplashMusic();
@@ -1647,7 +1672,8 @@
         await checkShowTutorial();
       });
     } else {
-      showScreen("menu");
+      // If player name is available, go directly to mode selection
+      showScreen("singleplayer");
     }
   }
 
@@ -1730,12 +1756,12 @@
         return;
       }
 
-if (mode === "royale") {
-// Show multiplayer lobby for royale
-isRoyaleMode = true;
-showScreen("multiplayer");
-return;
-}
+      if (mode === "royale") {
+        // Show multiplayer lobby for royale
+        isRoyaleMode = true;
+        showScreen("multiplayer");
+        return;
+      }
 
       lastMode = mode;
       isMultiplayerGame = false;

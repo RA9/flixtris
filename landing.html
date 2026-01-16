@@ -1108,6 +1108,45 @@
         </footer>
 
         <script>
+            // Check if player has custom name and redirect to game if so
+            (async () => {
+                let hasName = false;
+                try {
+                    if (window.indexedDB) {
+                        const db = await new Promise((resolve, reject) => {
+                            const req = indexedDB.open("flixtris", 4);
+                            req.onsuccess = () => resolve(req.result);
+                            req.onerror = () => reject(req.error);
+                        });
+                        const tx = db.transaction("player", "readonly");
+                        const req = tx.objectStore("player").get("profile");
+                        const result = await new Promise((resolve) => {
+                            req.onsuccess = () => resolve(req.result);
+                        });
+                        if (result && result.name !== null) {
+                            hasName = true;
+                        }
+                        db.close();
+                    }
+                } catch (e) {
+                    // Fallback to localStorage
+                    try {
+                        const player = localStorage.getItem("flixtris_player");
+                        if (player) {
+                            const p = JSON.parse(player);
+                            if (p.name !== null) {
+                                hasName = true;
+                            }
+                        }
+                    } catch (e2) {
+                        // Ignore
+                    }
+                }
+                if (hasName) {
+                    window.location.href = "index.html";
+                }
+            })();
+
             // Create falling blocks animation
             function createFallingBlocks() {
                 const container = document.getElementById("fallingBlocks");
