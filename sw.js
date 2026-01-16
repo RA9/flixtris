@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
   "/js/settings.js",
   "/js/leaderboard.js",
   "/js/tournament.js",
+  "/js/tournament-ui.js",
   "/js/updates.js",
   "/icons/icon.svg",
   "/icons/icon-192.png",
@@ -32,7 +33,7 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Caching static assets");
       return cache.addAll(STATIC_ASSETS);
-    })
+    }),
   );
 
   // Force the waiting service worker to become the active service worker
@@ -51,9 +52,9 @@ self.addEventListener("activate", (event) => {
             console.log("Deleting old cache:", cacheName);
             return caches.delete(cacheName);
           }
-        })
+        }),
       );
-    })
+    }),
   );
 
   // Claim all clients immediately
@@ -86,7 +87,7 @@ self.addEventListener("fetch", (event) => {
 
         return response;
       });
-    })
+    }),
   );
 });
 

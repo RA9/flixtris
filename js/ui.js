@@ -4407,6 +4407,26 @@
   // Load settings on initialization
   loadSettings();
 
+  // Initialize tournament UI
+  if (api.tournamentUI && api.tournamentUI.init) {
+    api.tournamentUI.init();
+  }
+
+  // Initialize settings UI
+  if (api.settings && api.settings.init) {
+    api.settings.init();
+  }
+
+  // Initialize leaderboard UI
+  if (api.leaderboard && api.leaderboard.init) {
+    api.leaderboard.init();
+  }
+
+  // Initialize update system
+  if (api.updates && api.updates.init) {
+    api.updates.init();
+  }
+
   // Show splash screen by default
   showScreen("splash");
 
