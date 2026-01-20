@@ -3130,10 +3130,18 @@ body {
 /* Responsive */
 @media (max-width: 767px) {
     :root {
-        /* Default: Fill available space for solo play */
-        --canvas-width: 90vw;
-        --canvas-height: calc(var(--canvas-width) * 2);
+        /* Canvas width must be multiple of 10 (COLS) for cells to fill width */
+        /* 300px / 10 = 30px cells, height = 600px for 20 rows */
+        --canvas-width: 300px;
+        --canvas-height: 600px;
     }
+
+    /* Smaller board when opponent is visible (multiplayer)
+       NOTE: Removed the `:has()` rule to avoid reserving horizontal space on mobile
+       when no opponent is present. Opponent visibility and any dynamic resizing
+       should be handled via the `.opponent-container.active` class (and/or JS)
+       rather than the parent `:has()` selector so mobile layouts don't keep
+       space for a missing opponent. */
 
     #screen-game {
         padding: 5px;
@@ -3190,33 +3198,25 @@ body {
         overflow: hidden;
     }
 
-    /* Solo play: maximize board size */
-    .game-center:not(:has(.opponent-container.active)) {
-        padding: 5px;
-    }
-
     .game-board-wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100%;
-        width: 100%;
     }
 
-    /* Default canvas sizing for solo play - fills available space */
     #game {
-        width: auto;
-        height: 100%;
-        max-width: 90vw;
+        width: var(--canvas-width);
+        height: var(--canvas-height);
+        max-height: 100%;
         object-fit: contain;
     }
 
-    /* When opponent is visible (multiplayer/bot), constrain the board */
-    .game-center:has(.opponent-container.active) #game {
-        width: 55vw;
-        height: auto;
-        max-height: 100%;
-    }
+    /* When opponent is visible (multiplayer/bot), constrain the board
+       NOTE: Removed the `:has()`-based rule to prevent the main board from
+       shrinking/allocating space when there is no opponent on mobile.
+       If needed, apply opponent-driven sizing via the `.opponent-container.active`
+       element or via JS that toggles an explicit class on `.game-center`. */
 
     /* Hide sidebars on mobile */
     .game-sidebar {

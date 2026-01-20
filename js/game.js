@@ -123,23 +123,82 @@
     state.nextCtx = state.nextCanvas.getContext("2d");
     state.holdCanvas = document.getElementById("hold");
     state.holdCtx = state.holdCanvas ? state.holdCanvas.getContext("2d") : null;
+
+    // Ensure mobile layout doesn't leave space for an opponent when none is active.
+    // We synchronize the inline display style with the presence of the "active" class
+    // and viewport width so the CSS :has(...) rules won't accidentally leave space.
+    try {
+      const opponentContainer = document.getElementById("opponentContainer");
+      const syncOpponentDisplay = () => {
+        if (!opponentContainer) return;
+        const isActive = opponentContainer.classList.contains("active");
+        const isMobile = window.matchMedia("(max-width: 767px)").matches;
+        // When on mobile, hide the opponent container element entirely unless active.
+        if (isMobile) {
+          opponentContainer.style.display = isActive ? "flex" : "none";
+        } else {
+          // On desktop leave control to CSS, but explicitly clear inline style to avoid overrides.
+          opponentContainer.style.display = "";
+        }
+      };
+
+      // Initial sync
+      syncOpponentDisplay();
+
+      // Observe class changes so show/hide called elsewhere still reflect in style
+      const mo = new MutationObserver((mutationsList) => {
+        for (const m of mutationsList) {
+          if (m.type === "attributes" && m.attributeName === "class") {
+            syncOpponentDisplay();
+            break;
+          }
+        }
+      });
+      mo.observe(opponentContainer, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+
+      // Also listen to resize so mobile/desktop toggles will update display appropriately
+      window.addEventListener("resize", syncOpponentDisplay);
+      // In case orientation changes on mobile
+      window.addEventListener("orientationchange", syncOpponentDisplay);
+    } catch (e) {
+      // If anything fails here, fall back to default CSS behavior (do not throw).
+      // Keep silent — this code is a UI nicety only.
+    }
+
+    // Perform initial sizing
     resizeCanvas();
   }
 
   function resizeCanvas() {
     if (!state.canvas) return;
 
-    const style = getComputedStyle(document.documentElement);
-    const width = parseInt(style.getPropertyValue("--canvas-width")) || 300;
-    const height = parseInt(style.getPropertyValue("--canvas-height")) || 500;
+    const dpr = window.devicePixelRatio || 1;
 
-    state.canvas.width = width;
-    state.canvas.height = height;
-    state.cellSize = Math.floor(Math.min(width / COLS, height / ROWS));
+    // You control ONE thing only
+    const cell = state.cellSize;
 
-    if (state.running && state.current) {
-      render();
-    }
+    const cssWidth = COLS * cell;
+    const cssHeight = ROWS * cell;
+
+    // CSS size
+    state.canvas.style.width = cssWidth + "px";
+    state.canvas.style.height = cssHeight + "px";
+
+    // Backing store
+    state.canvas.width = cssWidth * dpr;
+    state.canvas.height = cssHeight * dpr;
+
+    // HiDPI scaling ONCE
+    state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Store logical size
+    state.canvasCSSWidth = cssWidth;
+    state.canvasCSSHeight = cssHeight;
+
+    if (state.running) render();
   }
 
   function initBoard() {
@@ -600,59 +659,62 @@
   }
 
   function render() {
+    if (!state.board || !state.board.length) return;
+
     const ctx = state.ctx;
     const cell = state.cellSize;
-    const offsetX = (state.canvas.width - COLS * cell) / 2;
-    const offsetY = (state.canvas.height - ROWS * cell) / 2;
+    const w = state.canvasCSSWidth;
+    const h = state.canvasCSSHeight;
 
-    // Clear canvas
+    // Clear
     ctx.fillStyle = "#0f172a";
-    ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+    ctx.fillRect(0, 0, w, h);
 
-    // Draw grid
+    // ---- GRID ----
     ctx.strokeStyle = "#1e293b";
     ctx.lineWidth = 1;
+
     for (let r = 0; r <= ROWS; r++) {
+      const y = r * cell;
       ctx.beginPath();
-      ctx.moveTo(offsetX, offsetY + r * cell);
-      ctx.lineTo(offsetX + COLS * cell, offsetY + r * cell);
-      ctx.stroke();
-    }
-    for (let c = 0; c <= COLS; c++) {
-      ctx.beginPath();
-      ctx.moveTo(offsetX + c * cell, offsetY);
-      ctx.lineTo(offsetX + c * cell, offsetY + ROWS * cell);
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
       ctx.stroke();
     }
 
-    // Draw board
+    for (let c = 0; c <= COLS; c++) {
+      const x = c * cell;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+
+    // ---- BOARD ----
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (state.board[r][c]) {
-          drawCell(
-            ctx,
-            offsetX + c * cell,
-            offsetY + r * cell,
-            cell,
-            state.board[r][c],
-          );
+          drawCell(ctx, c * cell, r * cell, cell, state.board[r][c]);
         }
       }
     }
 
+    // ---- CURRENT PIECE ----
     if (state.current) {
-      // Draw ghost piece (not in hardcore mode and if enabled)
+      const shape = state.current.shape;
+
+      // Ghost
       if (state.mode !== "hardcore" && state.ghostEnabled) {
         const ghostY = getGhostY();
-        const shape = state.current.shape;
         ctx.globalAlpha = 0.3;
+
         for (let r = 0; r < shape.length; r++) {
           for (let c = 0; c < shape[r].length; c++) {
             if (shape[r][c]) {
               drawCell(
                 ctx,
-                offsetX + (state.posX + c) * cell,
-                offsetY + (ghostY + r) * cell,
+                (state.posX + c) * cell,
+                (ghostY + r) * cell,
                 cell,
                 state.current.color,
               );
@@ -662,15 +724,14 @@
         ctx.globalAlpha = 1;
       }
 
-      // Draw current piece
-      const shape = state.current.shape;
+      // Active
       for (let r = 0; r < shape.length; r++) {
         for (let c = 0; c < shape[r].length; c++) {
           if (shape[r][c]) {
             drawCell(
               ctx,
-              offsetX + (state.posX + c) * cell,
-              offsetY + (state.posY + r) * cell,
+              (state.posX + c) * cell,
+              (state.posY + r) * cell,
               cell,
               state.current.color,
             );
@@ -679,19 +740,21 @@
       }
     }
 
-    // Draw pause overlay
+    // ---- PAUSE ----
     if (state.paused) {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+      ctx.fillStyle = "rgba(0,0,0,0.7)";
+      ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = "#22d3ee";
       ctx.font = "bold 24px system-ui";
       ctx.textAlign = "center";
-      ctx.fillText("PAUSED", state.canvas.width / 2, state.canvas.height / 2);
+      ctx.textBaseline = "middle";
+      ctx.fillText("PAUSED", w / 2, h / 2);
     }
   }
 
   function drawCell(ctx, x, y, size, color) {
-    const padding = 2;
+    const padding = Math.max(1, size * 0.08);
+
     ctx.fillStyle = color;
     ctx.fillRect(
       x + padding,
@@ -701,12 +764,12 @@
     );
 
     // Highlight
-    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
     ctx.fillRect(x + padding, y + padding, size - padding * 2, 3);
     ctx.fillRect(x + padding, y + padding, 3, size - padding * 2);
 
     // Shadow
-    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
     ctx.fillRect(x + padding, y + size - padding - 3, size - padding * 2, 3);
     ctx.fillRect(x + size - padding - 3, y + padding, 3, size - padding * 2);
   }

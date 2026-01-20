@@ -2377,7 +2377,9 @@
 
     function handleControl(action) {
       return (e) => {
-        e.preventDefault();
+        if (e.cancelable) {
+          e.preventDefault();
+        }
         if (api.game[action]) {
           api.game[action]();
           api.game.render && api.game.render();
@@ -3599,6 +3601,15 @@
       opponentScoreEl.textContent = "0";
     }
 
+    // Also set a page-level flag so CSS fallbacks can detect multiplayer state
+    try {
+      if (document && document.body) {
+        document.body.classList.add("multiplayer-active");
+      }
+    } catch (e) {
+      // ignore if document/body not available
+    }
+
     // Initialize opponent canvas
     opponentCanvas = document.getElementById("opponent-board");
     if (opponentCanvas) {
@@ -3611,6 +3622,16 @@
     if (opponentContainer) {
       opponentContainer.classList.remove("active");
     }
+
+    // Remove page-level multiplayer flag so mobile layout doesn't reserve space
+    try {
+      if (document && document.body) {
+        document.body.classList.remove("multiplayer-active");
+      }
+    } catch (e) {
+      // ignore if document/body not available
+    }
+
     opponentCanvas = null;
     opponentCtx = null;
   }
