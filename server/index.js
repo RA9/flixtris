@@ -697,16 +697,25 @@ const server = http.createServer(async (req, res) => {
     // Resolve these files relative to the repository root (one level up from server/)
     filePath = path.join(__dirname, "..", pathname);
   } else if (pathname === "/about") {
-    filePath = "/about.html";
+    // Use relative path for joining so path.join(STATIC_DIR, ...) works correctly.
+    filePath = "about.html";
   } else {
-    filePath = pathname === "/" ? "/landing.html" : pathname;
+    // Normalize to a relative path (strip leading slash) so joining with STATIC_DIR
+    // won't be overridden by an absolute path (which previously caused a 403).
+    filePath = pathname === "/" ? "landing.html" : pathname.replace(/^\//, "");
   }
-  // If filePath is not absolute, resolve it inside the configured STATIC_DIR.
+  // Always resolve non-absolute paths inside the configured STATIC_DIR.
   if (!path.isAbsolute(filePath)) {
     filePath = path.join(STATIC_DIR, filePath);
   }
 
   // Security: prevent directory traversal
+  // Special-case favicon requests so the browser can fetch /favicon.ico without a 403.
+  // Serve the bundled icon file `icons/icon-192.png` as the favicon.
+  if (pathname === "/favicon.ico") {
+    filePath = path.join(STATIC_DIR, "icons", "icon-192.png");
+  }
+
   if (!filePath.startsWith(STATIC_DIR)) {
     res.writeHead(403);
     res.end("Forbidden");
