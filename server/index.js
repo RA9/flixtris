@@ -618,6 +618,48 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // GET /api/check-name?name=PLAYERNAME
+  // Returns { available: true } if the name is not present in the system.
+  if (pathname === "/api/check-name" && req.method === "GET") {
+    const name = url.searchParams.get("name");
+    if (!name) {
+      sendJSON(res, { error: "Missing name parameter" }, 400);
+      return;
+    }
+
+    // Basic validation (same rules as client): 2-16 chars, alphanumeric + underscore
+    if (name.length < 2 || name.length > 16 || !/^[a-zA-Z0-9_]+$/.test(name)) {
+      sendJSON(res, { available: false });
+      return;
+    }
+
+    // If Redis isn't connected, optimistically allow the name (so clients can proceed)
+    if (!redisConnected) {
+      sendJSON(res, { available: true });
+      return;
+    }
+
+    try {
+      // Check for existing player stats (used to determine taken names).
+      // Player stats are stored at KEYS.playerStats(name) as a hash.
+      const exists = await redisClient.exists(KEYS.playerStats(name));
+      // Additionally check player settings just in case (some players may only have settings stored)
+      const settingsExists = await redisClient.exists(
+        KEYS.playerSettings(name),
+      );
+      const taken = (exists || settingsExists) > 0;
+
+      sendJSON(res, { available: !taken });
+    } catch (err) {
+      console.error(
+        "Error checking name availability:",
+        err && err.message ? err.message : err,
+      );
+      sendJSON(res, { error: "Server error" }, 500);
+    }
+    return;
+  }
+
   // POST /api/settings/:name
   if (pathname.startsWith("/api/settings/") && req.method === "POST") {
     const playerName = decodeURIComponent(pathname.split("/")[3]);
@@ -648,13 +690,21 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Serve static files
+  // Special-case sw.js and version.json to ensure they are served from the project root
+  // with correct MIME types (avoid falling back to index.html which causes invalid MIME).
   let filePath;
-  if (pathname === "/about") {
+  if (pathname === "/sw.js" || pathname === "/version.json") {
+    // Resolve these files relative to the repository root (one level up from server/)
+    filePath = path.join(__dirname, "..", pathname);
+  } else if (pathname === "/about") {
     filePath = "/about.html";
   } else {
     filePath = pathname === "/" ? "/landing.html" : pathname;
   }
-  filePath = path.join(STATIC_DIR, filePath);
+  // If filePath is not absolute, resolve it inside the configured STATIC_DIR.
+  if (!path.isAbsolute(filePath)) {
+    filePath = path.join(STATIC_DIR, filePath);
+  }
 
   // Security: prevent directory traversal
   if (!filePath.startsWith(STATIC_DIR)) {
@@ -669,16 +719,39 @@ const server = http.createServer(async (req, res) => {
   fs.readFile(filePath, (err, data) => {
     if (err) {
       if (err.code === "ENOENT") {
-        // For SPA, serve index.html for non-file routes
-        fs.readFile(path.join(STATIC_DIR, "index.html"), (err2, indexData) => {
-          if (err2) {
-            res.writeHead(404);
-            res.end("Not Found");
-            return;
-          }
-          res.writeHead(200, { "Content-Type": "text/html" });
-          res.end(indexData);
-        });
+        // Serve index.html only for SPA navigation routes.
+        // For requests that look like missing static assets, return 404 instead.
+        // Heuristics:
+        //  - If the request has no extension (e.g. "/room/ABCD") OR ends with a slash,
+        //    treat it as a navigation route and serve the app shell.
+        //  - If the client explicitly accepts HTML (Accept header contains "text/html"),
+        //    treat it as a navigation route.
+        const acceptHeader =
+          req.headers && req.headers.accept ? req.headers.accept : "";
+        const isNavigationRoute =
+          !path.extname(filePath) ||
+          filePath.endsWith(path.sep) ||
+          pathname.endsWith("/") ||
+          acceptHeader.includes("text/html");
+
+        if (isNavigationRoute) {
+          fs.readFile(
+            path.join(STATIC_DIR, "index.html"),
+            (err2, indexData) => {
+              if (err2) {
+                res.writeHead(404);
+                res.end("Not Found");
+                return;
+              }
+              res.writeHead(200, { "Content-Type": "text/html" });
+              res.end(indexData);
+            },
+          );
+        } else {
+          // Missing static asset requested directly (JS/CSS/image/etc.) — return 404.
+          res.writeHead(404);
+          res.end("Not Found");
+        }
         return;
       }
       res.writeHead(500);
