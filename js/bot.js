@@ -393,12 +393,12 @@
         for (let x = -2; x <= COLS - pieceWidth + 2; x++) {
           // Find landing position
           let y = 0;
-          while (!collidesAt(shape, x, y + 1)) {
+          while (!collides(shape, x, y + 1)) {
             y++;
             if (y > ROWS) break;
           }
 
-          if (collidesAt(shape, x, y)) continue;
+          if (collides(shape, x, y)) continue;
 
           // Evaluate this placement
           const score = evaluatePlacement(shape, x, y);
@@ -417,21 +417,6 @@
     }
 
     return bestMove;
-  }
-
-  // Check collision at position
-  function collidesAt(shape, x, y) {
-    for (let r = 0; r < shape.length; r++) {
-      for (let c = 0; c < shape[r].length; c++) {
-        if (shape[r][c]) {
-          const newX = x + c;
-          const newY = y + r;
-          if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
-          if (newY >= 0 && botState.board[newY][newX]) return true;
-        }
-      }
-    }
-    return false;
   }
 
   // Evaluate a placement (higher is better)
@@ -535,48 +520,57 @@
     }, botState.config.thinkDelay);
   }
 
-  // Think and make a move
+  // Think and make a move — executes the full plan in one cycle
   function thinkAndMove() {
     if (!botState.active || botState.gameOver || !botState.current) return;
 
     const bestMove = findBestPlacement();
     if (!bestMove) return;
 
-    // Execute move
     if (bestMove.useHold) {
       doHold();
-      return; // Will continue on next think cycle
+      if (!botState.current || botState.gameOver) return;
     }
 
-    // Rotate to target rotation
-    let currentRotation = 0;
-    while (currentRotation < bestMove.rotation) {
+    // Rotate to target with simple wall-kick fallbacks
+    const kickOffsets = [0, -1, 1, -2, 2];
+    for (let i = 0; i < bestMove.rotation; i++) {
       const rotated = rotate(botState.current.shape);
-      if (!collides(rotated, botState.posX, botState.posY)) {
-        botState.current.shape = rotated;
+      let applied = false;
+      for (const dx of kickOffsets) {
+        if (!collides(rotated, botState.posX + dx, botState.posY)) {
+          botState.current.shape = rotated;
+          botState.posX += dx;
+          applied = true;
+          break;
+        }
       }
-      currentRotation++;
+      if (!applied) {
+        // Rotation blocked — abort and re-plan next cycle
+        emitUpdate();
+        return;
+      }
     }
 
-    // Move horizontally
-    const targetX = bestMove.x;
-    if (botState.posX < targetX) {
-      if (!collides(botState.current.shape, botState.posX + 1, botState.posY)) {
-        botState.posX++;
-      }
-    } else if (botState.posX > targetX) {
-      if (!collides(botState.current.shape, botState.posX - 1, botState.posY)) {
-        botState.posX--;
-      }
-    } else {
-      // At target X, hard drop
-      while (!collides(botState.current.shape, botState.posX, botState.posY + 1)) {
-        botState.posY++;
-      }
-      lockPiece();
+    // Shift horizontally to target x
+    while (
+      botState.posX < bestMove.x &&
+      !collides(botState.current.shape, botState.posX + 1, botState.posY)
+    ) {
+      botState.posX++;
+    }
+    while (
+      botState.posX > bestMove.x &&
+      !collides(botState.current.shape, botState.posX - 1, botState.posY)
+    ) {
+      botState.posX--;
     }
 
-    emitUpdate();
+    // Hard drop and lock
+    while (!collides(botState.current.shape, botState.posX, botState.posY + 1)) {
+      botState.posY++;
+    }
+    lockPiece();
   }
 
   // Hold piece
