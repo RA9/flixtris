@@ -44,149 +44,370 @@
         </div>
 
         <!-- Mode Selection Screen -->
-        <div id="screen-menu" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Select Mode</h2>
-            <div class="mode-cards">
-                <button class="mode-card category-card" id="singlePlayerBtn">
-                    <h3>🎮 Single Player</h3>
-                    <p>Play solo. Classic, Daily Challenge, and more.</p>
-                </button>
-                <button class="mode-card category-card" id="multiplayerBtn">
-                    <h3>⚔️ Multiplayer</h3>
-                    <p>Battle others in real-time 1v1 or Battle Royale.</p>
-                </button>
+        <div id="screen-menu" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
             </div>
-            <div
-                class="mode-cards pro-menu-items"
-                id="proMenuItems"
-                style="display: none"
-            >
-                <button class="mode-card pro-card" id="menuReplaysBtn">
-                    <h3>🎬 Your Replays</h3>
-                    <p>Watch and analyze your past games.</p>
-                </button>
-                <button class="mode-card pro-card" id="menuAnalyticsBtn">
-                    <h3>📊 Analytics</h3>
-                    <p>View detailed stats and performance insights.</p>
-                </button>
-                <button class="mode-card pro-card" id="menuRankedBtn">
-                    <h3>🏅 Ranked Mode</h3>
-                    <p>Compete for rankings and climb the ladder.</p>
-                </button>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Insert Coin · Select Mode</p>
+                </header>
+                <div class="mode-cards">
+                    <button
+                        class="mode-card category-card"
+                        id="singlePlayerBtn"
+                        data-piece="t"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Single Player</h3>
+                            <p>Play solo. Classic, Daily Challenge, and more.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card category-card"
+                        id="multiplayerBtn"
+                        data-piece="z"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="0" width="1" height="1" />
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Multiplayer</h3>
+                            <p>Battle others in real-time 1v1 or Battle Royale.</p>
+                        </span>
+                    </button>
+                </div>
+                <div
+                    class="mode-cards pro-menu-items"
+                    id="proMenuItems"
+                    style="display: none"
+                >
+                    <button
+                        class="mode-card pro-card"
+                        id="menuReplaysBtn"
+                        data-piece="l"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Your Replays</h3>
+                            <p>Watch and analyze your past games.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card pro-card"
+                        id="menuAnalyticsBtn"
+                        data-piece="s"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Analytics</h3>
+                            <p>View detailed stats and performance insights.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card pro-card"
+                        id="menuRankedBtn"
+                        data-piece="i"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                                <rect x="3" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Ranked Mode</h3>
+                            <p>Compete for rankings and climb the ladder.</p>
+                        </span>
+                    </button>
+                </div>
+                <div class="menu-links">
+                    <button class="menu-link" id="leaderboardBtn">
+                        🏆 Leaderboards
+                    </button>
+                    <button class="menu-link" id="tournamentBtn">
+                        🏆 Tournaments
+                    </button>
+                    <button class="menu-link" id="settingsBtn">
+                        ⚙️ Settings
+                    </button>
+                </div>
             </div>
-            <button class="menu-link" id="leaderboardBtn">
-                🏆 Leaderboards
-            </button>
-            <button class="menu-link" id="tournamentBtn">🏆 Tournaments</button>
-            <button class="menu-link" id="settingsBtn">⚙️ Settings</button>
         </div>
 
         <!-- Tournament Screen -->
-        <div id="screen-tournament" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Tournaments</h2>
-            <div class="tournament-container">
-                <button class="btn" id="createTournamentBtn">
-                    Create Tournament
-                </button>
-                <div class="tournament-list" id="tournamentList">
-                    <p class="tournament-empty">
-                        No tournaments yet. Create one to get started!
-                    </p>
+        <div id="screen-tournament" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Tournaments</p>
+                </header>
+                <div class="arcade-panel">
+                    <div class="tournament-container">
+                        <button class="arcade-btn" id="createTournamentBtn">
+                            + Create Tournament
+                        </button>
+                        <div class="tournament-list" id="tournamentList">
+                            <p class="tournament-empty">
+                                No tournaments yet. Create one to get started!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="tournamentBackBtn">
+                        ← Back
+                    </button>
                 </div>
             </div>
-            <button class="btn secondary back" id="tournamentBackBtn">
-                Back to Menu
-            </button>
         </div>
 
         <!-- Create Tournament Screen -->
-        <div id="screen-create-tournament" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Create Tournament</h2>
-            <div class="tournament-create-form">
-                <div class="form-group">
-                    <label for="tournamentName">Tournament Name</label>
-                    <input
-                        type="text"
-                        id="tournamentName"
-                        class="form-input"
-                        placeholder="My Awesome Tournament"
-                    />
-                </div>
-                <div class="form-group">
-                    <label>Tournament Type</label>
-                    <div class="tournament-type-selector">
-                        <button
-                            class="tournament-type-btn active"
-                            data-type="single_elimination"
-                        >
-                            Single Elimination
-                        </button>
-                        <button
-                            class="tournament-type-btn"
-                            data-type="round_robin"
-                        >
-                            Round Robin
-                        </button>
+        <div id="screen-create-tournament" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">New Tournament</p>
+                </header>
+                <div class="arcade-panel">
+                    <div class="tournament-create-form">
+                        <div class="form-group">
+                            <label for="tournamentName">Tournament Name</label>
+                            <input
+                                type="text"
+                                id="tournamentName"
+                                class="form-input"
+                                placeholder="My Awesome Tournament"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label>Tournament Type</label>
+                            <div class="tournament-type-selector">
+                                <button
+                                    class="tournament-type-btn active"
+                                    data-type="single_elimination"
+                                >
+                                    Single Elimination
+                                </button>
+                                <button
+                                    class="tournament-type-btn"
+                                    data-type="round_robin"
+                                >
+                                    Round Robin
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerCount">Number of Players</label>
+                            <select id="playerCount" class="form-select">
+                                <option value="4">4 Players</option>
+                                <option value="8" selected>8 Players</option>
+                                <option value="16">16 Players</option>
+                            </select>
+                        </div>
+                        <div class="arcade-actions">
+                            <button class="arcade-btn" id="startTournamentBtn">
+                                Create &amp; Start
+                            </button>
+                            <button
+                                class="arcade-btn ghost"
+                                id="cancelTournamentBtn"
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="playerCount">Number of Players</label>
-                    <select id="playerCount" class="form-select">
-                        <option value="4">4 Players</option>
-                        <option value="8" selected>8 Players</option>
-                        <option value="16">16 Players</option>
-                    </select>
-                </div>
-                <button class="btn" id="startTournamentBtn">
-                    Create & Start
-                </button>
-                <button class="btn secondary" id="cancelTournamentBtn">
-                    Cancel
-                </button>
             </div>
         </div>
 
         <!-- Tournament Bracket Screen -->
-        <div id="screen-tournament-bracket" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title" id="tournamentBracketTitle">
-                Tournament Bracket
-            </h2>
-            <div class="tournament-bracket-container">
-                <div class="tournament-status">
-                    <span class="tournament-round"
-                        >Round <span id="currentRound">1</span></span
-                    >
-                    <span class="tournament-players-remaining"
-                        ><span id="playersRemaining">8</span> players
-                        remaining</span
-                    >
-                </div>
-                <div class="tournament-matches" id="tournamentMatches">
-                    <!-- Matches will be dynamically populated -->
-                </div>
-                <div class="tournament-actions">
-                    <button class="btn" id="playNextMatchBtn">
-                        Play Next Match
-                    </button>
-                    <button class="btn secondary" id="viewStandingsBtn">
-                        View Standings
-                    </button>
-                    <button class="btn secondary" id="exitTournamentBtn">
-                        Exit Tournament
-                    </button>
+        <div id="screen-tournament-bracket" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline" id="tournamentBracketTitle">
+                        Tournament Bracket
+                    </p>
+                </header>
+                <div class="arcade-panel">
+                    <div class="tournament-bracket-container">
+                        <div class="tournament-status">
+                            <span class="tournament-round"
+                                >Round
+                                <span id="currentRound">1</span></span
+                            >
+                            <span class="tournament-players-remaining"
+                                ><span id="playersRemaining">8</span> players
+                                remaining</span
+                            >
+                        </div>
+                        <div
+                            class="tournament-matches"
+                            id="tournamentMatches"
+                        ></div>
+                        <div class="arcade-actions tournament-actions">
+                            <button class="arcade-btn" id="playNextMatchBtn">
+                                ▶ Play Next Match
+                            </button>
+                            <button
+                                class="arcade-btn ghost"
+                                id="viewStandingsBtn"
+                            >
+                                View Standings
+                            </button>
+                            <button
+                                class="arcade-btn ghost"
+                                id="exitTournamentBtn"
+                            >
+                                Exit Tournament
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Settings Screen -->
-        <div id="screen-settings" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Settings</h2>
-            <div class="settings-container">
+        <div id="screen-settings" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Settings</p>
+                </header>
+                <div class="settings-container">
                 <div class="settings-section">
                     <h3>Audio</h3>
                     <div class="setting-row">
@@ -306,20 +527,12 @@
                     </div>
                 </div>
             </div>
-            <button
-                class="btn secondary back"
-                id="settingsBackBtn"
-                style="display: flex; align-items: center"
-            >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    style="width: 16px; height: 16px; margin-right: 8px"
-                >
-                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                </svg>
-                Back
-            </button>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="settingsBackBtn">
+                        ← Back
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Analytics Dashboard Screen -->
@@ -550,121 +763,446 @@
         </div>
 
         <!-- Single Player Mode Selection -->
-        <div id="screen-singleplayer" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Single Player</h2>
-            <div class="mode-cards">
-                <button class="mode-card classic" data-mode="classic">
-                    <h3>Classic</h3>
-                    <p>Endless mode. How far can you go?</p>
-                </button>
-                <button class="mode-card daily" data-mode="daily">
-                    <h3>Daily Challenge</h3>
-                    <p>Same pieces for everyone. Compare your score!</p>
-                </button>
-                <button class="mode-card hardcore" data-mode="hardcore">
-                    <h3>Hardcore</h3>
-                    <p>No pause. No ghost piece. No mercy.</p>
-                </button>
-                <button class="mode-card bot" id="botBattleBtn">
-                    <h3>🤖 Bot Battle</h3>
-                    <p>Practice against AI bots of varying difficulty.</p>
-                </button>
-                <button class="mode-card seed" id="playSeedBtn">
-                    <h3>Play Seed</h3>
-                    <p>Enter a shared seed code to challenge a friend.</p>
-                </button>
+        <div id="screen-singleplayer" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
             </div>
-            <button class="btn secondary back" id="singlePlayerBackBtn">
-                Back
-            </button>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Single Player</p>
+                </header>
+                <div class="mode-cards">
+                    <button
+                        class="mode-card classic"
+                        data-mode="classic"
+                        data-piece="i"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                                <rect x="3" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Classic</h3>
+                            <p>Endless mode. How far can you go?</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card daily"
+                        data-mode="daily"
+                        data-piece="o"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Daily Challenge</h3>
+                            <p>Same pieces for everyone. Compare your score!</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card hardcore"
+                        data-mode="hardcore"
+                        data-piece="z"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="0" width="1" height="1" />
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Hardcore</h3>
+                            <p>No pause. No ghost piece. No mercy.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card bot"
+                        id="botBattleBtn"
+                        data-piece="t"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Bot Battle</h3>
+                            <p>Practice against AI bots of varying difficulty.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card seed"
+                        id="playSeedBtn"
+                        data-piece="j"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Play Seed</h3>
+                            <p>Enter a shared seed code to challenge a friend.</p>
+                        </span>
+                    </button>
+                </div>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="singlePlayerBackBtn">
+                        ← Back
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Bot Battle Screen -->
-        <div id="screen-bot-select" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Bot Battle</h2>
-            <p class="menu-subtitle">
-                Select your opponent. Game starts at the bot's level.
-            </p>
-            <div class="mode-cards bot-cards">
-                <button class="mode-card bot-card" data-bot="beginner">
-                    <h3>🟢 Beginner Bot</h3>
-                    <p>
-                        Level 1 • Slow and makes mistakes. Great for learning.
-                    </p>
-                </button>
-                <button class="mode-card bot-card" data-bot="easy">
-                    <h3>🟡 Easy Bot</h3>
-                    <p>Level 3 • Takes its time. Occasionally slips up.</p>
-                </button>
-                <button class="mode-card bot-card" data-bot="medium">
-                    <h3>🟠 Medium Bot</h3>
-                    <p>Level 5 • Balanced play. Good for practice.</p>
-                </button>
-                <button class="mode-card bot-card" data-bot="hard">
-                    <h3>🔴 Hard Bot</h3>
-                    <p>Level 8 • Fast and strategic. A real challenge.</p>
-                </button>
-                <button class="mode-card bot-card" data-bot="expert">
-                    <h3>🟣 Expert Bot</h3>
-                    <p>Level 12 • Near-perfect play. Only for the brave.</p>
-                </button>
-                <button class="mode-card bot-card" data-bot="master">
-                    <h3>⚫ Master Bot</h3>
-                    <p>Level 15 • Optimal play. Can you survive?</p>
-                </button>
+        <div id="screen-bot-select" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
             </div>
-            <button class="btn secondary back" id="botSelectBackBtn">
-                Back
-            </button>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Bot Battle</p>
+                </header>
+                <div class="mode-cards bot-cards">
+                    <button
+                        class="mode-card bot-card"
+                        data-bot="beginner"
+                        data-piece="s"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Beginner Bot</h3>
+                            <p>Level 1 — Slow and makes mistakes. Great for learning.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card bot-card"
+                        data-bot="easy"
+                        data-piece="o"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Easy Bot</h3>
+                            <p>Level 3 — Takes its time. Occasionally slips up.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card bot-card"
+                        data-bot="medium"
+                        data-piece="l"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Medium Bot</h3>
+                            <p>Level 5 — Balanced play. Good for practice.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card bot-card"
+                        data-bot="hard"
+                        data-piece="z"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="0" width="1" height="1" />
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Hard Bot</h3>
+                            <p>Level 8 — Fast and strategic. A real challenge.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card bot-card"
+                        data-bot="expert"
+                        data-piece="t"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Expert Bot</h3>
+                            <p>Level 12 — Near-perfect play. Only for the brave.</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card bot-card"
+                        data-bot="master"
+                        data-piece="i"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                                <rect x="3" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Master Bot</h3>
+                            <p>Level 15 — Optimal play. Can you survive?</p>
+                        </span>
+                    </button>
+                </div>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="botSelectBackBtn">
+                        ← Back
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Multiplayer Mode Selection -->
-        <div id="screen-multiplayer-select" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Multiplayer</h2>
-            <div class="mode-cards">
-                <button class="mode-card multiplayer" data-mode="multiplayer">
-                    <h3>1v1 Battle</h3>
-                    <p>Real-time 1v1 battle. See your opponent live!</p>
-                </button>
-                <button class="mode-card royale" data-mode="royale">
-                    <h3>Battle Royale</h3>
-                    <p>2-16 players. Last one standing wins!</p>
-                </button>
+        <div id="screen-multiplayer-select" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
             </div>
-            <button class="btn secondary back" id="multiplayerBackBtn">
-                Back
-            </button>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Multiplayer</p>
+                </header>
+                <div class="mode-cards">
+                    <button
+                        class="mode-card multiplayer"
+                        data-mode="multiplayer"
+                        data-piece="s"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="1" y="0" width="1" height="1" />
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>1v1 Battle</h3>
+                            <p>Real-time 1v1 battle. See your opponent live!</p>
+                        </span>
+                    </button>
+                    <button
+                        class="mode-card royale"
+                        data-mode="royale"
+                        data-piece="l"
+                    >
+                        <span class="mode-card-icon" aria-hidden="true">
+                            <svg
+                                class="tetromino"
+                                viewBox="0 0 4 4"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <rect x="2" y="0" width="1" height="1" />
+                                <rect x="0" y="1" width="1" height="1" />
+                                <rect x="1" y="1" width="1" height="1" />
+                                <rect x="2" y="1" width="1" height="1" />
+                            </svg>
+                        </span>
+                        <span class="mode-card-body">
+                            <h3>Battle Royale</h3>
+                            <p>2-16 players. Last one standing wins!</p>
+                        </span>
+                    </button>
+                </div>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="multiplayerBackBtn">
+                        ← Back
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Leaderboard Screen -->
-        <div id="screen-leaderboard" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Leaderboards</h2>
-            <div class="leaderboard-tabs">
-                <button class="leaderboard-tab active" data-tab="global">
-                    Global
-                </button>
-                <button class="leaderboard-tab" data-tab="daily">Daily</button>
-                <button class="leaderboard-tab" data-tab="weekly">
-                    Weekly
-                </button>
+        <div id="screen-leaderboard" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
             </div>
-            <div class="leaderboard-container">
-                <div class="leaderboard-header">
-                    <span>#</span>
-                    <span>Player</span>
-                    <span>Score</span>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Leaderboards</p>
+                </header>
+                <div class="arcade-panel">
+                    <div class="leaderboard-tabs">
+                        <button class="leaderboard-tab active" data-tab="global">
+                            Global
+                        </button>
+                        <button class="leaderboard-tab" data-tab="daily">
+                            Daily
+                        </button>
+                        <button class="leaderboard-tab" data-tab="weekly">
+                            Weekly
+                        </button>
+                    </div>
+                    <div class="leaderboard-container">
+                        <div class="leaderboard-header">
+                            <span>#</span>
+                            <span>Player</span>
+                            <span>Score</span>
+                        </div>
+                        <div class="leaderboard-list" id="leaderboardList">
+                            <div class="leaderboard-loading">Loading...</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="leaderboard-list" id="leaderboardList">
-                    <div class="leaderboard-loading">Loading...</div>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="leaderboardBackBtn">
+                        ← Back
+                    </button>
                 </div>
             </div>
-            <button class="btn secondary back" id="leaderboardBackBtn">
-                Back to Menu
-            </button>
         </div>
 
         <!-- Multiplayer Lobby Screen -->

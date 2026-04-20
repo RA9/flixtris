@@ -297,6 +297,1033 @@ body {
     color: var(--danger);
 }
 
+/* ========================
+   Arcade Redesign — shared look
+   Apply class="screen arcade-screen" to any screen
+   that should use this aesthetic (falling pieces,
+   CRT scanlines, tetromino-colored mode cards).
+   .mode-card inside .arcade-screen needs a data-piece
+   attribute (i / o / t / s / z / j / l).
+   Scoped via .arcade-screen so plain .mode-cards /
+   .menu-link on other screens are untouched.
+   ======================== */
+.arcade-screen {
+    padding: 0;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(
+        ellipse at center,
+        #050a1a 0%,
+        var(--bg-primary) 100%
+    );
+}
+
+/* Subtle playfield grid on whole screen */
+.arcade-screen {
+    background-image:
+        radial-gradient(
+            ellipse at center,
+            #050a1a 0%,
+            var(--bg-primary) 100%
+        ),
+        linear-gradient(
+            to right,
+            rgba(148, 163, 184, 0.04) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(148, 163, 184, 0.04) 1px,
+            transparent 1px
+        );
+    background-size: 100% 100%, 32px 32px, 32px 32px;
+}
+
+/* Falling tetrominoes background */
+.arcade-screen .menu-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.arcade-screen .bg-piece {
+    position: absolute;
+    top: -80px;
+    width: 18px;
+    height: 18px;
+    opacity: 0.22;
+    animation: fallPiece 18s linear infinite;
+    filter: drop-shadow(0 0 10px currentColor);
+}
+
+.arcade-screen .bg-piece.piece-i {
+    color: #22d3ee;
+    background: #22d3ee;
+    box-shadow: 20px 0 #22d3ee, 40px 0 #22d3ee, 60px 0 #22d3ee;
+}
+.arcade-screen .bg-piece.piece-o {
+    color: #facc15;
+    background: #facc15;
+    box-shadow: 20px 0 #facc15, 0 20px #facc15, 20px 20px #facc15;
+}
+.arcade-screen .bg-piece.piece-t {
+    color: #a78bfa;
+    background: #a78bfa;
+    box-shadow: 20px 0 #a78bfa, 40px 0 #a78bfa, 20px -20px #a78bfa;
+}
+.arcade-screen .bg-piece.piece-s {
+    color: #4ade80;
+    background: #4ade80;
+    box-shadow: 20px 0 #4ade80, 20px -20px #4ade80, 40px -20px #4ade80;
+}
+.arcade-screen .bg-piece.piece-z {
+    color: #f43f5e;
+    background: #f43f5e;
+    box-shadow: 20px 0 #f43f5e, 20px 20px #f43f5e, 40px 20px #f43f5e;
+}
+.arcade-screen .bg-piece.piece-l {
+    color: #fb923c;
+    background: #fb923c;
+    box-shadow: 20px 0 #fb923c, 40px 0 #fb923c, 40px -20px #fb923c;
+}
+
+.arcade-screen .bg-piece:nth-child(1) {
+    left: 8%;
+    animation-delay: -2s;
+    animation-duration: 20s;
+}
+.arcade-screen .bg-piece:nth-child(2) {
+    left: 22%;
+    animation-delay: -8s;
+    animation-duration: 24s;
+}
+.arcade-screen .bg-piece:nth-child(3) {
+    left: 40%;
+    animation-delay: -14s;
+    animation-duration: 22s;
+}
+.arcade-screen .bg-piece:nth-child(4) {
+    left: 60%;
+    animation-delay: -5s;
+    animation-duration: 26s;
+}
+.arcade-screen .bg-piece:nth-child(5) {
+    left: 76%;
+    animation-delay: -11s;
+    animation-duration: 21s;
+}
+.arcade-screen .bg-piece:nth-child(6) {
+    left: 90%;
+    animation-delay: -17s;
+    animation-duration: 25s;
+}
+
+/* CRT scanline overlay */
+.arcade-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.025) 0px,
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Main container */
+.arcade-screen .menu-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding:
+        max(env(safe-area-inset-top), clamp(1rem, 4vw, 2.5rem))
+        clamp(0.75rem, 3vw, 2rem)
+        max(env(safe-area-inset-bottom), clamp(1rem, 4vw, 2.5rem));
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+/* Hero — arcade marquee */
+.arcade-screen .menu-hero {
+    text-align: center;
+    margin-bottom: clamp(0.5rem, 2vw, 1rem);
+}
+
+.arcade-screen .brand-header {
+    font-family:
+        "Courier New",
+        ui-monospace,
+        SF Mono,
+        Menlo,
+        monospace;
+    font-size: clamp(2.5rem, 9vw, 5rem);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    margin: 0;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: initial;
+    background: none;
+    display: inline-flex;
+    gap: 0.04em;
+    animation: titleBounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.arcade-screen .brand-header .ltr {
+    display: inline-block;
+    color: var(--ltr-color, #fff);
+    text-shadow:
+        0 0 6px var(--ltr-color),
+        0 0 14px var(--ltr-color),
+        0 0 28px var(--ltr-color),
+        3px 3px 0 rgba(0, 0, 0, 0.55);
+    animation: letterGlow 3s ease-in-out infinite;
+}
+
+.arcade-screen .brand-header .ltr:nth-child(1) { --ltr-color: #22d3ee; animation-delay: 0s; }
+.arcade-screen .brand-header .ltr:nth-child(2) { --ltr-color: #facc15; animation-delay: 0.15s; }
+.arcade-screen .brand-header .ltr:nth-child(3) { --ltr-color: #a78bfa; animation-delay: 0.3s; }
+.arcade-screen .brand-header .ltr:nth-child(4) { --ltr-color: #4ade80; animation-delay: 0.45s; }
+.arcade-screen .brand-header .ltr:nth-child(5) { --ltr-color: #f43f5e; animation-delay: 0.6s; }
+.arcade-screen .brand-header .ltr:nth-child(6) { --ltr-color: #3b82f6; animation-delay: 0.75s; }
+.arcade-screen .brand-header .ltr:nth-child(7) { --ltr-color: #fb923c; animation-delay: 0.9s; }
+.arcade-screen .brand-header .ltr:nth-child(8) { --ltr-color: #22d3ee; animation-delay: 1.05s; }
+
+.arcade-screen .menu-tagline {
+    margin: 0.75rem 0 0;
+    color: var(--accent);
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-weight: 700;
+    text-shadow: 0 0 10px var(--accent-glow);
+    animation: taglineBlink 2.4s ease-in-out infinite;
+}
+
+.arcade-screen .menu-tagline::before { content: "▶ "; }
+.arcade-screen .menu-tagline::after { content: " ◀"; }
+
+/* Card grid */
+.arcade-screen .mode-cards {
+    width: 100%;
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+/* Arcade mode card */
+.arcade-screen .mode-card {
+    --piece-color: var(--accent);
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    min-height: 120px;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.92),
+        rgba(2, 6, 23, 0.92)
+    );
+    border: 3px solid var(--piece-color);
+    border-radius: 4px;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 0 0 0 var(--piece-color);
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+    font-family: "Courier New", ui-monospace, monospace;
+    animation: menuCardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Per-piece color tokens */
+.arcade-screen .mode-card[data-piece="i"] { --piece-color: #22d3ee; }
+.arcade-screen .mode-card[data-piece="t"] { --piece-color: #a78bfa; }
+.arcade-screen .mode-card[data-piece="s"] { --piece-color: #4ade80; }
+.arcade-screen .mode-card[data-piece="z"] { --piece-color: #f43f5e; }
+.arcade-screen .mode-card[data-piece="l"] { --piece-color: #fb923c; }
+.arcade-screen .mode-card[data-piece="j"] { --piece-color: #3b82f6; }
+.arcade-screen .mode-card[data-piece="o"] { --piece-color: #facc15; }
+
+/* Corner bracket accents — revealed on hover */
+.arcade-screen .mode-card::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    background-image:
+        linear-gradient(to right, var(--piece-color) 0 0),
+        linear-gradient(to bottom, var(--piece-color) 0 0),
+        linear-gradient(to right, var(--piece-color) 0 0),
+        linear-gradient(to bottom, var(--piece-color) 0 0),
+        linear-gradient(to right, var(--piece-color) 0 0),
+        linear-gradient(to bottom, var(--piece-color) 0 0),
+        linear-gradient(to right, var(--piece-color) 0 0),
+        linear-gradient(to bottom, var(--piece-color) 0 0);
+    background-repeat: no-repeat;
+    background-size:
+        14px 2px, 2px 14px,
+        14px 2px, 2px 14px,
+        14px 2px, 2px 14px,
+        14px 2px, 2px 14px;
+    background-position:
+        0 0,      0 0,
+        100% 0,   100% 0,
+        0 100%,   0 100%,
+        100% 100%, 100% 100%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+/* Arcade button press — translate + hard shadow */
+.arcade-screen .mode-card:hover,
+.arcade-screen .mode-card:focus-visible {
+    transform: translate(-3px, -3px);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        6px 6px 0 var(--piece-color),
+        0 0 36px var(--piece-color);
+    background: linear-gradient(
+        135deg,
+        rgba(30, 41, 59, 0.95),
+        rgba(15, 23, 42, 0.95)
+    );
+}
+
+.arcade-screen .mode-card:hover::before,
+.arcade-screen .mode-card:focus-visible::before {
+    opacity: 1;
+}
+
+.arcade-screen .mode-card:active {
+    transform: translate(0, 0);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 0 0 var(--piece-color),
+        0 0 20px var(--piece-color);
+}
+
+/* Stagger */
+.arcade-screen .mode-cards .mode-card:nth-child(1) { animation-delay: 0.1s; }
+.arcade-screen .mode-cards .mode-card:nth-child(2) { animation-delay: 0.2s; }
+.arcade-screen .mode-cards .mode-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* SVG tetromino icon */
+.arcade-screen .mode-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(56px, 10vw, 76px);
+    height: clamp(56px, 10vw, 76px);
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px var(--piece-color));
+    transition: transform 0.3s ease;
+}
+
+.arcade-screen .mode-card:hover .mode-card-icon,
+.arcade-screen .mode-card:focus-visible .mode-card-icon {
+    transform: rotate(-90deg) scale(1.08);
+}
+
+.arcade-screen .tetromino {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.arcade-screen .tetromino rect {
+    fill: var(--piece-color);
+    stroke: rgba(255, 255, 255, 0.35);
+    stroke-width: 0.06;
+}
+
+/* Body */
+.arcade-screen .mode-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.arcade-screen .mode-card h3 {
+    margin: 0;
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--piece-color);
+    text-shadow: 0 0 8px var(--piece-color);
+}
+
+.arcade-screen .mode-card p {
+    margin: 0;
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: clamp(0.78rem, 1.5vw, 0.88rem);
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+
+/* PRO badge for pro cards */
+.arcade-screen .mode-card.pro-card::after {
+    content: "PRO";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.6rem;
+    padding: 3px 10px;
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.25em;
+    color: #0b1220;
+    background: var(--piece-color);
+    border-radius: 2px;
+    box-shadow: 0 0 10px var(--piece-color);
+    z-index: 1;
+}
+
+/* Bottom menu links — arcade pill/caps */
+.arcade-screen .menu-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(0.5rem, 1.5vw, 0.75rem);
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
+    animation: menuFadeIn 0.5s ease-out 0.5s both;
+}
+
+.arcade-screen .menu-link {
+    flex: 1 1 auto;
+    min-width: 150px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0.7rem 1.25rem;
+    background: rgba(2, 6, 23, 0.7);
+    border: 2px solid rgba(148, 163, 184, 0.25);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-family: "Courier New", ui-monospace, monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.arcade-screen .menu-link:hover,
+.arcade-screen .menu-link:focus-visible {
+    background: rgba(34, 211, 238, 0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow:
+        0 0 14px var(--accent-glow),
+        3px 3px 0 var(--accent);
+    transform: translate(-2px, -2px);
+}
+
+/* Standalone back button — don't stretch to full row */
+.arcade-screen .menu-link.arcade-back {
+    flex: 0 0 auto;
+    min-width: 160px;
+    max-width: 260px;
+    align-self: center;
+}
+
+/* Arcade panel — frosted content container for non-card screens */
+.arcade-screen .arcade-panel {
+    width: min(100%, 860px);
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 2rem);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15, 15, 30, 0.72),
+            rgba(8, 8, 20, 0.82)
+        );
+    border: 2px solid rgba(168, 139, 250, 0.35);
+    border-radius: 18px;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 18px 44px -22px rgba(0, 0, 0, 0.8),
+        0 0 22px -4px rgba(168, 139, 250, 0.32);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: menuCardIn 420ms ease both;
+}
+
+/* Arcade chunky buttons (primary) */
+.arcade-screen .arcade-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.5rem;
+    font-family: inherit;
+    font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0b0b1a;
+    background: linear-gradient(180deg, #ffd84d, #facc15);
+    border: 2px solid #f59e0b;
+    border-radius: 10px;
+    box-shadow:
+        0 0 18px rgba(250, 204, 21, 0.45),
+        4px 4px 0 rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.arcade-screen .arcade-btn:hover,
+.arcade-screen .arcade-btn:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow:
+        0 0 24px rgba(250, 204, 21, 0.65),
+        6px 6px 0 rgba(0, 0, 0, 0.6);
+    outline: none;
+}
+
+.arcade-screen .arcade-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow:
+        0 0 14px rgba(250, 204, 21, 0.5),
+        2px 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.arcade-screen .arcade-btn.ghost {
+    color: #f5f5ff;
+    background: rgba(167, 139, 250, 0.08);
+    border-color: rgba(167, 139, 250, 0.5);
+    box-shadow:
+        0 0 12px rgba(167, 139, 250, 0.2),
+        4px 4px 0 rgba(0, 0, 0, 0.55);
+}
+
+.arcade-screen .arcade-btn.ghost:hover,
+.arcade-screen .arcade-btn.ghost:focus-visible {
+    background: rgba(167, 139, 250, 0.18);
+    box-shadow:
+        0 0 18px rgba(167, 139, 250, 0.4),
+        6px 6px 0 rgba(0, 0, 0, 0.55);
+}
+
+.arcade-screen .arcade-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* ==== Leaderboard styling inside arcade-screen ==== */
+.arcade-screen .leaderboard-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.arcade-screen .leaderboard-tab {
+    flex: 1 1 auto;
+    min-width: 96px;
+    padding: 0.55rem 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.75);
+    background: rgba(10, 10, 24, 0.6);
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.arcade-screen .leaderboard-tab:hover {
+    color: #fff;
+    border-color: rgba(167, 139, 250, 0.6);
+}
+
+.arcade-screen .leaderboard-tab.active {
+    color: #0b0b1a;
+    background: linear-gradient(180deg, #ffd84d, #facc15);
+    border-color: #f59e0b;
+    box-shadow: 0 0 14px rgba(250, 204, 21, 0.4);
+}
+
+.arcade-screen .leaderboard-container {
+    background: rgba(5, 5, 18, 0.5);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.arcade-screen .leaderboard-header,
+.arcade-screen .leaderboard-list .leaderboard-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 110px;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    align-items: center;
+}
+
+.arcade-screen .leaderboard-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.55);
+    background: rgba(167, 139, 250, 0.08);
+    border-bottom: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.arcade-screen .leaderboard-list .leaderboard-row {
+    border-top: 1px solid rgba(167, 139, 250, 0.08);
+    color: #f5f5ff;
+}
+
+.arcade-screen .leaderboard-list .leaderboard-row:first-child {
+    border-top: none;
+}
+
+.arcade-screen .leaderboard-loading,
+.arcade-screen .leaderboard-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: rgba(245, 245, 255, 0.6);
+    font-size: 0.95rem;
+}
+
+/* ==== Tournament styling inside arcade-screen ==== */
+.arcade-screen .tournament-container,
+.arcade-screen .tournament-bracket-container,
+.arcade-screen .tournament-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.arcade-screen .tournament-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.arcade-screen .tournament-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: rgba(245, 245, 255, 0.6);
+    border: 1px dashed rgba(167, 139, 250, 0.25);
+    border-radius: 10px;
+}
+
+.arcade-screen .tournament-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(167, 139, 250, 0.08);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.85);
+}
+
+.arcade-screen .tournament-status span span {
+    color: #facc15;
+    font-weight: 700;
+}
+
+.arcade-screen .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.arcade-screen .form-group label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.7);
+}
+
+.arcade-screen .form-input,
+.arcade-screen .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #f5f5ff;
+    background: rgba(5, 5, 18, 0.7);
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.arcade-screen .form-input:focus,
+.arcade-screen .form-select:focus {
+    border-color: rgba(250, 204, 21, 0.7);
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.25);
+}
+
+.arcade-screen .tournament-type-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.arcade-screen .tournament-type-btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 140px;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.75);
+    background: rgba(10, 10, 24, 0.6);
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.arcade-screen .tournament-type-btn:hover {
+    color: #fff;
+    border-color: rgba(167, 139, 250, 0.6);
+}
+
+.arcade-screen .tournament-type-btn.active {
+    color: #0b0b1a;
+    background: linear-gradient(180deg, #ffd84d, #facc15);
+    border-color: #f59e0b;
+    box-shadow: 0 0 14px rgba(250, 204, 21, 0.4);
+}
+
+/* ==== Settings styling inside arcade-screen ==== */
+.arcade-screen .settings-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1rem;
+    width: min(100%, 960px);
+    margin: 0 auto;
+}
+
+.arcade-screen .settings-section {
+    padding: clamp(0.9rem, 2vw, 1.25rem);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15, 15, 30, 0.72),
+            rgba(8, 8, 20, 0.82)
+        );
+    border: 2px solid rgba(168, 139, 250, 0.35);
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 12px 32px -20px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: menuCardIn 420ms ease both;
+}
+
+.arcade-screen .settings-section h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #facc15;
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
+    border-bottom: 1px solid rgba(167, 139, 250, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.arcade-screen .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.arcade-screen .setting-label {
+    color: rgba(245, 245, 255, 0.85);
+    font-size: 0.95rem;
+}
+
+.arcade-screen .theme-selector,
+.arcade-screen .controls-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.arcade-screen .theme-btn {
+    padding: 0.4rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.75);
+    background: rgba(10, 10, 24, 0.6);
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.arcade-screen .theme-btn:hover {
+    border-color: rgba(167, 139, 250, 0.6);
+    color: #fff;
+}
+
+.arcade-screen .theme-btn.active {
+    color: #0b0b1a;
+    background: linear-gradient(180deg, #ffd84d, #facc15);
+    border-color: #f59e0b;
+}
+
+.arcade-screen .toggle-btn {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    padding: 0;
+    background: rgba(10, 10, 24, 0.8);
+    border: 2px solid rgba(167, 139, 250, 0.3);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.arcade-screen .toggle-btn .toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #6b6b88;
+    border-radius: 50%;
+    transition: all 160ms ease;
+}
+
+.arcade-screen .toggle-btn[data-enabled="true"] {
+    background: rgba(250, 204, 21, 0.15);
+    border-color: #facc15;
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
+}
+
+.arcade-screen .toggle-btn[data-enabled="true"] .toggle-slider {
+    left: 26px;
+    background: #facc15;
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+}
+
+.arcade-screen .controls-info {
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.arcade-screen .control-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: rgba(245, 245, 255, 0.85);
+}
+
+.arcade-screen .control-row .key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    padding: 0.2rem 0.5rem;
+    font-family: "Courier New", monospace;
+    font-weight: 700;
+    color: #facc15;
+    background: rgba(5, 5, 18, 0.8);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 4px;
+}
+
+.arcade-screen .btn.secondary.small,
+.arcade-screen .btn.small {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f5f5ff;
+    background: rgba(167, 139, 250, 0.12);
+    border: 2px solid rgba(167, 139, 250, 0.4);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 120ms ease;
+}
+
+.arcade-screen .btn.secondary.small:hover,
+.arcade-screen .btn.small:hover {
+    background: rgba(167, 139, 250, 0.25);
+    border-color: rgba(167, 139, 250, 0.7);
+}
+
+.arcade-screen [data-dev-pro-toggle] {
+    padding: 0.6rem 1rem;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0b0b1a;
+    background: linear-gradient(180deg, #ffd84d, #facc15);
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+/* Keyframes */
+@keyframes titleBounce {
+    0% { opacity: 0; transform: translateY(-40px) scale(0.85); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes letterGlow {
+    0%, 100% {
+        text-shadow:
+            0 0 6px var(--ltr-color),
+            0 0 14px var(--ltr-color),
+            0 0 28px var(--ltr-color),
+            3px 3px 0 rgba(0, 0, 0, 0.55);
+    }
+    50% {
+        text-shadow:
+            0 0 10px var(--ltr-color),
+            0 0 22px var(--ltr-color),
+            0 0 44px var(--ltr-color),
+            3px 3px 0 rgba(0, 0, 0, 0.55);
+    }
+}
+
+@keyframes taglineBlink {
+    0%, 100% { opacity: 0.85; }
+    50% { opacity: 0.4; }
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes menuCardIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fallPiece {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(360deg); }
+}
+
+/* Reduced-motion users get a static menu */
+@media (prefers-reduced-motion: reduce) {
+    .arcade-screen .menu-bg,
+    .arcade-screen .bg-piece,
+    .arcade-screen .brand-header,
+    .arcade-screen .brand-header .ltr,
+    .arcade-screen .menu-tagline,
+    .arcade-screen .mode-card,
+    .arcade-screen .menu-links {
+        animation: none !important;
+    }
+    .arcade-screen .mode-card,
+    .arcade-screen .mode-card-icon,
+    .arcade-screen .menu-link {
+        transition: none !important;
+    }
+}
+
+/* Narrow phones */
+@media (max-width: 480px) {
+    .arcade-screen .mode-cards {
+        grid-template-columns: 1fr;
+    }
+    .arcade-screen .menu-links {
+        flex-direction: column;
+    }
+    .arcade-screen .menu-link {
+        min-width: 0;
+        width: 100%;
+    }
+    .arcade-screen .mode-card {
+        min-height: 100px;
+    }
+    .arcade-screen .bg-piece {
+        opacity: 0.14;
+    }
+    .arcade-screen .leaderboard-header,
+    .arcade-screen .leaderboard-list .leaderboard-row {
+        grid-template-columns: 40px 1fr 80px;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    .arcade-screen .tournament-type-btn {
+        flex: 1 1 100%;
+    }
+    .arcade-screen .arcade-actions .arcade-btn {
+        width: 100%;
+    }
+}
+
+/* Landscape phones */
+@media (max-height: 560px) and (orientation: landscape) {
+    .arcade-screen .menu-container {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        gap: 0.5rem;
+    }
+    .arcade-screen .menu-hero {
+        margin-bottom: 0;
+    }
+    .arcade-screen .mode-card {
+        min-height: 0;
+        padding: 0.75rem 1rem;
+    }
+    .arcade-screen .mode-card-icon {
+        width: 48px;
+        height: 48px;
+    }
+}
+
 /* Game Screen */
 #screen-game {
     padding: 0;
@@ -3202,14 +4229,17 @@ body {
         display: flex;
         justify-content: center;
         align-items: center;
+        width: 100%;
         height: 100%;
+        min-width: 0;
+        min-height: 0;
     }
 
+    /* JS sets explicit CSS width/height from cellSize, so avoid CSS overrides
+       that would distort the aspect ratio (no max-height/object-fit). */
     #game {
-        width: var(--canvas-width);
-        height: var(--canvas-height);
+        max-width: 100%;
         max-height: 100%;
-        object-fit: contain;
     }
 
     /* When opponent is visible (multiplayer/bot), constrain the board

@@ -168,6 +168,13 @@
       // Keep silent — this code is a UI nicety only.
     }
 
+    // Keep canvas sized to the available wrapper space on resize/orientation change.
+    if (!state._resizeBound) {
+      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener("orientationchange", resizeCanvas);
+      state._resizeBound = true;
+    }
+
     // Perform initial sizing
     resizeCanvas();
   }
@@ -176,9 +183,25 @@
     if (!state.canvas) return;
 
     const dpr = window.devicePixelRatio || 1;
+    const wrapper = state.canvas.parentElement;
+    const isMobile =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 767px)").matches;
 
-    // You control ONE thing only
-    const cell = state.cellSize;
+    // On mobile, fit the cell size to the wrapper so the board fills the available
+    // space and stays centered. On desktop, keep the default fixed cell size.
+    let cell = state.cellSize || 25;
+    if (isMobile && wrapper) {
+      const availWidth = wrapper.clientWidth;
+      const availHeight = wrapper.clientHeight;
+      if (availWidth > 0 && availHeight > 0) {
+        const fit = Math.floor(
+          Math.min(availWidth / COLS, availHeight / ROWS),
+        );
+        if (fit >= 8) cell = fit;
+      }
+    }
+    state.cellSize = cell;
 
     const cssWidth = COLS * cell;
     const cssHeight = ROWS * cell;
