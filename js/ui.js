@@ -2376,7 +2376,14 @@
     const holdBtn = document.getElementById("holdBtn");
 
     function handleControl(action) {
+      let lastTouch = 0;
       return (e) => {
+        // De-dupe when a touch is followed by a synthesized click.
+        if (e.type === "touchstart") {
+          lastTouch = Date.now();
+        } else if (e.type === "click" && Date.now() - lastTouch < 500) {
+          return;
+        }
         if (e.cancelable) {
           e.preventDefault();
         }
@@ -2387,24 +2394,19 @@
       };
     }
 
-    if (leftBtn) {
-      leftBtn.addEventListener("touchstart", handleControl("moveLeft"));
+    function bindControl(btn, action) {
+      if (!btn) return;
+      const handler = handleControl(action);
+      btn.addEventListener("touchstart", handler, { passive: false });
+      btn.addEventListener("click", handler);
     }
-    if (rightBtn) {
-      rightBtn.addEventListener("touchstart", handleControl("moveRight"));
-    }
-    if (downBtn) {
-      downBtn.addEventListener("touchstart", handleControl("moveDown"));
-    }
-    if (rotateBtn) {
-      rotateBtn.addEventListener("touchstart", handleControl("rotate"));
-    }
-    if (dropBtn) {
-      dropBtn.addEventListener("touchstart", handleControl("hardDrop"));
-    }
-    if (holdBtn) {
-      holdBtn.addEventListener("touchstart", handleControl("holdPiece"));
-    }
+
+    bindControl(leftBtn, "moveLeft");
+    bindControl(rightBtn, "moveRight");
+    bindControl(downBtn, "moveDown");
+    bindControl(rotateBtn, "rotate");
+    bindControl(dropBtn, "hardDrop");
+    bindControl(holdBtn, "holdPiece");
   }
 
   setupMobileControls();
