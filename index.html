@@ -25,22 +25,69 @@
     </head>
     <body>
         <!-- Audio Enable Screen -->
-        <div id="screen-audio" class="screen active">
-            <h1 class="splash-title">FLIXTRIS</h1>
-            <p class="splash-prompt">Tap or press any key to enable sound</p>
+        <div id="screen-audio" class="screen active arcade-screen splash-arcade">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="splash-container">
+                <div class="splash-coin" aria-hidden="true">🔊</div>
+                <h1 class="brand-header splash-title" aria-label="FLIXTRIS">
+                    <span class="ltr" aria-hidden="true">F</span
+                    ><span class="ltr" aria-hidden="true">L</span
+                    ><span class="ltr" aria-hidden="true">I</span
+                    ><span class="ltr" aria-hidden="true">X</span
+                    ><span class="ltr" aria-hidden="true">T</span
+                    ><span class="ltr" aria-hidden="true">R</span
+                    ><span class="ltr" aria-hidden="true">I</span
+                    ><span class="ltr" aria-hidden="true">S</span>
+                </h1>
+                <p class="splash-prompt arcade-blink">
+                    ▸ Tap or press any key to enable sound ◂
+                </p>
+            </div>
         </div>
 
         <!-- Splash Screen -->
-        <div id="screen-splash" class="screen">
-            <h1 class="splash-title">FLIXTRIS</h1>
-            <p class="splash-author">
-                Created by
-                <a href="https://github.com/ra9" target="_blank" rel="noopener"
-                    >Carlos S. Nah</a
-                >
-                | Version 1.0
-            </p>
-            <p class="splash-prompt">Press any key or tap to start</p>
+        <div id="screen-splash" class="screen arcade-screen splash-arcade">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="splash-container">
+                <div class="splash-coin" aria-hidden="true">◆</div>
+                <h1 class="brand-header splash-title" aria-label="FLIXTRIS">
+                    <span class="ltr" aria-hidden="true">F</span
+                    ><span class="ltr" aria-hidden="true">L</span
+                    ><span class="ltr" aria-hidden="true">I</span
+                    ><span class="ltr" aria-hidden="true">X</span
+                    ><span class="ltr" aria-hidden="true">T</span
+                    ><span class="ltr" aria-hidden="true">R</span
+                    ><span class="ltr" aria-hidden="true">I</span
+                    ><span class="ltr" aria-hidden="true">S</span>
+                </h1>
+                <p class="splash-author">
+                    Created by
+                    <a
+                        href="https://github.com/ra9"
+                        target="_blank"
+                        rel="noopener"
+                        >Carlos S. Nah</a
+                    >
+                    · v1.0
+                </p>
+                <p class="splash-prompt arcade-blink">
+                    ▸ Press any key or tap to start ◂
+                </p>
+            </div>
         </div>
 
         <!-- Mode Selection Screen -->
@@ -536,9 +583,29 @@
         </div>
 
         <!-- Analytics Dashboard Screen -->
-        <div id="screen-analytics" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">📊 Analytics Dashboard</h2>
+        <div id="screen-analytics" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Performance Analytics</p>
+                </header>
 
             <!-- Performance Grade Section -->
             <div class="analytics-grade-section">
@@ -757,9 +824,12 @@
                 </div>
             </div>
 
-            <button class="btn secondary back" id="analyticsBackBtn">
-                Back to Menu
-            </button>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="analyticsBackBtn">
+                        ← Back
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Single Player Mode Selection -->
@@ -1206,45 +1276,107 @@
         </div>
 
         <!-- Multiplayer Lobby Screen -->
-        <div id="screen-multiplayer" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Multiplayer</h2>
-            <div class="multiplayer-options">
-                <button class="btn" id="createRoomBtn">Create Room</button>
-                <div class="or-divider">or</div>
-                <div class="join-room">
-                    <input
-                        type="text"
-                        id="roomCodeInput"
-                        class="seed-input"
-                        placeholder="Enter room code"
-                        maxlength="4"
-                        autocomplete="off"
-                    />
-                    <button class="btn" id="joinRoomBtn">Join Room</button>
+        <div id="screen-multiplayer" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Multiplayer Lobby</p>
+                </header>
+                <div class="arcade-panel">
+                    <div class="multiplayer-options">
+                        <button class="arcade-btn" id="createRoomBtn">
+                            + Create Room
+                        </button>
+                        <div class="or-divider">or</div>
+                        <div class="join-room">
+                            <input
+                                type="text"
+                                id="roomCodeInput"
+                                class="form-input"
+                                placeholder="Enter room code"
+                                maxlength="4"
+                                autocomplete="off"
+                            />
+                            <button class="arcade-btn" id="joinRoomBtn">
+                                Join Room
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <button class="btn secondary back" id="mpBackBtn">
-                    Back to Menu
-                </button>
+                <div class="menu-links">
+                    <button class="menu-link arcade-back" id="mpBackBtn">
+                        ← Back
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Multiplayer Waiting Room -->
-        <div id="screen-waiting" class="screen">
-            <h1 class="brand-header">FLIXTRIS</h1>
-            <h2 class="menu-title">Waiting Room</h2>
-            <div class="room-info">
-                <p class="room-code-label">Room Code</p>
-                <div class="room-code-display" id="roomCodeDisplay">----</div>
-                <p class="waiting-text" id="waitingText">
-                    Waiting for opponent...
-                </p>
+        <div id="screen-waiting" class="screen arcade-screen">
+            <div class="menu-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-o"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-l"></span>
             </div>
-            <div class="players-list" id="playersList"></div>
-            <button class="btn" id="readyBtn" style="display: none">
-                Ready!
-            </button>
-            <button class="btn secondary" id="leaveRoomBtn">Leave Room</button>
+            <div class="menu-container">
+                <header class="menu-hero">
+                    <h1 class="brand-header" aria-label="FLIXTRIS">
+                        <span class="ltr" aria-hidden="true">F</span
+                        ><span class="ltr" aria-hidden="true">L</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">X</span
+                        ><span class="ltr" aria-hidden="true">T</span
+                        ><span class="ltr" aria-hidden="true">R</span
+                        ><span class="ltr" aria-hidden="true">I</span
+                        ><span class="ltr" aria-hidden="true">S</span>
+                    </h1>
+                    <p class="menu-tagline">Waiting Room</p>
+                </header>
+                <div class="arcade-panel">
+                    <div class="room-info">
+                        <p class="room-code-label">Room Code</p>
+                        <div class="room-code-display" id="roomCodeDisplay">
+                            ----
+                        </div>
+                        <p class="waiting-text arcade-blink" id="waitingText">
+                            ▸ Waiting for opponent... ◂
+                        </p>
+                    </div>
+                    <div class="players-list" id="playersList"></div>
+                    <div class="arcade-actions">
+                        <button
+                            class="arcade-btn"
+                            id="readyBtn"
+                            style="display: none"
+                        >
+                            ▶ Ready!
+                        </button>
+                        <button class="arcade-btn ghost" id="leaveRoomBtn">
+                            Leave Room
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Game Screen -->
@@ -1702,46 +1834,86 @@
         </div>
 
         <!-- Game Over Overlay -->
-        <div id="gameover-overlay">
-            <div class="overlay-content gameover-content">
-                <h2>Game Over</h2>
+        <div id="gameover-overlay" class="arcade-overlay">
+            <div class="arcade-overlay-bg" aria-hidden="true">
+                <span class="bg-piece piece-z"></span>
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+            </div>
+            <div class="overlay-content gameover-content arcade-dialog">
+                <div class="gameover-banner" aria-hidden="true">
+                    <span class="gameover-pixel"></span>
+                    <span class="gameover-pixel"></span>
+                    <span class="gameover-pixel"></span>
+                </div>
+                <h2 class="gameover-title" aria-label="Game Over">
+                    <span class="gg-ltr" style="--gg-color: #f43f5e">G</span
+                    ><span class="gg-ltr" style="--gg-color: #fb923c">A</span
+                    ><span class="gg-ltr" style="--gg-color: #facc15">M</span
+                    ><span class="gg-ltr" style="--gg-color: #4ade80">E</span
+                    ><span class="gg-gap"></span
+                    ><span class="gg-ltr" style="--gg-color: #22d3ee">O</span
+                    ><span class="gg-ltr" style="--gg-color: #a78bfa">V</span
+                    ><span class="gg-ltr" style="--gg-color: #f472b6">E</span
+                    ><span class="gg-ltr" style="--gg-color: #3b82f6">R</span>
+                </h2>
+
+                <div class="gameover-score">
+                    <span class="gameover-score-label">Final Score</span>
+                    <span class="gameover-score-value" id="final-score">0</span>
+                </div>
+
                 <div class="gameover-stats">
-                    <div class="stat-row">
-                        <span>Score</span>
-                        <span id="final-score">0</span>
+                    <div class="gameover-grid primary">
+                        <div class="gameover-stat-card" data-piece="o">
+                            <span class="stat-k">Level</span>
+                            <span class="stat-v" id="final-level">1</span>
+                        </div>
+                        <div class="gameover-stat-card" data-piece="i">
+                            <span class="stat-k">Lines</span>
+                            <span class="stat-v" id="final-lines">0</span>
+                        </div>
                     </div>
-                    <div class="stat-row">
-                        <span>Level</span>
-                        <span id="final-level">1</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Lines</span>
-                        <span id="final-lines">0</span>
-                    </div>
-                    <div class="stat-row secondary">
-                        <span>Singles</span>
-                        <span id="final-singles">0</span>
-                    </div>
-                    <div class="stat-row secondary">
-                        <span>Doubles</span>
-                        <span id="final-doubles">0</span>
-                    </div>
-                    <div class="stat-row secondary">
-                        <span>Triples</span>
-                        <span id="final-triples">0</span>
-                    </div>
-                    <div class="stat-row secondary">
-                        <span>Tetrises</span>
-                        <span id="final-tetrises">0</span>
+                    <div class="gameover-breakdown">
+                        <span class="breakdown-label">Line Clears</span>
+                        <div class="gameover-chips">
+                            <span class="chip chip-s">
+                                <span class="chip-k">Singles</span>
+                                <span class="chip-v" id="final-singles">0</span>
+                            </span>
+                            <span class="chip chip-l">
+                                <span class="chip-k">Doubles</span>
+                                <span class="chip-v" id="final-doubles">0</span>
+                            </span>
+                            <span class="chip chip-t">
+                                <span class="chip-k">Triples</span>
+                                <span class="chip-v" id="final-triples">0</span>
+                            </span>
+                            <span class="chip chip-i">
+                                <span class="chip-k">Tetrises</span>
+                                <span class="chip-v" id="final-tetrises">0</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
+
                 <div id="daily-seed-container" style="display: none">
                     <p class="seed-label">Daily Seed</p>
                     <div class="seed-display" id="seed-display"></div>
-                    <button class="btn" id="shareBtn">Share Score</button>
+                    <button class="arcade-btn" id="shareBtn">
+                        Share Score
+                    </button>
                 </div>
-                <button class="btn" id="playAgainBtn">Play Again</button>
-                <button class="btn secondary" id="menuBtn">Main Menu</button>
+
+                <div class="arcade-actions gameover-actions">
+                    <button class="arcade-btn" id="playAgainBtn">
+                        ▶ Play Again
+                    </button>
+                    <button class="arcade-btn ghost" id="menuBtn">
+                        Main Menu
+                    </button>
+                </div>
             </div>
         </div>
 
