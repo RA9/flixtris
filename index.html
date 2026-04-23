@@ -91,205 +91,304 @@
         </div>
 
         <!-- Mode Selection Screen -->
-        <div id="screen-menu" class="screen arcade-screen landing-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
+        <div id="screen-menu" class="screen cabinet-screen">
+            <!-- Cabinet Marquee (topper) -->
+            <div class="cabinet-marquee" aria-hidden="true">
+                <div class="marquee-bulbs marquee-bulbs-left">
+                    <span></span><span></span><span></span><span></span
+                    ><span></span><span></span><span></span><span></span
+                    ><span></span><span></span>
+                </div>
+                <div class="marquee-sign">
+                    <span class="marquee-brand">FLIXTRIS</span>
+                    <span class="marquee-sub">◆ ARCADE EDITION ◆</span>
+                </div>
+                <div class="marquee-bulbs marquee-bulbs-right">
+                    <span></span><span></span><span></span><span></span
+                    ><span></span><span></span><span></span><span></span
+                    ><span></span><span></span>
+                </div>
             </div>
-            <div class="menu-container landing-container">
-                <div class="landing-hud" aria-hidden="false">
-                    <div class="hud-item hud-player">
-                        <span class="hud-k">Player</span>
-                        <span class="hud-v" id="landingPlayerName">Guest</span>
+
+            <!-- Cabinet Screen Bezel -->
+            <div class="cabinet-bezel">
+                <div class="bezel-corner bezel-corner-tl"></div>
+                <div class="bezel-corner bezel-corner-tr"></div>
+                <div class="bezel-corner bezel-corner-bl"></div>
+                <div class="bezel-corner bezel-corner-br"></div>
+
+                <!-- CRT Background -->
+                <div class="crt-bg" aria-hidden="true">
+                    <span class="crt-piece crt-piece-1"></span>
+                    <span class="crt-piece crt-piece-2"></span>
+                    <span class="crt-piece crt-piece-3"></span>
+                    <span class="crt-piece crt-piece-4"></span>
+                    <span class="crt-piece crt-piece-5"></span>
+                    <span class="crt-piece crt-piece-6"></span>
+                </div>
+
+                <!-- LCD Scoreboard Strip -->
+                <div class="lcd-scoreboard">
+                    <div class="lcd-cell">
+                        <span class="lcd-k">1UP</span>
+                        <span class="lcd-v lcd-name" id="landingPlayerName"
+                            >GUEST</span
+                        >
                     </div>
-                    <div class="hud-marquee" aria-hidden="true">
-                        <span class="hud-marquee-track">
-                            ◆ FLIXTRIS ARCADE ◆ Stack · Clear · Conquer ◆
-                            Daily Challenges Live ◆ Climb the Ranked Ladder ◆
-                            Battle Royale Open ◆ Insert Coin ◆
-                        </span>
+                    <div class="lcd-cell lcd-cell-hi">
+                        <span class="lcd-k">HI-SCORE</span>
+                        <span class="lcd-v lcd-number" id="landingHighScore"
+                            >0000000</span
+                        >
                     </div>
-                    <div class="hud-item hud-score">
-                        <span class="hud-k">Hi-Score</span>
-                        <span class="hud-v" id="landingHighScore">0</span>
+                    <div class="lcd-cell">
+                        <span class="lcd-k">CREDITS</span>
+                        <span class="lcd-v lcd-credit">FREE PLAY</span>
                     </div>
                 </div>
 
-                <header class="menu-hero landing-hero">
-                    <div class="landing-bracket left" aria-hidden="true">
-                        <span></span><span></span><span></span>
+                <!-- Giant Tetromino Title -->
+                <div class="cabinet-title-wrap">
+                    <div class="press-start">
+                        <span class="press-lamp"></span>
+                        <span>PLAYER 1 READY</span>
+                        <span class="press-lamp"></span>
                     </div>
-                    <h1 class="brand-header landing-title" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
+                    <h1
+                        class="cabinet-title"
+                        aria-label="FLIXTRIS"
+                        data-text="FLIXTRIS"
+                    >
+                        <span class="cab-ltr" style="--ltr-color:#22d3ee"
+                            >F</span
+                        ><span class="cab-ltr" style="--ltr-color:#facc15"
+                            >L</span
+                        ><span class="cab-ltr" style="--ltr-color:#a78bfa"
+                            >I</span
+                        ><span class="cab-ltr" style="--ltr-color:#4ade80"
+                            >X</span
+                        ><span class="cab-ltr" style="--ltr-color:#f43f5e"
+                            >T</span
+                        ><span class="cab-ltr" style="--ltr-color:#3b82f6"
+                            >R</span
+                        ><span class="cab-ltr" style="--ltr-color:#fb923c"
+                            >I</span
+                        ><span class="cab-ltr" style="--ltr-color:#f472b6"
+                            >S</span
+                        >
                     </h1>
-                    <div class="landing-bracket right" aria-hidden="true">
-                        <span></span><span></span><span></span>
+                    <div class="insert-coin">
+                        <span class="coin-slot" aria-hidden="true">
+                            <span class="coin"></span>
+                        </span>
+                        <span class="insert-coin-text">INSERT COIN · SELECT MODE</span>
                     </div>
-                    <p class="menu-tagline landing-tagline arcade-blink">
-                        ▸ Insert Coin · Select Mode ◂
-                    </p>
-                </header>
-
-                <div class="mode-cards landing-primary">
-                    <button
-                        class="mode-card category-card"
-                        id="singlePlayerBtn"
-                        data-piece="t"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
-                        <span class="mode-card-body">
-                            <h3>Single Player</h3>
-                            <p>Play solo. Classic, Daily Challenge, and more.</p>
-                        </span>
-                    </button>
-                    <button
-                        class="mode-card category-card"
-                        id="multiplayerBtn"
-                        data-piece="z"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="0" width="1" height="1" />
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
-                        <span class="mode-card-body">
-                            <h3>Multiplayer</h3>
-                            <p>Battle others in real-time 1v1 or Battle Royale.</p>
-                        </span>
-                    </button>
-                </div>
-                <div
-                    class="mode-cards pro-menu-items"
-                    id="proMenuItems"
-                    style="display: none"
-                >
-                    <button
-                        class="mode-card pro-card"
-                        id="menuReplaysBtn"
-                        data-piece="l"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
-                        <span class="mode-card-body">
-                            <h3>Your Replays</h3>
-                            <p>Watch and analyze your past games.</p>
-                        </span>
-                    </button>
-                    <button
-                        class="mode-card pro-card"
-                        id="menuAnalyticsBtn"
-                        data-piece="s"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
-                        <span class="mode-card-body">
-                            <h3>Analytics</h3>
-                            <p>View detailed stats and performance insights.</p>
-                        </span>
-                    </button>
-                    <button
-                        class="mode-card pro-card"
-                        id="menuRankedBtn"
-                        data-piece="i"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                                <rect x="3" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
-                        <span class="mode-card-body">
-                            <h3>Ranked Mode</h3>
-                            <p>Compete for rankings and climb the ladder.</p>
-                        </span>
-                    </button>
-                </div>
-                <div class="menu-links landing-links">
-                    <button class="menu-link landing-link" id="leaderboardBtn">
-                        <span class="ll-icon" aria-hidden="true">🏆</span>
-                        <span class="ll-label">Leaderboards</span>
-                    </button>
-                    <button class="menu-link landing-link" id="tournamentBtn">
-                        <span class="ll-icon" aria-hidden="true">⚔</span>
-                        <span class="ll-label">Tournaments</span>
-                    </button>
-                    <button class="menu-link landing-link" id="settingsBtn">
-                        <span class="ll-icon" aria-hidden="true">⚙</span>
-                        <span class="ll-label">Settings</span>
-                    </button>
                 </div>
 
-                <footer class="landing-footer" aria-hidden="true">
-                    <div class="landing-ticker">
-                        <span class="landing-ticker-track">
-                            ▲ TIP · Hold I-pieces for Tetrises ▲ TIP · Keep
-                            your stack low and flat ▲ TIP · Use Ghost Piece
-                            to aim hard drops ▲ TIP · Combos reward back-to-back
-                            clears ▲ TIP · Daily Seed resets at midnight UTC ▲
+                <!-- SELECT YOUR MODE — character select grid -->
+                <section class="mode-select">
+                    <div class="mode-select-header">
+                        <span class="mode-select-chevron">▸</span>
+                        <h2 class="mode-select-title">SELECT MODE</h2>
+                        <span class="mode-select-chevron">◂</span>
+                    </div>
+                    <div class="mode-select-grid">
+                        <button
+                            class="select-card"
+                            id="singlePlayerBtn"
+                            data-piece="t"
+                        >
+                            <span class="select-card-scan"></span>
+                            <div class="select-card-portrait">
+                                <svg
+                                    class="portrait-tetro"
+                                    viewBox="0 0 4 4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect x="1" y="0" width="1" height="1" />
+                                    <rect x="0" y="1" width="1" height="1" />
+                                    <rect x="1" y="1" width="1" height="1" />
+                                    <rect x="2" y="1" width="1" height="1" />
+                                </svg>
+                                <span class="portrait-tag">T</span>
+                            </div>
+                            <div class="select-card-meta">
+                                <h3>Single Player</h3>
+                                <p>Classic · Daily · Sprint</p>
+                                <span class="select-card-action">
+                                    PRESS START
+                                </span>
+                            </div>
+                        </button>
+                        <button
+                            class="select-card"
+                            id="multiplayerBtn"
+                            data-piece="z"
+                        >
+                            <span class="select-card-scan"></span>
+                            <div class="select-card-portrait">
+                                <svg
+                                    class="portrait-tetro"
+                                    viewBox="0 0 4 4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect x="0" y="0" width="1" height="1" />
+                                    <rect x="1" y="0" width="1" height="1" />
+                                    <rect x="1" y="1" width="1" height="1" />
+                                    <rect x="2" y="1" width="1" height="1" />
+                                </svg>
+                                <span class="portrait-tag">Z</span>
+                            </div>
+                            <div class="select-card-meta">
+                                <h3>Multiplayer</h3>
+                                <p>1v1 · Battle Royale · Co-op</p>
+                                <span class="select-card-action">
+                                    PRESS START
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Pro row (Replays / Analytics / Ranked) -->
+                    <div
+                        class="mode-select-grid mode-select-grid-pro"
+                        id="proMenuItems"
+                        style="display: none"
+                    >
+                        <button
+                            class="select-card select-card-sm"
+                            id="menuReplaysBtn"
+                            data-piece="l"
+                        >
+                            <span class="select-card-scan"></span>
+                            <div class="select-card-portrait portrait-sm">
+                                <svg
+                                    class="portrait-tetro"
+                                    viewBox="0 0 4 4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect x="2" y="0" width="1" height="1" />
+                                    <rect x="0" y="1" width="1" height="1" />
+                                    <rect x="1" y="1" width="1" height="1" />
+                                    <rect x="2" y="1" width="1" height="1" />
+                                </svg>
+                            </div>
+                            <div class="select-card-meta">
+                                <h3>Replays</h3>
+                                <p>Review your runs</p>
+                            </div>
+                        </button>
+                        <button
+                            class="select-card select-card-sm"
+                            id="menuAnalyticsBtn"
+                            data-piece="s"
+                        >
+                            <span class="select-card-scan"></span>
+                            <div class="select-card-portrait portrait-sm">
+                                <svg
+                                    class="portrait-tetro"
+                                    viewBox="0 0 4 4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect x="1" y="0" width="1" height="1" />
+                                    <rect x="2" y="0" width="1" height="1" />
+                                    <rect x="0" y="1" width="1" height="1" />
+                                    <rect x="1" y="1" width="1" height="1" />
+                                </svg>
+                            </div>
+                            <div class="select-card-meta">
+                                <h3>Analytics</h3>
+                                <p>Deep performance</p>
+                            </div>
+                        </button>
+                        <button
+                            class="select-card select-card-sm"
+                            id="menuRankedBtn"
+                            data-piece="i"
+                        >
+                            <span class="select-card-scan"></span>
+                            <div class="select-card-portrait portrait-sm">
+                                <svg
+                                    class="portrait-tetro"
+                                    viewBox="0 0 4 4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <rect x="0" y="1" width="1" height="1" />
+                                    <rect x="1" y="1" width="1" height="1" />
+                                    <rect x="2" y="1" width="1" height="1" />
+                                    <rect x="3" y="1" width="1" height="1" />
+                                </svg>
+                            </div>
+                            <div class="select-card-meta">
+                                <h3>Ranked</h3>
+                                <p>Climb the ladder</p>
+                            </div>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Live Ticker Bar -->
+                <div class="cabinet-ticker" aria-hidden="true">
+                    <span class="ticker-tag">
+                        <span class="tag-dot"></span>LIVE
+                    </span>
+                    <div class="ticker-track">
+                        <span class="ticker-run">
+                            ◆ TIP Use ghost piece to aim hard drops ◆ NEWS Daily
+                            seed resets at midnight UTC ◆ RANK Top 1% earn the
+                            Platinum badge ◆ EVENT Battle Royale queue open
+                            ◆ TIP Keep your stack low and flat ◆ SECRET Hold
+                            I-pieces for Tetrises ◆
                         </span>
                     </div>
-                    <div class="landing-credits">
-                        <span>© Flixtris · v1.0</span>
-                        <span class="credit-dot" aria-hidden="true">●</span>
-                        <span>Made with ♥ by Carlos S. Nah</span>
-                    </div>
-                </footer>
+                </div>
             </div>
+
+            <!-- Cabinet Control Panel (footer) -->
+            <footer class="cabinet-control-panel">
+                <div class="cp-row cp-row-main">
+                    <div class="cp-joystick" aria-hidden="true">
+                        <div class="cp-joy-base"></div>
+                        <div class="cp-joy-shaft"></div>
+                        <div class="cp-joy-ball"></div>
+                    </div>
+                    <div class="cp-keycaps">
+                        <button class="keycap" id="leaderboardBtn">
+                            <span class="keycap-icon" aria-hidden="true">
+                                🏆
+                            </span>
+                            <span class="keycap-label">Leaderboards</span>
+                            <span class="keycap-hint" aria-hidden="true">L</span>
+                        </button>
+                        <button class="keycap" id="tournamentBtn">
+                            <span class="keycap-icon" aria-hidden="true">
+                                ⚔
+                            </span>
+                            <span class="keycap-label">Tournaments</span>
+                            <span class="keycap-hint" aria-hidden="true">T</span>
+                        </button>
+                        <button class="keycap" id="settingsBtn">
+                            <span class="keycap-icon" aria-hidden="true">
+                                ⚙
+                            </span>
+                            <span class="keycap-label">Settings</span>
+                            <span class="keycap-hint" aria-hidden="true">S</span>
+                        </button>
+                    </div>
+                    <div class="cp-action-buttons" aria-hidden="true">
+                        <span class="cp-btn cp-btn-a">A</span>
+                        <span class="cp-btn cp-btn-b">B</span>
+                        <span class="cp-btn cp-btn-c">C</span>
+                    </div>
+                </div>
+                <div class="cp-row cp-row-credits">
+                    <span class="cp-meta">© FLIXTRIS · v1.0</span>
+                    <span class="cp-meta-dot">●</span>
+                    <span class="cp-meta">
+                        Made with ♥ by Carlos S. Nah
+                    </span>
+                </div>
+            </footer>
         </div>
 
         <!-- Tournament Screen -->
