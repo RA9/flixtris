@@ -2178,6 +2178,88 @@
             </div>
         </div>
 
+        <!-- In-Game Menu (hamburger-triggered) -->
+        <div id="ingame-menu-overlay" class="arcade-overlay ingame-menu-overlay">
+            <div class="arcade-overlay-bg" aria-hidden="true">
+                <span class="bg-piece piece-i"></span>
+                <span class="bg-piece piece-t"></span>
+                <span class="bg-piece piece-s"></span>
+                <span class="bg-piece piece-l"></span>
+            </div>
+            <div class="arcade-dialog ingame-menu-dialog">
+                <button
+                    class="ingame-menu-close"
+                    id="ingameMenuCloseBtn"
+                    aria-label="Close menu"
+                >
+                    &times;
+                </button>
+                <div class="ingame-menu-banner" aria-hidden="true">
+                    <span class="ingame-menu-pixel"></span>
+                    <span class="ingame-menu-pixel"></span>
+                    <span class="ingame-menu-pixel"></span>
+                </div>
+                <h2 class="ingame-menu-title" aria-label="Paused">
+                    <span class="gg-ltr" style="--gg-color: #22d3ee">P</span
+                    ><span class="gg-ltr" style="--gg-color: #a78bfa">A</span
+                    ><span class="gg-ltr" style="--gg-color: #f472b6">U</span
+                    ><span class="gg-ltr" style="--gg-color: #facc15">S</span
+                    ><span class="gg-ltr" style="--gg-color: #4ade80">E</span
+                    ><span class="gg-ltr" style="--gg-color: #fb923c">D</span>
+                </h2>
+                <p class="ingame-menu-subtitle">◆ Press P to resume instantly ◆</p>
+                <div class="ingame-menu-grid">
+                    <button
+                        class="ingame-menu-btn"
+                        id="ingameResumeBtn"
+                        data-piece="i"
+                    >
+                        <span class="ingame-menu-icon">▶</span>
+                        <span class="ingame-menu-label">Resume</span>
+                    </button>
+                    <button
+                        class="ingame-menu-btn"
+                        id="ingameSoundBtn"
+                        data-piece="t"
+                    >
+                        <span class="ingame-menu-icon" id="ingameSoundIcon"
+                            >🔊</span
+                        >
+                        <span class="ingame-menu-label" id="ingameSoundLabel"
+                            >Sound: On</span
+                        >
+                    </button>
+                    <button
+                        class="ingame-menu-btn"
+                        id="ingameHelpBtn"
+                        data-piece="s"
+                    >
+                        <span class="ingame-menu-icon">?</span>
+                        <span class="ingame-menu-label">Help</span>
+                    </button>
+                    <button
+                        class="ingame-menu-btn"
+                        id="ingameRestartBtn"
+                        data-piece="z"
+                    >
+                        <span class="ingame-menu-icon">↻</span>
+                        <span class="ingame-menu-label">Restart</span>
+                    </button>
+                    <button
+                        class="ingame-menu-btn ingame-menu-btn-wide"
+                        id="ingameMainMenuBtn"
+                        data-piece="l"
+                    >
+                        <span class="ingame-menu-icon">🏠</span>
+                        <span class="ingame-menu-label">Main Menu</span>
+                    </button>
+                </div>
+                <div class="ingame-menu-footer">
+                    <span class="arcade-blink">◆ FLIXTRIS ARCADE ◆</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Countdown Overlay -->
         <div id="countdown-overlay">
             <div class="countdown-number" id="countdownNumber">3</div>

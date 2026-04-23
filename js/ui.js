@@ -2360,31 +2360,154 @@
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
 
-  // Mobile hamburger menu
+  // Legacy side panel references (kept for any remaining listeners)
   const panel = document.getElementById("sidePanel");
   const panelOverlay = document.getElementById("panelOverlay");
   const hamburgerBtn = document.getElementById("hamburgerBtn");
   const panelCloseBtn = document.getElementById("panelCloseBtn");
 
-  function openPanel() {
-    panel.classList.add("open");
-    panelOverlay.classList.add("open");
+  function closePanel() {
+    if (panel) panel.classList.remove("open");
+    if (panelOverlay) panelOverlay.classList.remove("open");
   }
 
-  function closePanel() {
-    panel.classList.remove("open");
-    panelOverlay.classList.remove("open");
+  // In-game menu (arcade-themed, hamburger-triggered)
+  const ingameMenu = document.getElementById("ingame-menu-overlay");
+  const ingameMenuCloseBtn = document.getElementById("ingameMenuCloseBtn");
+  const ingameResumeBtn = document.getElementById("ingameResumeBtn");
+  const ingameSoundBtn = document.getElementById("ingameSoundBtn");
+  const ingameSoundLabel = document.getElementById("ingameSoundLabel");
+  const ingameSoundIcon = document.getElementById("ingameSoundIcon");
+  const ingameHelpBtn = document.getElementById("ingameHelpBtn");
+  const ingameRestartBtn = document.getElementById("ingameRestartBtn");
+  const ingameMainMenuBtn = document.getElementById("ingameMainMenuBtn");
+
+  // Tracks whether opening the menu paused the game so closing can restore it.
+  let ingameMenuAutoPaused = false;
+
+  function refreshIngameSoundLabel() {
+    if (!api.sound || !ingameSoundLabel || !ingameSoundIcon) return;
+    const enabled = api.sound.isEnabled();
+    ingameSoundLabel.textContent = enabled ? "Sound: On" : "Sound: Off";
+    ingameSoundIcon.textContent = enabled ? "🔊" : "🔇";
+  }
+
+  function openIngameMenu() {
+    const state = getState();
+    ingameMenuAutoPaused = false;
+    if (state.running && !state.paused) {
+      state.paused = true;
+      ingameMenuAutoPaused = true;
+    }
+    refreshIngameSoundLabel();
+    if (ingameMenu) ingameMenu.classList.add("active");
+    closePanel();
+  }
+
+  function closeIngameMenu({ resume = false } = {}) {
+    if (ingameMenu) ingameMenu.classList.remove("active");
+    if (resume && ingameMenuAutoPaused) {
+      const state = getState();
+      if (state.paused && state.running) {
+        state.paused = false;
+        if (api.game.render) api.game.render();
+      }
+    }
+    ingameMenuAutoPaused = false;
   }
 
   if (hamburgerBtn) {
-    hamburgerBtn.addEventListener("click", openPanel);
+    hamburgerBtn.addEventListener("click", openIngameMenu);
   }
+  if (ingameMenuCloseBtn) {
+    ingameMenuCloseBtn.addEventListener("click", () =>
+      closeIngameMenu({ resume: true }),
+    );
+  }
+  if (ingameMenu) {
+    ingameMenu.addEventListener("click", (e) => {
+      if (e.target === ingameMenu) closeIngameMenu({ resume: true });
+    });
+  }
+  if (ingameResumeBtn) {
+    ingameResumeBtn.addEventListener("click", () =>
+      closeIngameMenu({ resume: true }),
+    );
+  }
+  if (ingameSoundBtn) {
+    ingameSoundBtn.addEventListener("click", () => {
+      if (!api.sound) return;
+      const enabled = !api.sound.isEnabled();
+      api.sound.setEnabled(enabled);
+      refreshIngameSoundLabel();
+      const sidebarSoundBtn = document.getElementById("soundBtn");
+      if (sidebarSoundBtn) {
+        sidebarSoundBtn.textContent = enabled ? "Sound: On" : "Sound: Off";
+      }
+    });
+  }
+  if (ingameHelpBtn) {
+    ingameHelpBtn.addEventListener("click", () => {
+      closeIngameMenu();
+      showOverlay(true);
+    });
+  }
+  if (ingameRestartBtn) {
+    ingameRestartBtn.addEventListener("click", () => {
+      closeIngameMenu();
+      showConfirmLeave(true, () => {
+        if (api.game.stop) api.game.stop();
+        const state = getState();
+        state.paused = false;
+        if (isMultiplayerGame) {
+          // No mid-match restart in multiplayer — leave to lobby instead.
+          if (api.multiplayer) api.multiplayer.disconnect();
+          isMultiplayerGame = false;
+          hideOpponentBoard();
+          showScreen("multiplayerSelect");
+          return;
+        }
+        loadHighScore();
+        runCountdown(3, () => {
+          api.game.startGame(lastMode);
+        });
+      });
+    });
+  }
+  if (ingameMainMenuBtn) {
+    ingameMainMenuBtn.addEventListener("click", () => {
+      closeIngameMenu();
+      showConfirmLeave(true, () => {
+        if (api.game.stop) api.game.stop();
+        const state = getState();
+        state.paused = false;
+        if (isMultiplayerGame && api.multiplayer) {
+          api.multiplayer.disconnect();
+          isMultiplayerGame = false;
+        }
+        hideOpponentBoard();
+        showScreen("menu");
+      });
+    });
+  }
+
+  // Legacy close handlers (side panel kept but no longer opened by hamburger)
   if (panelCloseBtn) {
     panelCloseBtn.addEventListener("click", closePanel);
   }
   if (panelOverlay) {
     panelOverlay.addEventListener("click", closePanel);
   }
+
+  // Close in-game menu on Escape/P while it's open
+  document.addEventListener("keydown", (e) => {
+    if (!ingameMenu || !ingameMenu.classList.contains("active")) return;
+    if (e.key === "Escape" || e.key === "p" || e.key === "P") {
+      e.preventDefault();
+      e.stopPropagation();
+      closeIngameMenu({ resume: true });
+    }
+  });
 
   // Mobile touch controls
   function setupMobileControls() {
