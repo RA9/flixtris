@@ -70,6 +70,10 @@
       screens[name].classList.add("active");
       screens[name].style.display = "flex";
     }
+    if (name === "menu") {
+      updateLandingPlayerName();
+      updateHighScoreDisplay();
+    }
   }
 
   function showOverlay(show) {
@@ -186,6 +190,7 @@
     const desktopEl = document.getElementById("high-score-display");
     const mobileEl = document.getElementById("mobile-high-score");
     const desktopSidebarEl = document.getElementById("desktop-high-score");
+    const landingEl = document.getElementById("landingHighScore");
 
     if (currentHighScore > 0) {
       if (desktopEl) {
@@ -197,10 +202,25 @@
       if (desktopSidebarEl) {
         desktopSidebarEl.textContent = currentHighScore.toLocaleString();
       }
+      if (landingEl) {
+        landingEl.textContent = currentHighScore.toLocaleString();
+      }
     } else {
       if (desktopEl) desktopEl.innerHTML = "";
       if (mobileEl) mobileEl.textContent = "";
       if (desktopSidebarEl) desktopSidebarEl.textContent = "0";
+      if (landingEl) landingEl.textContent = "0";
+    }
+  }
+
+  async function updateLandingPlayerName() {
+    const el = document.getElementById("landingPlayerName");
+    if (!el) return;
+    try {
+      const name = await api.db.getDisplayName();
+      el.textContent = name && name.trim() ? name : "Guest";
+    } catch (_) {
+      el.textContent = "Guest";
     }
   }
 

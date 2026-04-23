@@ -91,7 +91,7 @@
         </div>
 
         <!-- Mode Selection Screen -->
-        <div id="screen-menu" class="screen arcade-screen">
+        <div id="screen-menu" class="screen arcade-screen landing-screen">
             <div class="menu-bg" aria-hidden="true">
                 <span class="bg-piece piece-i"></span>
                 <span class="bg-piece piece-o"></span>
@@ -100,9 +100,30 @@
                 <span class="bg-piece piece-z"></span>
                 <span class="bg-piece piece-l"></span>
             </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
+            <div class="menu-container landing-container">
+                <div class="landing-hud" aria-hidden="false">
+                    <div class="hud-item hud-player">
+                        <span class="hud-k">Player</span>
+                        <span class="hud-v" id="landingPlayerName">Guest</span>
+                    </div>
+                    <div class="hud-marquee" aria-hidden="true">
+                        <span class="hud-marquee-track">
+                            ◆ FLIXTRIS ARCADE ◆ Stack · Clear · Conquer ◆
+                            Daily Challenges Live ◆ Climb the Ranked Ladder ◆
+                            Battle Royale Open ◆ Insert Coin ◆
+                        </span>
+                    </div>
+                    <div class="hud-item hud-score">
+                        <span class="hud-k">Hi-Score</span>
+                        <span class="hud-v" id="landingHighScore">0</span>
+                    </div>
+                </div>
+
+                <header class="menu-hero landing-hero">
+                    <div class="landing-bracket left" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <h1 class="brand-header landing-title" aria-label="FLIXTRIS">
                         <span class="ltr" aria-hidden="true">F</span
                         ><span class="ltr" aria-hidden="true">L</span
                         ><span class="ltr" aria-hidden="true">I</span
@@ -112,9 +133,15 @@
                         ><span class="ltr" aria-hidden="true">I</span
                         ><span class="ltr" aria-hidden="true">S</span>
                     </h1>
-                    <p class="menu-tagline">Insert Coin · Select Mode</p>
+                    <div class="landing-bracket right" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <p class="menu-tagline landing-tagline arcade-blink">
+                        ▸ Insert Coin · Select Mode ◂
+                    </p>
                 </header>
-                <div class="mode-cards">
+
+                <div class="mode-cards landing-primary">
                     <button
                         class="mode-card category-card"
                         id="singlePlayerBtn"
@@ -232,17 +259,36 @@
                         </span>
                     </button>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link" id="leaderboardBtn">
-                        🏆 Leaderboards
+                <div class="menu-links landing-links">
+                    <button class="menu-link landing-link" id="leaderboardBtn">
+                        <span class="ll-icon" aria-hidden="true">🏆</span>
+                        <span class="ll-label">Leaderboards</span>
                     </button>
-                    <button class="menu-link" id="tournamentBtn">
-                        🏆 Tournaments
+                    <button class="menu-link landing-link" id="tournamentBtn">
+                        <span class="ll-icon" aria-hidden="true">⚔</span>
+                        <span class="ll-label">Tournaments</span>
                     </button>
-                    <button class="menu-link" id="settingsBtn">
-                        ⚙️ Settings
+                    <button class="menu-link landing-link" id="settingsBtn">
+                        <span class="ll-icon" aria-hidden="true">⚙</span>
+                        <span class="ll-label">Settings</span>
                     </button>
                 </div>
+
+                <footer class="landing-footer" aria-hidden="true">
+                    <div class="landing-ticker">
+                        <span class="landing-ticker-track">
+                            ▲ TIP · Hold I-pieces for Tetrises ▲ TIP · Keep
+                            your stack low and flat ▲ TIP · Use Ghost Piece
+                            to aim hard drops ▲ TIP · Combos reward back-to-back
+                            clears ▲ TIP · Daily Seed resets at midnight UTC ▲
+                        </span>
+                    </div>
+                    <div class="landing-credits">
+                        <span>© Flixtris · v1.0</span>
+                        <span class="credit-dot" aria-hidden="true">●</span>
+                        <span>Made with ♥ by Carlos S. Nah</span>
+                    </div>
+                </footer>
             </div>
         </div>
 

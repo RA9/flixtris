@@ -5328,6 +5328,372 @@ body {
 }
 
 /* ============================================================
+   LANDING PAGE (main menu) — arcade cabinet treatment
+   ============================================================ */
+
+.landing-screen .landing-container {
+    gap: clamp(0.9rem, 2.5vw, 1.75rem);
+    padding-top: clamp(0.75rem, 3vw, 1.5rem);
+    padding-bottom: clamp(0.75rem, 3vw, 1.5rem);
+}
+
+/* Top HUD — player / marquee / hi-score */
+.landing-hud {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr minmax(120px, auto);
+    gap: 0.75rem;
+    align-items: stretch;
+    padding: 0.6rem;
+    background: linear-gradient(
+        180deg,
+        rgba(20, 15, 40, 0.85),
+        rgba(8, 8, 20, 0.92)
+    );
+    border: 2px solid rgba(168, 139, 250, 0.4);
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 12px 32px -20px rgba(0, 0, 0, 0.85),
+        0 0 22px -6px rgba(168, 139, 250, 0.35);
+    animation: menuFadeIn 520ms ease both;
+}
+
+.hud-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    background: rgba(5, 5, 18, 0.6);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 10px;
+    min-width: 110px;
+}
+
+.hud-item .hud-k {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.6);
+}
+
+.hud-item .hud-v {
+    font-family: "Courier New", monospace;
+    font-size: clamp(0.95rem, 2.4vw, 1.25rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #facc15;
+    text-shadow:
+        0 0 10px rgba(250, 204, 21, 0.55),
+        0 0 22px rgba(250, 204, 21, 0.25);
+    max-width: 16ch;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hud-player .hud-v {
+    color: #22d3ee;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+}
+
+.hud-score .hud-v { color: #facc15; }
+
+.hud-marquee {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.5rem;
+    background: rgba(5, 5, 18, 0.7);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 10px;
+}
+
+.hud-marquee::before,
+.hud-marquee::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.hud-marquee::before {
+    left: 0;
+    background: linear-gradient(90deg, rgba(5, 5, 18, 0.95), transparent);
+}
+
+.hud-marquee::after {
+    right: 0;
+    background: linear-gradient(270deg, rgba(5, 5, 18, 0.95), transparent);
+}
+
+.hud-marquee-track {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.85);
+    animation: marqueeScroll 28s linear infinite;
+}
+
+@keyframes marqueeScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Hero with side brackets */
+.landing-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.4rem, 2vw, 1rem);
+    flex-wrap: wrap;
+}
+
+.landing-bracket {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.landing-bracket span {
+    display: block;
+    width: clamp(10px, 1.8vw, 16px);
+    height: clamp(10px, 1.8vw, 16px);
+    background: #facc15;
+    box-shadow:
+        0 0 10px rgba(250, 204, 21, 0.7),
+        0 0 22px rgba(250, 204, 21, 0.35);
+    animation: bracketBlink 1.4s steps(2, end) infinite;
+}
+
+.landing-bracket.left span:nth-child(1) {
+    background: #22d3ee;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.75);
+}
+.landing-bracket.left span:nth-child(2) {
+    background: #a78bfa;
+    box-shadow: 0 0 10px rgba(167, 139, 250, 0.75);
+    animation-delay: 0.18s;
+}
+.landing-bracket.left span:nth-child(3) {
+    background: #f472b6;
+    box-shadow: 0 0 10px rgba(244, 114, 182, 0.75);
+    animation-delay: 0.36s;
+}
+.landing-bracket.right span:nth-child(1) {
+    background: #4ade80;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.75);
+    animation-delay: 0.18s;
+}
+.landing-bracket.right span:nth-child(2) {
+    background: #fb923c;
+    box-shadow: 0 0 10px rgba(251, 146, 60, 0.75);
+    animation-delay: 0.36s;
+}
+.landing-bracket.right span:nth-child(3) {
+    background: #f43f5e;
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.75);
+    animation-delay: 0.54s;
+}
+
+@keyframes bracketBlink {
+    0%, 55% { opacity: 1; transform: scale(1); }
+    60%, 100% { opacity: 0.35; transform: scale(0.85); }
+}
+
+.landing-title {
+    flex: 0 1 auto;
+    margin: 0;
+    font-size: clamp(2.5rem, 10vw, 5rem);
+}
+
+.landing-tagline {
+    flex: 1 1 100%;
+    margin: 0;
+    text-align: center;
+    font-size: clamp(0.85rem, 2vw, 1.05rem);
+    letter-spacing: 0.22em;
+}
+
+/* Primary mode cards get extra emphasis on the landing */
+.landing-primary .mode-card {
+    min-height: clamp(140px, 20vw, 180px);
+    padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.landing-primary .mode-card::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: clamp(0.75rem, 2vw, 1.25rem);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--piece-color);
+    filter: drop-shadow(0 0 6px var(--piece-color));
+    opacity: 0.85;
+}
+
+/* Quick-link buttons — icon + label */
+.landing-links {
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.landing-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 170px;
+    padding: 0.65rem 1rem;
+    background: rgba(167, 139, 250, 0.08);
+    border: 2px solid rgba(167, 139, 250, 0.35);
+    border-radius: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #f5f5ff;
+    cursor: pointer;
+    transition:
+        transform 140ms ease,
+        box-shadow 140ms ease,
+        background 140ms ease;
+}
+
+.landing-link:hover,
+.landing-link:focus-visible {
+    outline: none;
+    background: rgba(167, 139, 250, 0.18);
+    border-color: rgba(167, 139, 250, 0.75);
+    transform: translate(-2px, -2px);
+    box-shadow:
+        0 0 16px rgba(167, 139, 250, 0.4),
+        4px 4px 0 rgba(0, 0, 0, 0.55);
+}
+
+.landing-link .ll-icon {
+    font-size: 1.15rem;
+    color: #facc15;
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.55);
+}
+
+.landing-link .ll-label {
+    font-size: 0.85rem;
+}
+
+/* Footer: ticker + credits */
+.landing-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: auto;
+}
+
+.landing-ticker {
+    position: relative;
+    overflow: hidden;
+    padding: 0.4rem 0.5rem;
+    background: rgba(5, 5, 18, 0.7);
+    border: 1px solid rgba(250, 204, 21, 0.25);
+    border-radius: 8px;
+}
+
+.landing-ticker::before,
+.landing-ticker::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.landing-ticker::before {
+    left: 0;
+    background: linear-gradient(90deg, rgba(5, 5, 18, 0.95), transparent);
+}
+
+.landing-ticker::after {
+    right: 0;
+    background: linear-gradient(270deg, rgba(5, 5, 18, 0.95), transparent);
+}
+
+.landing-ticker-track {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #facc15;
+    animation: marqueeScroll 40s linear infinite;
+}
+
+.landing-credits {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(245, 245, 255, 0.45);
+}
+
+.landing-credits .credit-dot {
+    color: #a78bfa;
+    font-size: 0.4rem;
+}
+
+/* Narrow phones */
+@media (max-width: 640px) {
+    .landing-hud {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "player score"
+            "marquee marquee";
+        gap: 0.5rem;
+    }
+    .hud-player { grid-area: player; }
+    .hud-score { grid-area: score; }
+    .hud-marquee { grid-area: marquee; }
+    .landing-bracket span {
+        width: 8px;
+        height: 8px;
+    }
+    .landing-link {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hud-marquee-track,
+    .landing-ticker-track,
+    .landing-bracket span {
+        animation: none !important;
+    }
+    .hud-marquee-track,
+    .landing-ticker-track {
+        padding-left: 0;
+    }
+}
+
+/* ============================================================
    MULTIPLAYER LOBBY / WAITING — inside .arcade-screen
    ============================================================ */
 
