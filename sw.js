@@ -6,8 +6,11 @@ const CACHE_NAME = `flixtris-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   "/",
   "/index.html",
+  "/landing.html",
+  "/about.html",
   "/manifest.json",
   "/css/styles.css",
+  "/css/site.css",
   "/js/db.js",
   "/js/sound.js",
   "/js/game.js",
