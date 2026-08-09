@@ -227,6 +227,21 @@
     return player.name !== null;
   }
 
+  // Remember that we already asked for a name, so players who chose to stay
+  // anonymous aren't prompted again on every visit.
+  async function markNamePrompted() {
+    const player = await getPlayer();
+    if (player.namePrompted) return player;
+    player.namePrompted = true;
+    await savePlayer(player);
+    return player;
+  }
+
+  async function hasBeenNamePrompted() {
+    const player = await getPlayer();
+    return player.namePrompted === true;
+  }
+
   // Sync player data from server
   async function syncPlayer(name) {
     if (!name) return;
@@ -574,6 +589,8 @@
       getDisplayName,
       updatePlayerStats,
       hasCustomName,
+      markNamePrompted,
+      hasBeenNamePrompted,
       // Wall of Fame
       isEligibleForWallOfFame,
       submitWallOfFame,

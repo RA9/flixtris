@@ -1209,9 +1209,12 @@
       myPlayerName = await api.db.getDisplayName();
     }
 
+    // Capture before closing — showNameOverlay(false) clears namePromptCallback.
+    const callback = namePromptCallback;
+    await api.db.markNamePrompted();
     showNameOverlay(false);
-    if (namePromptCallback) {
-      namePromptCallback();
+    if (callback) {
+      callback();
     }
   }
 
@@ -1220,9 +1223,12 @@
     myPlayerName = await api.db.getDisplayName();
     // Upload player data to server
     await api.db.uploadPlayer();
+    // Capture before closing — showNameOverlay(false) clears namePromptCallback.
+    const callback = namePromptCallback;
+    await api.db.markNamePrompted();
     showNameOverlay(false);
-    if (namePromptCallback) {
-      namePromptCallback();
+    if (callback) {
+      callback();
     }
   }
 
@@ -1230,7 +1236,10 @@
   async function checkFirstVisit() {
     await window.Flixtris.api.dbReady;
     const hasName = await api.db.hasCustomName();
-    return !hasName;
+    if (hasName) return false;
+    // Players who chose to stay anonymous already answered the prompt.
+    const prompted = await api.db.hasBeenNamePrompted();
+    return !prompted;
   }
 
   // Initialize player name on load
