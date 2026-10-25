@@ -3,12 +3,12 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Flixtris - The Ultimate Block Puzzle Battle</title>
+        <title>Flixtris - Stack Fast, Clear Clean, Outlast Everyone</title>
         <meta
             name="description"
-            content="Experience the classic block puzzle game reimagined. Play solo, battle friends in 1v1, or compete in Battle Royale mode. Free to play!"
+            content="The classic block puzzle, built for the browser. Play solo, take on the daily seed, or battle up to 16 players in real time. Free, no account, works offline."
         />
-        <meta name="theme-color" content="#080b12" />
+        <meta name="theme-color" content="#07090f" />
         <link rel="manifest" href="manifest.json" />
         <link
             rel="icon"
@@ -16,7 +16,7 @@
             sizes="192x192"
             href="icons/icon-192.png"
         />
-        <link rel="stylesheet" href="css/site.css" />
+        <link rel="stylesheet" href="css/landing.css" />
         <script>
             // Mark JS as available before first paint so the reveal styles
             // apply without a flash — and never apply if JS is dead.
@@ -26,337 +26,476 @@
     <body>
         <a class="skip-link" href="#main">Skip to content</a>
 
-        <div class="falling-blocks" id="fallingBlocks" aria-hidden="true"></div>
-
-        <header class="site-nav">
+        <header class="nav">
             <div class="shell">
                 <a class="brand" href="landing.html">
-                    <span class="brand-mark" aria-hidden="true"></span>
+                    <span class="brand-mark" aria-hidden="true"
+                        ><i></i><i></i><i></i><i></i
+                    ></span>
                     FLIXTRIS
                 </a>
                 <nav aria-label="Primary">
                     <ul class="nav-links">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#modes">Game Modes</a></li>
-                        <li><a href="#pro">Pro</a></li>
+                        <li><a href="#modes">Modes</a></li>
+                        <li><a href="#daily">Daily</a></li>
+                        <li><a href="#rules">Rules</a></li>
+                        <li><a href="#leaderboard">Leaderboard</a></li>
                         <li><a href="about.html">About</a></li>
                     </ul>
                 </nav>
-                <a href="index.html" class="btn btn-primary btn-sm">Play Now</a>
+                <a href="index.html" class="btn btn-primary btn-sm">Play</a>
             </div>
         </header>
 
-        <main class="page-main" id="main">
-            <!-- Hero -->
+        <main id="main">
+            <!-- Hero: copy beside a live, AI-played board -->
             <section class="hero">
                 <div class="shell">
-                    <h1 class="wordmark" aria-label="Flixtris">
-                        <span style="--ltr: #22d3ee" aria-hidden="true">F</span>
-                        <span style="--ltr: #facc15" aria-hidden="true">L</span>
-                        <span style="--ltr: #a78bfa" aria-hidden="true">I</span>
-                        <span style="--ltr: #4ade80" aria-hidden="true">X</span>
-                        <span style="--ltr: #f43f5e" aria-hidden="true">T</span>
-                        <span style="--ltr: #3b82f6" aria-hidden="true">R</span>
-                        <span style="--ltr: #fb923c" aria-hidden="true">I</span>
-                        <span style="--ltr: #f472b6" aria-hidden="true">S</span>
-                    </h1>
-
-                    <p class="hero-sub">
-                        The classic block puzzle game reimagined for the modern
-                        era. Play solo, battle friends, or compete worldwide.
-                    </p>
-
-                    <div class="hero-cta">
-                        <a href="index.html" class="btn btn-primary btn-lg">
-                            Play Free Now
-                        </a>
-                        <a href="#modes" class="btn btn-ghost btn-lg">
-                            Explore Modes
-                        </a>
-                    </div>
-
-                    <div class="stats fade-in">
-                        <div class="stat">
-                            <div class="stat-value" id="stat-total-games">
-                                0
-                            </div>
-                            <div class="stat-label">Total Games</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="stat-daily-games">
-                                0
-                            </div>
-                            <div class="stat-label">Games Today</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="stat-active-players">
-                                0
-                            </div>
-                            <div class="stat-label">Active Players</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value">6</div>
-                            <div class="stat-label">Game Modes</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Features -->
-            <section class="section section-alt" id="features">
-                <div class="shell">
-                    <div class="section-head">
-                        <span class="eyebrow">Features</span>
-                        <h2 class="section-title">Why Flixtris?</h2>
-                        <p class="section-sub">
-                            Experience the perfect blend of nostalgia and
-                            innovation.
+                    <div>
+                        <p class="kicker">Free play · No coin needed</p>
+                        <h1 class="hero-title">
+                            <span class="c-cyan">Stack fast.</span>
+                            <span class="c-yellow">Clear clean.</span>
+                            <span class="c-red">Outlast everyone.</span>
+                        </h1>
+                        <p class="hero-sub">
+                            The block puzzle you already know, built for the
+                            browser. Solo runs, a daily seed everyone shares,
+                            and real-time battles for up to 16 players.
                         </p>
+                        <div class="hero-cta">
+                            <a href="index.html" class="btn btn-primary btn-lg"
+                                >Play now — it's free</a
+                            >
+                            <a href="#modes" class="btn btn-ghost btn-lg"
+                                >See the modes</a
+                            >
+                        </div>
+                        <ul class="hero-meta">
+                            <li>No account</li>
+                            <li>No install</li>
+                            <li>Plays offline</li>
+                        </ul>
                     </div>
 
-                    <div class="grid grid-3">
-                        <article class="card fade-in">
-                            <div
-                                class="card-chip"
-                                style="--chip: #22d3ee"
-                                aria-hidden="true"
+                    <a
+                        class="cabinet"
+                        href="index.html"
+                        aria-label="Play Flixtris. The board here is a demo played by an AI."
+                    >
+                        <span class="well">
+                            <canvas id="demoBoard" aria-hidden="true"></canvas>
+                            <span class="well-cta" aria-hidden="true"
+                                >PRESS START</span
                             >
-                                ⚡
-                            </div>
-                            <h3 class="card-title">Instant Play</h3>
-                            <p class="card-text">
-                                No downloads, no sign-ups. Jump straight into
-                                the action from any browser, any device.
-                            </p>
-                        </article>
-
-                        <article class="card fade-in">
-                            <div
-                                class="card-chip"
-                                style="--chip: #3b82f6"
-                                aria-hidden="true"
+                        </span>
+                        <span class="hud" aria-hidden="true">
+                            <span class="hud-block hud-next">
+                                <span class="hud-label">NEXT</span>
+                                <canvas id="demoNext"></canvas>
+                            </span>
+                            <span class="hud-block">
+                                <span class="hud-label">SCORE</span>
+                                <span class="hud-value" id="demoScore">0</span>
+                            </span>
+                            <span class="hud-block">
+                                <span class="hud-label">LINES</span>
+                                <span class="hud-value" id="demoLines">0</span>
+                            </span>
+                            <span class="hud-block">
+                                <span class="hud-label">LEVEL</span>
+                                <span class="hud-value" id="demoLevel">0</span>
+                            </span>
+                            <span class="hud-tag"
+                                ><b>DEMO</b>AI at the controls</span
                             >
-                                🌐
-                            </div>
-                            <h3 class="card-title">Real-time Multiplayer</h3>
-                            <p class="card-text">
-                                Battle players worldwide with smooth, lag-free
-                                multiplayer powered by WebSocket technology.
-                            </p>
-                        </article>
-
-                        <article class="card fade-in">
-                            <div
-                                class="card-chip"
-                                style="--chip: #a78bfa"
-                                aria-hidden="true"
-                            >
-                                📊
-                            </div>
-                            <h3 class="card-title">Advanced Analytics</h3>
-                            <p class="card-text">
-                                Track your APM, efficiency, and progress with
-                                detailed performance insights and replay
-                                analysis.
-                            </p>
-                        </article>
-
-                        <article class="card fade-in">
-                            <div
-                                class="card-chip"
-                                style="--chip: #4ade80"
-                                aria-hidden="true"
-                            >
-                                🎯
-                            </div>
-                            <h3 class="card-title">Daily Challenges</h3>
-                            <p class="card-text">
-                                Same pieces for everyone. Compete on the global
-                                leaderboard with the daily challenge mode.
-                            </p>
-                        </article>
-
-                        <article class="card fade-in">
-                            <div
-                                class="card-chip"
-                                style="--chip: #fb923c"
-                                aria-hidden="true"
-                            >
-                                🤖
-                            </div>
-                            <h3 class="card-title">AI Training Partner</h3>
-                            <p class="card-text">
-                                Practice against bots from Beginner to Master
-                                level. Perfect your skills before facing real
-                                opponents.
-                            </p>
-                        </article>
-
-                        <article class="card fade-in">
-                            <div
-                                class="card-chip"
-                                style="--chip: #facc15"
-                                aria-hidden="true"
-                            >
-                                📱
-                            </div>
-                            <h3 class="card-title">Mobile Optimized</h3>
-                            <p class="card-text">
-                                Touch controls, responsive design, and PWA
-                                support. Install and play offline anywhere.
-                            </p>
-                        </article>
-                    </div>
+                        </span>
+                    </a>
                 </div>
             </section>
 
-            <!-- Game modes -->
+            <!-- Live server stats -->
+            <section class="stats" id="stats" aria-label="Live stats">
+                <div class="shell">
+                    <p class="stats-live" id="statsStatus">CONNECTING</p>
+                    <p class="stat">
+                        <span class="stat-value" id="stat-daily-games">—</span>
+                        <span class="stat-label">games today</span>
+                    </p>
+                    <p class="stat">
+                        <span class="stat-value" id="stat-total-games">—</span>
+                        <span class="stat-label">games played</span>
+                    </p>
+                    <p class="stat">
+                        <span class="stat-value" id="stat-active-players"
+                            >—</span
+                        >
+                        <span class="stat-label">players</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Modes -->
             <section class="section" id="modes">
                 <div class="shell">
                     <div class="section-head">
-                        <span class="eyebrow">Game Modes</span>
-                        <h2 class="section-title">Choose Your Challenge</h2>
+                        <p class="section-index"><b>01</b> / MODES</p>
+                        <h2 class="section-title">Every way to play.</h2>
                         <p class="section-sub">
-                            Six unique ways to play, from relaxing solo sessions
-                            to intense competitive battles.
+                            Warm up alone, settle it head to head, then prove it
+                            where it counts.
                         </p>
                     </div>
 
-                    <div class="grid grid-3">
-                        <a
-                            href="index.html"
-                            class="card mode-card fade-in"
-                            style="--chip: #22d3ee"
-                        >
-                            <h3 class="card-title">Classic</h3>
-                            <p class="card-text">
-                                Endless mode. How far can you go?
-                            </p>
-                        </a>
+                    <div class="modes reveal">
+                        <div class="mode-group">
+                            <h3 class="mode-group-head">
+                                Solo <span>03</span>
+                            </h3>
+                            <ul class="mode-list">
+                                <li class="mode">
+                                    <span class="piece" data-shape="1111 0000" style="--pc: var(--cyan)"></span>
+                                    <div>
+                                        <h4>Classic</h4>
+                                        <p>
+                                            Endless. The drop speeds up every
+                                            ten lines. How long can you last?
+                                        </p>
+                                        <span class="tag">ENDLESS</span>
+                                    </div>
+                                </li>
+                                <li class="mode">
+                                    <span class="piece" data-shape="0110 1100" style="--pc: var(--green)"></span>
+                                    <div>
+                                        <h4>Daily Challenge</h4>
+                                        <p>
+                                            One seed a day. Everyone gets the
+                                            exact same pieces.
+                                        </p>
+                                        <span class="tag">NEW SEED DAILY</span>
+                                    </div>
+                                </li>
+                                <li class="mode">
+                                    <span class="piece" data-shape="1100 0110" style="--pc: var(--red)"></span>
+                                    <div>
+                                        <h4>Hardcore</h4>
+                                        <p>
+                                            No pause, no ghost piece. Every
+                                            placement is final.
+                                        </p>
+                                        <span class="tag">NO PAUSE</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
 
-                        <a
-                            href="index.html"
-                            class="card mode-card fade-in"
-                            style="--chip: #4ade80"
-                        >
-                            <h3 class="card-title">Daily Challenge</h3>
-                            <p class="card-text">
-                                Same pieces for all. Compare globally.
-                            </p>
-                        </a>
+                        <div class="mode-group">
+                            <h3 class="mode-group-head">
+                                Versus <span>03</span>
+                            </h3>
+                            <ul class="mode-list">
+                                <li class="mode">
+                                    <span class="piece" data-shape="0010 1110" style="--pc: var(--orange)"></span>
+                                    <div>
+                                        <h4>Bot Battle</h4>
+                                        <p>
+                                            Spar with AI opponents, from gentle
+                                            to ruthless.
+                                        </p>
+                                        <span class="tag">VS AI</span>
+                                    </div>
+                                </li>
+                                <li class="mode">
+                                    <span class="piece" data-shape="1000 1110" style="--pc: var(--blue)"></span>
+                                    <div>
+                                        <h4>1v1 Battle</h4>
+                                        <p>
+                                            A real-time duel with your
+                                            opponent's board live beside yours.
+                                        </p>
+                                        <span class="tag">2 PLAYERS</span>
+                                    </div>
+                                </li>
+                                <li class="mode">
+                                    <span class="piece" data-shape="0100 1110" style="--pc: var(--purple)"></span>
+                                    <div>
+                                        <h4>Battle Royale</h4>
+                                        <p>
+                                            Up to sixteen stacks in one room.
+                                            The last one standing wins.
+                                        </p>
+                                        <span class="tag">2–16 PLAYERS</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
 
-                        <a
-                            href="index.html"
-                            class="card mode-card fade-in"
-                            style="--chip: #f43f5e"
-                        >
-                            <h3 class="card-title">1v1 Battle</h3>
-                            <p class="card-text">
-                                Real-time duels. See your opponent live.
-                            </p>
-                        </a>
-
-                        <a
-                            href="index.html"
-                            class="card mode-card fade-in"
-                            style="--chip: #facc15"
-                        >
-                            <h3 class="card-title">Battle Royale</h3>
-                            <p class="card-text">
-                                Last player standing wins it all.
-                            </p>
-                        </a>
-
-                        <a
-                            href="index.html"
-                            class="card mode-card fade-in"
-                            style="--chip: #fb923c"
-                        >
-                            <h3 class="card-title">Bot Battle</h3>
-                            <p class="card-text">
-                                Train against AI from easy to master.
-                            </p>
-                        </a>
-
-                        <a
-                            href="index.html"
-                            class="card mode-card fade-in"
-                            style="--chip: #a78bfa"
-                        >
-                            <h3 class="card-title">Ranked</h3>
-                            <p class="card-text">
-                                Climb the ELO ladder. Prove your worth.
-                            </p>
-                        </a>
+                        <div class="mode-group">
+                            <h3 class="mode-group-head">
+                                Compete <span>03</span>
+                            </h3>
+                            <ul class="mode-list">
+                                <li class="mode">
+                                    <span class="piece" data-shape="0110 0110" style="--pc: var(--yellow)"></span>
+                                    <div>
+                                        <h4>Ranked</h4>
+                                        <p>
+                                            Climb the ladder one match at a
+                                            time.
+                                        </p>
+                                        <span class="tag">PRO · FREE IN BETA</span>
+                                    </div>
+                                </li>
+                                <li class="mode">
+                                    <span class="piece" data-shape="1001 1111" style="--pc: var(--muted)"></span>
+                                    <div>
+                                        <h4>Tournaments</h4>
+                                        <p>
+                                            Single elimination or round robin
+                                            for your crew.
+                                        </p>
+                                        <span class="tag">4 / 8 / 16</span>
+                                    </div>
+                                </li>
+                                <li class="mode">
+                                    <span class="piece" data-shape="1000 1100" style="--pc: var(--muted)"></span>
+                                    <div>
+                                        <h4>Replays &amp; Analytics</h4>
+                                        <p>
+                                            Rewatch any run. Track APM,
+                                            efficiency and progress.
+                                        </p>
+                                        <span class="tag">PRO · FREE IN BETA</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Pro -->
-            <section class="section section-alt" id="pro">
-                <div class="shell">
-                    <div class="pro-panel fade-in">
-                        <span class="eyebrow">Pro</span>
-                        <h2 class="section-title">Unlock Your Full Potential</h2>
-                        <p class="section-sub">
-                            Premium features for serious players.
-                        </p>
-
-                        <ul class="pro-list">
-                            <li>Replay Viewer</li>
-                            <li>Advanced Analytics</li>
-                            <li>Ranked Mode</li>
-                            <li>Premium Themes</li>
-                            <li>Custom Emojis</li>
-                            <li>No Ads Forever</li>
+            <!-- Daily seed -->
+            <section class="section" id="daily">
+                <div class="shell daily">
+                    <div>
+                        <p class="section-index"><b>02</b> / DAILY</p>
+                        <h2 class="section-title">
+                            Same pieces. Same day. Who stacks them best?
+                        </h2>
+                        <ul class="daily-points">
+                            <li>
+                                <b>01</b>
+                                <span
+                                    ><strong>One seed for everyone.</strong> The
+                                    daily piece order comes from the date, so
+                                    nobody gets a lucky bag.</span
+                                >
+                            </li>
+                            <li>
+                                <b>02</b>
+                                <span
+                                    ><strong>Share your run.</strong> Send the
+                                    seed and your score. Friends play the
+                                    identical sequence.</span
+                                >
+                            </li>
+                            <li>
+                                <b>03</b>
+                                <span
+                                    ><strong>Daily leaderboard.</strong> Scores
+                                    reset each day, so everyone starts
+                                    level.</span
+                                >
+                            </li>
                         </ul>
+                    </div>
 
-                        <a href="index.html" class="btn btn-primary btn-lg">
-                            Get Pro Access
-                        </a>
-                        <p class="pro-note">
-                            Currently free during beta. Enable it in Settings.
+                    <div class="reveal">
+                        <div class="share-card">
+                            <div class="sc-head">Flixtris Daily Challenge</div>
+                            <div class="sc-seed" id="dailySeed">FLX-2026-1-1</div>
+                            <dl>
+                                <div>
+                                    <dt>SCORE</dt>
+                                    <dd>12,430</dd>
+                                </div>
+                                <div>
+                                    <dt>LEVEL</dt>
+                                    <dd>8</dd>
+                                </div>
+                                <div>
+                                    <dt>LINES</dt>
+                                    <dd>72</dd>
+                                </div>
+                            </dl>
+                            <div class="sc-foot">Can you beat my score?</div>
+                        </div>
+                        <p class="share-note">
+                            Today's real seed, with an example score.
                         </p>
                     </div>
                 </div>
             </section>
 
-            <!-- Final CTA -->
-            <section class="section">
+            <!-- Scoring and controls -->
+            <section class="section" id="rules">
                 <div class="shell">
-                    <div class="section-head" style="margin-bottom: 0">
-                        <h2 class="section-title">Ready to Stack?</h2>
+                    <div class="section-head">
+                        <p class="section-index"><b>03</b> / RULES</p>
+                        <h2 class="section-title">Old-school scoring.</h2>
                         <p class="section-sub">
-                            No account, no install. Just press play.
+                            NES rules: clearing more lines at once pays far
+                            more. Four at once is a Tetris, and it pays thirty
+                            times a single.
                         </p>
-                        <p style="margin-top: 2rem">
-                            <a href="index.html" class="btn btn-primary btn-lg">
-                                Start Playing Now
-                            </a>
+                    </div>
+
+                    <div class="rules reveal">
+                        <div class="panel">
+                            <h3 class="panel-title">Points per clear</h3>
+                            <table class="score-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">CLEAR</th>
+                                        <th scope="col">BASE POINTS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">
+                                            <span class="clear-rows" aria-hidden="true" style="--rc: var(--green)"><i></i></span>
+                                            <span class="clear-name">Single</span>
+                                        </th>
+                                        <td class="pts">40</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">
+                                            <span class="clear-rows" aria-hidden="true" style="--rc: var(--yellow)"><i></i><i></i></span>
+                                            <span class="clear-name">Double</span>
+                                        </th>
+                                        <td class="pts">100</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">
+                                            <span class="clear-rows" aria-hidden="true" style="--rc: var(--orange)"><i></i><i></i><i></i></span>
+                                            <span class="clear-name">Triple</span>
+                                        </th>
+                                        <td class="pts">300</td>
+                                    </tr>
+                                    <tr class="is-tetris">
+                                        <th scope="row">
+                                            <span class="clear-rows" aria-hidden="true" style="--rc: var(--cyan)"><i></i><i></i><i></i><i></i></span>
+                                            <span class="clear-name">Tetris</span>
+                                        </th>
+                                        <td class="pts">1,200</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="score-foot">
+                                × <b>(level + 1)</b>. A Tetris on level 9 is
+                                worth 12,000.
+                            </p>
+                        </div>
+
+                        <div class="panel">
+                            <h3 class="panel-title">Controls</h3>
+                            <ul class="keys">
+                                <li>
+                                    Move
+                                    <span><kbd class="key">←</kbd><kbd class="key">→</kbd></span>
+                                </li>
+                                <li>
+                                    Rotate
+                                    <span><kbd class="key">↑</kbd></span>
+                                </li>
+                                <li>
+                                    Soft drop
+                                    <span><kbd class="key">↓</kbd></span>
+                                </li>
+                                <li>
+                                    Hard drop
+                                    <span><kbd class="key">Space</kbd></span>
+                                </li>
+                                <li>
+                                    Pause
+                                    <span><kbd class="key">P</kbd></span>
+                                </li>
+                            </ul>
+                            <p class="keys-note">
+                                On a phone, touch controls appear under the
+                                board.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Leaderboard -->
+            <section class="section" id="leaderboard">
+                <div class="shell board">
+                    <div>
+                        <p class="section-index"><b>04</b> / LEADERBOARD</p>
+                        <h2 class="section-title">The names to beat.</h2>
+                        <p class="section-sub">
+                            The global all-time top five, live from the server.
+                            There are daily and weekly boards in the game too.
                         </p>
+                        <a href="index.html" class="btn btn-ghost"
+                            >Put your name up there</a
+                        >
+                    </div>
+
+                    <ol class="ranks reveal" id="ranks" aria-live="polite">
+                        <li class="is-skeleton" aria-hidden="true"><span></span><span></span><span style="width: 4rem"></span></li>
+                        <li class="is-skeleton" aria-hidden="true"><span></span><span></span><span style="width: 4rem"></span></li>
+                        <li class="is-skeleton" aria-hidden="true"><span></span><span></span><span style="width: 4rem"></span></li>
+                        <li class="is-skeleton" aria-hidden="true"><span></span><span></span><span style="width: 4rem"></span></li>
+                        <li class="is-skeleton" aria-hidden="true"><span></span><span></span><span style="width: 4rem"></span></li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Closing CTA -->
+            <section class="finale">
+                <div class="shell">
+                    <div class="finale-stack" id="finaleStack" aria-hidden="true"></div>
+                    <h2>Your move.</h2>
+                    <p>
+                        No account, no install. The first piece drops the
+                        moment you press play.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="index.html" class="btn btn-primary btn-lg"
+                            >Play Flixtris</a
+                        >
+                        <a href="about.html" class="btn btn-ghost btn-lg"
+                            >Why it exists</a
+                        >
                     </div>
                 </div>
             </section>
         </main>
 
-        <footer class="site-footer">
+        <footer class="footer">
             <div class="shell">
                 <a class="brand" href="landing.html">
-                    <span class="brand-mark" aria-hidden="true"></span>
+                    <span class="brand-mark" aria-hidden="true"
+                        ><i></i><i></i><i></i><i></i
+                    ></span>
                     FLIXTRIS
                 </a>
                 <nav class="footer-links" aria-label="Footer">
                     <a href="index.html">Play</a>
-                    <a href="#features">Features</a>
-                    <a href="#modes">Game Modes</a>
-                    <a href="#pro">Pro</a>
+                    <a href="#modes">Modes</a>
+                    <a href="#daily">Daily</a>
+                    <a href="#leaderboard">Leaderboard</a>
                     <a href="about.html">About</a>
-                    <a href="https://github.com/ra9" target="_blank" rel="noopener">
-                        GitHub
-                    </a>
+                    <a href="https://github.com/ra9" target="_blank" rel="noopener"
+                        >GitHub</a
+                    >
                 </nav>
                 <p class="footer-copy">
-                    © 2024 Flixtris. Made with ♥ for puzzle lovers everywhere.
+                    Flixtris · Open source · Made for puzzle lovers everywhere.
                 </p>
             </div>
         </footer>
@@ -400,90 +539,526 @@
                     window.location.href = "index.html";
                 }
             })();
+        </script>
 
-            // Decorative falling blocks, in the tetromino palette.
-            function createFallingBlocks() {
-                const container = document.getElementById("fallingBlocks");
-                if (!container) return;
-                const colors = [
-                    "#22d3ee",
-                    "#a78bfa",
-                    "#f43f5e",
-                    "#4ade80",
-                    "#facc15",
-                    "#fb923c",
-                    "#3b82f6",
-                ];
+        <script>
+            (() => {
+                const reduceMotion = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)",
+                ).matches;
 
-                for (let i = 0; i < 18; i++) {
-                    const block = document.createElement("div");
-                    block.className = "block";
-                    // Keep well inside the viewport so nothing widens the page.
-                    block.style.left = Math.random() * 94 + "%";
-                    block.style.backgroundColor =
-                        colors[Math.floor(Math.random() * colors.length)];
-                    block.style.animationDuration =
-                        10 + Math.random() * 20 + "s";
-                    block.style.animationDelay = Math.random() * 20 + "s";
-                    container.appendChild(block);
+                // ---------- Attract-mode demo board ----------
+                // A small self-contained stacker with a greedy AI. It shares
+                // piece shapes and colours with js/game.js but none of its code.
+                const COLS = 10;
+                const ROWS = 20;
+                const PIECES = {
+                    I: { shape: [[1, 1, 1, 1]], color: "#22d3ee" },
+                    O: { shape: [[1, 1], [1, 1]], color: "#facc15" },
+                    T: { shape: [[0, 1, 0], [1, 1, 1]], color: "#a78bfa" },
+                    S: { shape: [[0, 1, 1], [1, 1, 0]], color: "#4ade80" },
+                    Z: { shape: [[1, 1, 0], [0, 1, 1]], color: "#f43f5e" },
+                    J: { shape: [[1, 0, 0], [1, 1, 1]], color: "#3b82f6" },
+                    L: { shape: [[0, 0, 1], [1, 1, 1]], color: "#fb923c" },
+                };
+                const LINE_POINTS = [0, 40, 100, 300, 1200];
+
+                const boardCanvas = document.getElementById("demoBoard");
+                const nextCanvas = document.getElementById("demoNext");
+                const scoreEl = document.getElementById("demoScore");
+                const linesEl = document.getElementById("demoLines");
+                const levelEl = document.getElementById("demoLevel");
+
+                const rotate = (m) =>
+                    m[0].map((_, i) => m.map((row) => row[i]).reverse());
+
+                function rotations(shape) {
+                    const out = [shape];
+                    for (let i = 0; i < 3; i++) {
+                        const next = rotate(out[out.length - 1]);
+                        const key = JSON.stringify(next);
+                        if (out.some((s) => JSON.stringify(s) === key)) break;
+                        out.push(next);
+                    }
+                    return out;
                 }
-            }
 
-            // Reveal on scroll. Anything already on screen is revealed at once,
-            // and every element is unhidden if IntersectionObserver is missing.
-            function handleScrollAnimations() {
-                const elements = document.querySelectorAll(".fade-in");
-                if (!("IntersectionObserver" in window)) {
-                    elements.forEach((el) => el.classList.add("visible"));
-                    return;
+                function collides(grid, shape, x, y) {
+                    for (let r = 0; r < shape.length; r++) {
+                        for (let c = 0; c < shape[r].length; c++) {
+                            if (!shape[r][c]) continue;
+                            const gx = x + c;
+                            const gy = y + r;
+                            if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+                            if (gy >= 0 && grid[gy][gx]) return true;
+                        }
+                    }
+                    return false;
                 }
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        entries.forEach((entry) => {
-                            if (entry.isIntersecting) {
-                                entry.target.classList.add("visible");
-                                observer.unobserve(entry.target);
+
+                function dropY(grid, shape, x) {
+                    if (collides(grid, shape, x, 0)) return -1;
+                    let y = 0;
+                    while (!collides(grid, shape, x, y + 1)) y++;
+                    return y;
+                }
+
+                function merge(grid, shape, x, y, color) {
+                    const g = grid.map((row) => row.slice());
+                    shape.forEach((row, r) =>
+                        row.forEach((v, c) => {
+                            if (v) g[y + r][x + c] = color;
+                        }),
+                    );
+                    return g;
+                }
+
+                const fullRows = (grid) =>
+                    grid.reduce(
+                        (acc, row, i) => (row.every(Boolean) ? [...acc, i] : acc),
+                        [],
+                    );
+
+                function clearRows(grid, rows) {
+                    const kept = grid.filter((_, i) => !rows.includes(i));
+                    while (kept.length < ROWS) kept.unshift(Array(COLS).fill(null));
+                    return kept;
+                }
+
+                // Classic four-feature heuristic: favour cleared lines, punish
+                // height, holes and a jagged surface.
+                function evaluate(grid, lines) {
+                    let agg = 0;
+                    let holes = 0;
+                    let bump = 0;
+                    let prev = null;
+                    for (let c = 0; c < COLS; c++) {
+                        let h = 0;
+                        let seen = false;
+                        for (let r = 0; r < ROWS; r++) {
+                            if (grid[r][c]) {
+                                if (!seen) h = ROWS - r;
+                                seen = true;
+                            } else if (seen) {
+                                holes++;
                             }
-                        });
-                    },
-                    { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
-                );
-                elements.forEach((el) => observer.observe(el));
-            }
-
-            function formatNumber(num) {
-                if (num >= 1000000) {
-                    return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+                        }
+                        agg += h;
+                        if (prev !== null) bump += Math.abs(h - prev);
+                        prev = h;
+                    }
+                    return -0.51 * agg + 0.76 * lines - 0.36 * holes - 0.18 * bump;
                 }
-                if (num >= 1000) {
-                    return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+
+                function bestMove(grid, name) {
+                    let best = null;
+                    for (const shape of rotations(PIECES[name].shape)) {
+                        for (let x = 0; x <= COLS - shape[0].length; x++) {
+                            const y = dropY(grid, shape, x);
+                            if (y < 0) continue;
+                            const placed = merge(grid, shape, x, y, "#fff");
+                            const lines = fullRows(placed).length;
+                            const score = evaluate(
+                                clearRows(placed, fullRows(placed)),
+                                lines,
+                            );
+                            if (!best || score > best.score) {
+                                best = { shape, x, score };
+                            }
+                        }
+                    }
+                    return best;
                 }
-                return num.toString();
-            }
 
-            async function loadGlobalStats() {
-                try {
-                    const response = await fetch("/api/stats");
-                    if (!response.ok) throw new Error("Failed to fetch stats");
-                    const stats = await response.json();
+                let bag = [];
+                function nextName() {
+                    if (!bag.length) {
+                        bag = Object.keys(PIECES);
+                        for (let i = bag.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [bag[i], bag[j]] = [bag[j], bag[i]];
+                        }
+                    }
+                    return bag.pop();
+                }
 
-                    const set = (id, value) => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = formatNumber(value || 0);
+                const emptyGrid = () =>
+                    Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+
+                const game = {
+                    grid: emptyGrid(),
+                    piece: null,
+                    next: nextName(),
+                    score: 0,
+                    lines: 0,
+                    flash: null, // { rows, until }
+                    overUntil: 0,
+                };
+
+                function spawn() {
+                    const name = game.next;
+                    game.next = nextName();
+                    const move = bestMove(game.grid, name);
+                    if (!move) return false;
+                    const startX = Math.floor((COLS - move.shape[0].length) / 2);
+                    game.piece = {
+                        shape: move.shape,
+                        color: PIECES[name].color,
+                        x: collides(game.grid, move.shape, startX, 0)
+                            ? move.x
+                            : startX,
+                        y: 0,
+                        targetX: move.x,
                     };
-                    set("stat-total-games", stats.totalGames);
-                    set("stat-daily-games", stats.dailyGames);
-                    set("stat-active-players", stats.activePlayers);
-                } catch (err) {
-                    console.log("Stats not available:", err.message);
+                    return true;
                 }
-            }
 
-            loadGlobalStats();
-            setInterval(loadGlobalStats, 30000);
+                function lock() {
+                    const p = game.piece;
+                    game.grid = merge(game.grid, p.shape, p.x, p.y, p.color);
+                    game.piece = null;
+                    const rows = fullRows(game.grid);
+                    if (rows.length) {
+                        const level = Math.floor(game.lines / 10);
+                        game.score += LINE_POINTS[rows.length] * (level + 1);
+                        game.lines += rows.length;
+                        return rows;
+                    }
+                    return null;
+                }
 
-            createFallingBlocks();
-            handleScrollAnimations();
+                function reset() {
+                    game.grid = emptyGrid();
+                    game.score = 0;
+                    game.lines = 0;
+                    game.piece = null;
+                }
+
+                // One simulation step. Returns false on top-out.
+                function step(now) {
+                    if (game.flash) {
+                        if (now < game.flash.until) return true;
+                        game.grid = clearRows(game.grid, game.flash.rows);
+                        game.flash = null;
+                    }
+                    if (!game.piece) return spawn();
+                    const p = game.piece;
+                    if (p.x !== p.targetX) {
+                        const dx = Math.sign(p.targetX - p.x);
+                        if (collides(game.grid, p.shape, p.x + dx, p.y)) {
+                            p.x = p.targetX;
+                        } else {
+                            p.x += dx;
+                        }
+                        return true;
+                    }
+                    if (!collides(game.grid, p.shape, p.x, p.y + 1)) {
+                        p.y++;
+                        return true;
+                    }
+                    const rows = lock();
+                    if (rows) game.flash = { rows, until: now + 260 };
+                    return true;
+                }
+
+                // ---------- Rendering ----------
+                const ctx = boardCanvas.getContext("2d");
+                const nctx = nextCanvas.getContext("2d");
+                let cell = 0;
+
+                function fit() {
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = boardCanvas.clientWidth;
+                    boardCanvas.width = Math.round(w * dpr);
+                    boardCanvas.height = Math.round(w * 2 * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    cell = w / COLS;
+                    const nw = nextCanvas.clientWidth;
+                    nextCanvas.width = Math.round(nw * dpr);
+                    nextCanvas.height = Math.round(nw * dpr);
+                    nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                }
+
+                function block(c, x, y, size, color) {
+                    const gap = Math.max(1, size * 0.08);
+                    c.fillStyle = color;
+                    c.fillRect(x + gap / 2, y + gap / 2, size - gap, size - gap);
+                }
+
+                function draw() {
+                    const w = cell * COLS;
+                    ctx.clearRect(0, 0, w, w * 2);
+
+                    // Faint column guides.
+                    ctx.fillStyle = "#111724";
+                    for (let c = 1; c < COLS; c++) {
+                        ctx.fillRect(c * cell, 0, 1, w * 2);
+                    }
+
+                    game.grid.forEach((row, r) =>
+                        row.forEach((color, c) => {
+                            if (!color) return;
+                            const flashing =
+                                game.flash && game.flash.rows.includes(r);
+                            block(ctx, c * cell, r * cell, cell, flashing ? "#eef2f8" : color);
+                        }),
+                    );
+
+                    const p = game.piece;
+                    if (p) {
+                        // Ghost: outline where the piece will land.
+                        let gy = p.y;
+                        while (!collides(game.grid, p.shape, p.x, gy + 1)) gy++;
+                        ctx.strokeStyle = p.color;
+                        ctx.globalAlpha = 0.45;
+                        ctx.lineWidth = 1;
+                        p.shape.forEach((row, r) =>
+                            row.forEach((v, c) => {
+                                if (!v) return;
+                                ctx.strokeRect(
+                                    (p.x + c) * cell + 2.5,
+                                    (gy + r) * cell + 2.5,
+                                    cell - 5,
+                                    cell - 5,
+                                );
+                            }),
+                        );
+                        ctx.globalAlpha = 1;
+                        p.shape.forEach((row, r) =>
+                            row.forEach((v, c) => {
+                                if (v) block(ctx, (p.x + c) * cell, (p.y + r) * cell, cell, p.color);
+                            }),
+                        );
+                    }
+
+                    // Next piece, centred in a 4x4 box.
+                    const nw = nextCanvas.clientWidth;
+                    nctx.clearRect(0, 0, nw, nw);
+                    const shape = PIECES[game.next].shape;
+                    const ns = nw / 4.5;
+                    const ox = (nw - shape[0].length * ns) / 2;
+                    const oy = (nw - shape.length * ns) / 2;
+                    shape.forEach((row, r) =>
+                        row.forEach((v, c) => {
+                            if (v) block(nctx, ox + c * ns, oy + r * ns, ns, PIECES[game.next].color);
+                        }),
+                    );
+
+                    scoreEl.textContent = game.score.toLocaleString();
+                    linesEl.textContent = game.lines;
+                    levelEl.textContent = Math.floor(game.lines / 10);
+                }
+
+                // ---------- Loop ----------
+                const SHIFT_MS = 70;
+                const DROP_MS = 34;
+                let last = 0;
+                let acc = 0;
+                let running = false;
+                let onScreen = true;
+
+                function tick(now) {
+                    if (!running) return;
+                    acc += Math.min(now - last, 250);
+                    last = now;
+                    if (game.overUntil) {
+                        if (now >= game.overUntil) {
+                            game.overUntil = 0;
+                            reset();
+                        }
+                    } else {
+                        const p = game.piece;
+                        const interval = p && p.x !== p.targetX ? SHIFT_MS : DROP_MS;
+                        while (acc >= interval && !game.overUntil) {
+                            acc -= interval;
+                            if (!step(now)) game.overUntil = now + 1500;
+                        }
+                    }
+                    draw();
+                    requestAnimationFrame(tick);
+                }
+
+                function setRunning(on) {
+                    if (reduceMotion || on === running) return;
+                    running = on;
+                    if (on) {
+                        last = performance.now();
+                        acc = 0;
+                        requestAnimationFrame(tick);
+                    }
+                }
+
+                const sync = () => setRunning(onScreen && !document.hidden);
+
+                fit();
+                if ("ResizeObserver" in window) {
+                    new ResizeObserver(() => {
+                        fit();
+                        draw();
+                    }).observe(boardCanvas);
+                }
+
+                if (reduceMotion) {
+                    // A still frame: play a few dozen pieces instantly and show
+                    // the resulting stack.
+                    for (let i = 0; i < 40; i++) {
+                        if (!spawn()) break;
+                        const p = game.piece;
+                        p.x = p.targetX;
+                        p.y = dropY(game.grid, p.shape, p.x);
+                        const rows = lock();
+                        if (rows) game.grid = clearRows(game.grid, rows);
+                    }
+                    spawn();
+                    draw();
+                } else {
+                    if ("IntersectionObserver" in window) {
+                        new IntersectionObserver((entries) => {
+                            onScreen = entries[0].isIntersecting;
+                            sync();
+                        }).observe(boardCanvas);
+                    }
+                    document.addEventListener("visibilitychange", sync);
+                    sync();
+                }
+
+                // ---------- Decorative glyphs ----------
+                document.querySelectorAll(".piece[data-shape]").forEach((el) => {
+                    el.setAttribute("aria-hidden", "true");
+                    for (const ch of el.dataset.shape.replace(/\s/g, "")) {
+                        const i = document.createElement("i");
+                        if (ch !== "1") i.style.background = "transparent";
+                        el.appendChild(i);
+                    }
+                });
+
+                // Closing stack: three nearly-full rows with the Tetris well
+                // left open in the last column.
+                const stack = document.getElementById("finaleStack");
+                const palette = ["#22d3ee", "#facc15", "#a78bfa", "#4ade80", "#f43f5e", "#3b82f6", "#fb923c"];
+                const pattern = [
+                    "0000000000",
+                    "0000110000",
+                    "1101111110",
+                    "1111111110",
+                    "1111111110",
+                ];
+                pattern.forEach((row, r) =>
+                    [...row].forEach((ch, c) => {
+                        const i = document.createElement("i");
+                        if (ch === "1") {
+                            i.style.setProperty("--c", palette[(r * 3 + Math.floor(c / 2)) % palette.length]);
+                        } else if (r === 0 || c !== 9) {
+                            i.style.background = "transparent";
+                        }
+                        stack.appendChild(i);
+                    }),
+                );
+
+                // ---------- Today's daily seed (same format as js/game.js) ----------
+                const d = new Date();
+                document.getElementById("dailySeed").textContent =
+                    `FLX-${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+                // ---------- Live stats ----------
+                function formatNumber(num) {
+                    if (num >= 1000000) {
+                        return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+                    }
+                    if (num >= 1000) {
+                        return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+                    }
+                    return String(num);
+                }
+
+                const statsEl = document.getElementById("stats");
+                const statusEl = document.getElementById("statsStatus");
+
+                async function loadGlobalStats() {
+                    try {
+                        const response = await fetch("/api/stats");
+                        if (!response.ok) throw new Error("Failed to fetch stats");
+                        const stats = await response.json();
+                        const set = (id, value) => {
+                            document.getElementById(id).textContent = formatNumber(value || 0);
+                        };
+                        set("stat-daily-games", stats.dailyGames);
+                        set("stat-total-games", stats.totalGames);
+                        set("stat-active-players", stats.activePlayers);
+                        statsEl.classList.add("is-live");
+                        statusEl.textContent = "LIVE";
+                    } catch (err) {
+                        statsEl.classList.remove("is-live");
+                        statusEl.textContent = "OFFLINE";
+                    }
+                }
+
+                loadGlobalStats();
+                setInterval(loadGlobalStats, 30000);
+
+                // ---------- Leaderboard ----------
+                const ranksEl = document.getElementById("ranks");
+
+                function showRanksMessage(text) {
+                    const li = document.createElement("li");
+                    li.className = "ranks-empty";
+                    li.textContent = text;
+                    ranksEl.replaceChildren(li);
+                }
+
+                async function loadLeaderboard() {
+                    try {
+                        const response = await fetch("/api/leaderboard/global?limit=5");
+                        if (!response.ok) throw new Error("Failed to fetch leaderboard");
+                        const { leaderboard = [] } = await response.json();
+                        if (!leaderboard.length) {
+                            showRanksMessage("No scores yet. The top spot is open.");
+                            return;
+                        }
+                        ranksEl.replaceChildren(
+                            ...leaderboard.map((entry, i) => {
+                                const li = document.createElement("li");
+                                const n = document.createElement("span");
+                                n.className = "rank-n";
+                                n.textContent = String(entry.rank || i + 1).padStart(2, "0");
+                                const name = document.createElement("span");
+                                name.className = "rank-name";
+                                name.textContent = entry.playerName || "Anonymous";
+                                const score = document.createElement("span");
+                                score.className = "rank-score";
+                                score.textContent = Number(entry.score || 0).toLocaleString();
+                                li.append(n, name, score);
+                                return li;
+                            }),
+                        );
+                    } catch (err) {
+                        showRanksMessage(
+                            "The leaderboard is offline right now. Your scores still save on this device.",
+                        );
+                    }
+                }
+
+                loadLeaderboard();
+
+                // ---------- Scroll reveal ----------
+                const reveals = document.querySelectorAll(".reveal");
+                if (!("IntersectionObserver" in window)) {
+                    reveals.forEach((el) => el.classList.add("visible"));
+                } else {
+                    const observer = new IntersectionObserver(
+                        (entries) => {
+                            entries.forEach((entry) => {
+                                if (entry.isIntersecting) {
+                                    entry.target.classList.add("visible");
+                                    observer.unobserve(entry.target);
+                                }
+                            });
+                        },
+                        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+                    );
+                    reveals.forEach((el) => observer.observe(el));
+                }
+            })();
         </script>
     </body>
 </html>
