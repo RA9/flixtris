@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { WebSocketServer } = require("ws");
+const crypto = require("crypto");
 const redis = require("redis");
 
 const PORT = process.env.PORT || 3001;
@@ -767,7 +768,25 @@ const server = http.createServer(async (req, res) => {
       res.end("Server Error");
       return;
     }
-    res.writeHead(200, { "Content-Type": contentType });
+    // Code and pages must revalidate on every load (cheap via ETag/304).
+    // Without an explicit header, Cloudflare and browsers cached JS/CSS for
+    // hours, so a deploy could pair new HTML with old scripts.
+    const etag = `"${crypto.createHash("sha1").update(data).digest("base64")}"`;
+    const revalidate = [".html", ".js", ".css", ".json"].includes(ext);
+    const headers = {
+      "Content-Type": contentType,
+      ETag: etag,
+      "Cache-Control": revalidate ? "no-cache" : "public, max-age=86400",
+    };
+    // The service worker script must never be served from a cache.
+    if (pathname === "/sw.js") headers["Cache-Control"] = "no-store";
+
+    if (req.headers["if-none-match"] === etag) {
+      res.writeHead(304, headers);
+      res.end();
+      return;
+    }
+    res.writeHead(200, headers);
     res.end(data);
   });
 });

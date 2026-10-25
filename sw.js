@@ -1,5 +1,5 @@
 // sw.js - Service Worker for PWA and caching
-const CACHE_VERSION = "v2.2.1";
+const CACHE_VERSION = "v2.2.2";
 const CACHE_NAME = `flixtris-${CACHE_VERSION}`;
 
 // Files to cache
@@ -36,7 +36,11 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Caching static assets");
-      return cache.addAll(STATIC_ASSETS);
+      // cache: "reload" skips the HTTP cache, so a new version never
+      // precaches stale copies of the files it is meant to replace.
+      return cache.addAll(
+        STATIC_ASSETS.map((url) => new Request(url, { cache: "reload" })),
+      );
     }),
   );
 
@@ -65,33 +69,55 @@ self.addEventListener("activate", (event) => {
   return self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch strategy:
+// - Only same-origin GETs are handled; /api and the WebSocket never are.
+// - Pages, scripts, styles and JSON: network first, so a deploy shows up on
+//   the next load; the cache is the offline fallback.
+// - Everything else (icons, images): cache first.
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // Return cached response if found
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  const { request } = event;
+  if (request.method !== "GET") return;
 
-      // Otherwise fetch from network
-      return fetch(event.request).then((response) => {
-        // Don't cache non-successful responses
-        if (!response || response.status !== 200 || response.type !== "basic") {
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith("/api/") || url.pathname === "/health") return;
+
+  const isCode =
+    request.mode === "navigate" ||
+    /\.(html|js|css|json)$/.test(url.pathname) ||
+    url.pathname === "/";
+
+  if (isCode) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.ok && response.type === "basic") {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
-        }
+        })
+        .catch(() =>
+          caches
+            .match(request, { ignoreSearch: true })
+            .then((cached) => cached || caches.match("/index.html")),
+        ),
+    );
+    return;
+  }
 
-        // Clone the response
-        const responseToCache = response.clone();
-
-        // Cache the new response
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-
-        return response;
-      });
-    }),
+  event.respondWith(
+    caches.match(request).then(
+      (cached) =>
+        cached ||
+        fetch(request).then((response) => {
+          if (response && response.ok && response.type === "basic") {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        }),
+    ),
   );
 });
 

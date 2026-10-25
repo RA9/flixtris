@@ -20,6 +20,8 @@ COPY js/ ../public/js/
 COPY css/ ../public/css/
 COPY icons/ ../public/icons/
 COPY manifest.json ../public/
+COPY sw.js ../public/
+COPY version.json ../public/
 
 # Railway sets PORT automatically
 ENV NODE_ENV=production
