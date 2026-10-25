@@ -1035,7 +1035,8 @@
       state.rngSeed = state.seed;
     } else {
       state.seed = null;
-      state.rngSeed = `R-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+      // Short enough to read in a share link.
+      state.rngSeed = `FLX-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
     }
     state.rng = seededRandom(state.rngSeed);
 

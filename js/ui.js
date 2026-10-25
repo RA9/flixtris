@@ -1582,6 +1582,11 @@
     if (state.mode === "daily" && state.seed) {
       seedContainer.style.display = "block";
       document.getElementById("seed-display").textContent = state.seed;
+      // Shared challenge seeds also run in daily mode; only today's is "daily".
+      const d = new Date();
+      const today = `FLX-${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      document.getElementById("seed-label").textContent =
+        state.seed === today ? "DAILY SEED" : "SEED";
     } else {
       seedContainer.style.display = "none";
     }
@@ -1609,20 +1614,27 @@
     }
   }
 
+  // Every game is seeded, so any run can be shared as a challenge: the
+  // link deals the friend the exact same pieces.
   function shareScore() {
     const state = getState();
-    const shareUrl = `${window.location.origin}${window.location.pathname}?seed=${encodeURIComponent(state.seed)}`;
-    const text = `Flixtris Challenge\n${state.seed}\nScore: ${state.score} | Level: ${state.level} | Lines: ${state.lines}\n\nCan you beat my score?\n${shareUrl}`;
+    const seed = state.seed || state.rngSeed;
+    const score = state.score.toLocaleString();
+    const shareUrl = seed
+      ? `${window.location.origin}${window.location.pathname}?seed=${encodeURIComponent(seed)}`
+      : `${window.location.origin}/`;
+    const summary = `I scored ${score} in Flixtris (level ${state.level}, ${state.lines} lines).`;
+    const ask = seed
+      ? "Same pieces, your turn. Can you beat me?"
+      : "Can you beat me?";
+    const text = `${summary}\n${ask}\n${shareUrl}`;
 
+    // A dismissed share sheet rejects with AbortError: that is not a failure.
     if (navigator.share) {
       navigator
-        .share({
-          title: "Flixtris Challenge",
-          text: `I scored ${state.score} on ${state.seed}. Can you beat me?`,
-          url: shareUrl,
-        })
-        .catch(() => {
-          copyToClipboard(text);
+        .share({ title: "Flixtris", text: `${summary} ${ask}`, url: shareUrl })
+        .catch((err) => {
+          if (err && err.name !== "AbortError") copyToClipboard(text);
         });
     } else {
       copyToClipboard(text);
@@ -1630,14 +1642,38 @@
   }
 
   function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById("shareBtn");
-      const originalText = btn.textContent;
-      btn.textContent = "Copied!";
-      setTimeout(() => {
-        btn.textContent = originalText;
+    const btn = document.getElementById("shareBtn");
+    const flash = (label) => {
+      btn.textContent = label;
+      clearTimeout(btn._flash);
+      btn._flash = setTimeout(() => {
+        btn.textContent = "Share";
       }, 2000);
-    });
+    };
+    const fallback = () => {
+      // Clipboard API needs a secure context; fall back to a hidden textarea.
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (e) {}
+      ta.remove();
+      flash(ok ? "Link copied!" : "Couldn't copy");
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => flash("Link copied!"))
+        .catch(fallback);
+    } else {
+      fallback();
+    }
   }
 
   // Audio enable screen - first interaction enables audio
@@ -1697,14 +1733,28 @@
     const isFirstVisit = await checkFirstVisit();
     if (isFirstVisit) {
       showNameOverlay(true, async () => {
+        if (startPendingChallenge()) return;
         showScreen("menu");
         // Show tutorial for first-time users
         await checkShowTutorial();
       });
-    } else {
+    } else if (!startPendingChallenge()) {
       // If player name is available, go directly to menu
       showScreen("menu");
     }
+  }
+
+  // A shared link (?seed=...) skips the menu and deals the sharer's pieces.
+  let pendingChallenge = null;
+  function startPendingChallenge() {
+    if (!pendingChallenge) return false;
+    const seed = pendingChallenge;
+    pendingChallenge = null;
+    const prompt = screens.splash.querySelector(".splash-prompt");
+    if (prompt) prompt.textContent = "Press any key or tap to start";
+    showScreen("game");
+    api.game.startGameWithSeed(seed);
+    return true;
   }
 
   screens.splash.addEventListener("click", handleSplashInteraction);
@@ -4388,22 +4438,12 @@
 
   const urlSeed = checkUrlSeed();
 
-  // If URL has seed, show challenge mode after audio enable
+  // If URL has seed, the splash announces the challenge and starts it.
   if (urlSeed) {
-    const originalAudioHandler = handleAudioEnable;
-    handleAudioEnable = function () {
-      if (api.sound && api.sound.resumeContext) {
-        api.sound.resumeContext();
-      }
-      // Skip splash, go straight to game with seed
-      showScreen("game");
-      api.game.startGameWithSeed(urlSeed);
-    };
-
-    // Update the audio screen prompt
-    const audioPrompt = screens.audio.querySelector(".splash-prompt");
-    if (audioPrompt) {
-      audioPrompt.textContent = `Challenge: ${urlSeed} - Tap to play!`;
+    pendingChallenge = urlSeed;
+    const prompt = screens.splash.querySelector(".splash-prompt");
+    if (prompt) {
+      prompt.textContent = `Challenge ${urlSeed} · press any key or tap to play`;
     }
   }
 
