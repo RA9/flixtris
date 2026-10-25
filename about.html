@@ -8,7 +8,7 @@
             name="description"
             content="Why Flixtris exists: the story behind the open-source block puzzle game, its mission, core values, and Wall of Fame."
         />
-        <meta name="theme-color" content="#080b12" />
+        <meta name="theme-color" content="#07090f" />
         <link rel="manifest" href="manifest.json" />
         <link
             rel="icon"
@@ -24,43 +24,53 @@
     <body>
         <a class="skip-link" href="#main">Skip to content</a>
 
-        <div class="falling-blocks" id="fallingBlocks" aria-hidden="true"></div>
-
-        <header class="site-nav">
+        <header class="nav">
             <div class="shell">
                 <a class="brand" href="landing.html">
-                    <span class="brand-mark" aria-hidden="true"></span>
+                    <span class="brand-mark" aria-hidden="true"
+                        ><i></i><i></i><i></i><i></i
+                    ></span>
                     FLIXTRIS
                 </a>
                 <nav aria-label="Primary">
                     <ul class="nav-links">
-                        <li><a href="landing.html">Home</a></li>
-                        <li><a href="#story">Our Story</a></li>
-                        <li><a href="#values">Values</a></li>
+                        <li><a href="landing.html#modes">Modes</a></li>
+                        <li><a href="landing.html#daily">Daily</a></li>
+                        <li><a href="landing.html#rules">Rules</a></li>
+                        <li>
+                            <a href="landing.html#leaderboard">Leaderboard</a>
+                        </li>
                         <li>
                             <a href="about.html" aria-current="page">About</a>
                         </li>
                     </ul>
                 </nav>
-                <a href="index.html" class="btn btn-primary btn-sm">Play Now</a>
+                <a href="index.html" class="btn btn-primary btn-sm">Play</a>
             </div>
         </header>
 
-        <main class="page-main" id="main">
-            <section class="hero">
+        <main id="main">
+            <section class="hero hero-page">
                 <div class="shell">
-                    <span class="eyebrow">About</span>
-                    <h1 class="section-title">Why Flixtris Exists</h1>
-                    <p class="hero-sub">
-                        A story of passion, purpose, and play.
-                    </p>
+                    <div>
+                        <p class="kicker">About · Player one's notes</p>
+                        <h1 class="hero-title">
+                            <span>Why Flixtris</span>
+                            <span class="c-cyan">exists.</span>
+                        </h1>
+                        <p class="hero-sub">
+                            A story of passion, purpose, and play.
+                        </p>
+                    </div>
                 </div>
             </section>
 
-            <section class="section section-alt">
-                <div class="shell">
-                    <div class="story-layout">
-                        <div class="prose fade-in">
+            <!-- Note + story, beside the maker card -->
+            <section class="section" id="story">
+                <div class="shell story">
+                    <div class="prose">
+                        <p class="section-index"><b>01</b> / A NOTE</p>
+                        <div class="letter reveal">
                             <p>
                                 Hello, my beautiful Flixtristers! I am beyond
                                 thrilled that you made it past the game and have
@@ -71,7 +81,6 @@
                                 well-thought-out and engaging, designed to give
                                 you a seamless experience.
                             </p>
-
                             <p>
                                 I had two special people in mind when making
                                 this — you guys are the real G's. To Tangaye and
@@ -85,152 +94,249 @@
                                 whatever they want (as long as it aligns with
                                 our core values).
                             </p>
-
-                            <h2 id="story">The Story of Flixtris</h2>
-                            <p>
-                                Flixtris began with a deep appreciation for the
-                                timeless brilliance of classic block-puzzle
-                                games. The simplicity, the pressure, and the
-                                quiet satisfaction of fitting pieces together
-                                inspired more than just nostalgia — it sparked a
-                                vision.
+                            <p class="signature">
+                                — <b>Carlos S. Nah</b> · alias RA9
                             </p>
+                        </div>
 
-                            <p>
-                                Built by me (Carlos S. Nah, alias RA9), someone
-                                who grew up loving puzzles and later fell in
-                                love with modern web technologies, Flixtris
-                                started as a small experiment. The question was
-                                simple:
-                                <strong>
-                                    What if a classic game could feel modern,
-                                    social, and accessible to everyone?
-                                </strong>
-                            </p>
+                        <p class="section-index" style="margin-top: clamp(3rem, 8vw, 4.5rem)">
+                            <b>02</b> / THE STORY
+                        </p>
+                        <h2 class="section-title" style="margin-bottom: 1.5rem">
+                            The Story of Flixtris
+                        </h2>
+                        <p>
+                            Flixtris began with a deep appreciation for the
+                            timeless brilliance of classic block-puzzle games.
+                            The simplicity, the pressure, and the quiet
+                            satisfaction of fitting pieces together inspired
+                            more than just nostalgia — it sparked a vision.
+                        </p>
+                        <p>
+                            Built by me (Carlos S. Nah, alias RA9), someone who
+                            grew up loving puzzles and later fell in love with
+                            modern web technologies, Flixtris started as a small
+                            experiment. The question was simple:
+                        </p>
+                        <p class="big-quote">
+                            What if a classic game could feel modern, social,
+                            and accessible to everyone?
+                        </p>
+                        <p>
+                            That experiment grew into a fully playable,
+                            browser-based multiplayer experience — crafted line
+                            by line, tested relentlessly, and refined with care.
+                            Every feature reflects my belief that great games
+                            don't need bloated installs, paywalls, or barriers.
+                        </p>
 
+                        <div class="mission reveal">
+                            <h3 class="panel-title">Our mission</h3>
                             <p>
-                                That experiment grew into a fully playable,
-                                browser-based multiplayer experience — crafted
-                                line by line, tested relentlessly, and refined
-                                with care. Every feature reflects my belief that
-                                great games don't need bloated installs,
-                                paywalls, or barriers.
-                            </p>
-
-                            <p>
-                                <strong>Our mission is simple:</strong> to
-                                create an engaging, accessible block-puzzle game
-                                that works everywhere, brings people together,
-                                and stays true to the joy that made us fall in
-                                love with gaming in the first place. Flixtris is
-                                open-source and community-driven — an open
-                                invitation to players and developers alike.
-                                Whether you're here to compete, relax, or
+                                To create an engaging, accessible block-puzzle
+                                game that works everywhere, brings people
+                                together, and stays true to the joy that made us
+                                fall in love with gaming in the first place.
+                                Flixtris is open-source and community-driven —
+                                an open invitation to players and developers
+                                alike. Whether you're here to compete, relax, or
                                 contribute, you're part of the story.
                             </p>
+                        </div>
+                    </div>
 
-                            <h2 id="values">Our Core Values</h2>
-                            <p>
-                                To keep the Flixtris community a fun and
-                                welcoming space for everyone, we ask our players
-                                and contributors to uphold these principles:
-                            </p>
+                    <aside class="maker" aria-label="About the creator">
+                        <img
+                            src="icons/icon-512.png"
+                            alt="The Flixtris app icon"
+                            width="96"
+                            height="96"
+                        />
+                        <p class="maker-name">Carlos S. Nah</p>
+                        <p class="maker-role">CREATOR · ALIAS RA9</p>
+                        <dl>
+                            <div>
+                                <dt>LICENSE</dt>
+                                <dd>Open source</dd>
+                            </div>
+                            <div>
+                                <dt>BUILT WITH</dt>
+                                <dd>Plain JavaScript</dd>
+                            </div>
+                            <div>
+                                <dt>PRICE</dt>
+                                <dd>Free</dd>
+                            </div>
+                        </dl>
+                        <a href="index.html" class="btn btn-primary"
+                            >Play Flixtris</a
+                        >
+                    </aside>
+                </div>
+            </section>
 
-                            <ul class="values-grid">
-                                <li style="--vc: #22d3ee">
-                                    <strong>Inclusivity &amp; Respect</strong>
+            <!-- Values -->
+            <section class="section" id="values">
+                <div class="shell">
+                    <div class="section-head">
+                        <p class="section-index"><b>03</b> / VALUES</p>
+                        <h2 class="section-title">Our Core Values</h2>
+                        <p class="section-sub">
+                            To keep the Flixtris community a fun and welcoming
+                            space for everyone, we ask our players and
+                            contributors to uphold these principles.
+                        </p>
+                    </div>
+
+                    <ul class="values reveal">
+                        <li class="mode">
+                            <span class="piece" data-shape="1111 0000" style="--pc: var(--cyan)"></span>
+                            <div>
+                                <h3>Inclusivity &amp; Respect</h3>
+                                <p>
                                     We welcome players from all walks of life.
                                     We compete hard, but we remain kind. No hate
                                     speech, harassment, or bullying is
                                     tolerated.
-                                </li>
-                                <li style="--vc: #4ade80">
-                                    <strong>Spirit of Play</strong>
+                                </p>
+                            </div>
+                        </li>
+                        <li class="mode">
+                            <span class="piece" data-shape="0110 1100" style="--pc: var(--green)"></span>
+                            <div>
+                                <h3>Spirit of Play</h3>
+                                <p>
                                     We play for the joy of the game. Whether you
                                     win or lose, the goal is to enjoy the
                                     challenge and the flow.
-                                </li>
-                                <li style="--vc: #a78bfa">
-                                    <strong>Transparency &amp; Openness</strong>
+                                </p>
+                            </div>
+                        </li>
+                        <li class="mode">
+                            <span class="piece" data-shape="0100 1110" style="--pc: var(--purple)"></span>
+                            <div>
+                                <h3>Transparency &amp; Openness</h3>
+                                <p>
                                     As an open-source project, we value honesty
                                     and collaboration. We grow by sharing ideas
                                     and helping one another improve.
-                                </li>
-                                <li style="--vc: #facc15">
-                                    <strong>Integrity</strong>
+                                </p>
+                            </div>
+                        </li>
+                        <li class="mode">
+                            <span class="piece" data-shape="0110 0110" style="--pc: var(--yellow)"></span>
+                            <div>
+                                <h3>Integrity</h3>
+                                <p>
                                     We celebrate skill and hard work. Dominating
                                     the leaderboard feels better when it's done
                                     through fair play and dedication.
-                                </li>
-                                <li style="--vc: #fb923c">
-                                    <strong>Community First</strong>
+                                </p>
+                            </div>
+                        </li>
+                        <li class="mode">
+                            <span class="piece" data-shape="0010 1110" style="--pc: var(--orange)"></span>
+                            <div>
+                                <h3>Community First</h3>
+                                <p>
                                     Flixtris exists because of you. We listen to
                                     feedback and build features that make the
                                     experience better for the whole
                                     "Flixtrister" family.
-                                </li>
-                            </ul>
-
-                            <h2 id="wall-of-fame">🏆 Wall of Fame</h2>
-                            <p>
-                                Going forward, the first person to unlock Level
-                                10 and above will have a section below as a wall
-                                of fame (their rank, level, full name/username,
-                                and message or word of wisdom).
-                            </p>
-
-                            <blockquote class="pull-quote">
-                                "Congratulations, Legend! You've reached Level
-                                10. You now have a permanent spot on our wall of
-                                fame. Please submit a message (up to 100
-                                characters) that reflects our values of respect,
-                                joy, or community spirit to be displayed next to
-                                your name."
-                            </blockquote>
-
-                            <div class="note-panel">
-                                No legends yet… Will you be the first?
+                                </p>
                             </div>
+                        </li>
+                        <li class="mode">
+                            <span class="piece" data-shape="1000 1110" style="--pc: var(--blue)"></span>
+                            <div>
+                                <h3>Build It With Us</h3>
+                                <p>
+                                    Flixtris is open source. Ideas, issues and
+                                    pull requests are all welcome on
+                                    <a href="https://github.com/ra9" target="_blank" rel="noopener">GitHub</a>.
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
 
-                            <p style="margin-top: 2rem">
-                                <a
-                                    href="https://github.com/ra9"
-                                    target="_blank"
-                                    rel="noopener"
-                                    class="btn btn-ghost"
-                                >
-                                    ⭐ Open Source on GitHub
-                                </a>
-                            </p>
-                        </div>
+            <!-- Wall of Fame -->
+            <section class="section" id="wall-of-fame">
+                <div class="shell fame">
+                    <div>
+                        <p class="section-index"><b>04</b> / WALL OF FAME</p>
+                        <h2 class="section-title">Wall of Fame</h2>
+                        <p class="section-sub">
+                            Going forward, the first person to unlock Level 10
+                            and above will have a section here as a wall of
+                            fame: their rank, level, full name or username, and
+                            a message or word of wisdom.
+                        </p>
+                        <span class="fame-badge">UNLOCKS AT LEVEL 10</span>
+                    </div>
 
-                        <aside class="story-aside fade-in">
-                            <img
-                                src="icons/icon-512.png"
-                                alt="The Flixtris app icon"
-                                width="140"
-                                height="140"
-                            />
-                            <p class="aside-name">Carlos S. Nah</p>
-                            <p class="aside-role">Creator · alias RA9</p>
-                            <p style="margin-top: 1.25rem">
-                                <a
-                                    href="index.html"
-                                    class="btn btn-primary btn-sm"
+                    <div class="reveal">
+                        <ol class="ranks">
+                            <li class="is-open">
+                                <span class="rank-n">01</span>
+                                <span class="rank-name"
+                                    >No legends yet… Will you be the first?</span
                                 >
-                                    Play Flixtris
-                                </a>
-                            </p>
-                        </aside>
+                                <span class="rank-score">LV 10+</span>
+                            </li>
+                            <li class="is-open">
+                                <span class="rank-n">02</span>
+                                <span class="rank-name">Open</span>
+                                <span class="rank-score">—</span>
+                            </li>
+                            <li class="is-open">
+                                <span class="rank-n">03</span>
+                                <span class="rank-name">Open</span>
+                                <span class="rank-score">—</span>
+                            </li>
+                        </ol>
+                        <blockquote class="fame-note">
+                            <b>WHAT LEGENDS HEAR</b>
+                            "Congratulations, Legend! You've reached Level 10.
+                            You now have a permanent spot on our wall of fame.
+                            Please submit a message (up to 100 characters) that
+                            reflects our values of respect, joy, or community
+                            spirit to be displayed next to your name."
+                        </blockquote>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Closing CTA -->
+            <section class="finale">
+                <div class="shell">
+                    <h2>You're part of the story.</h2>
+                    <p>
+                        Play a run, share a seed, or send a pull request.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="index.html" class="btn btn-primary btn-lg"
+                            >Play Flixtris</a
+                        >
+                        <a
+                            href="https://github.com/ra9"
+                            target="_blank"
+                            rel="noopener"
+                            class="btn btn-ghost btn-lg"
+                            >Open source on GitHub</a
+                        >
                     </div>
                 </div>
             </section>
         </main>
 
-        <footer class="site-footer">
+        <footer class="footer">
             <div class="shell">
                 <a class="brand" href="landing.html">
-                    <span class="brand-mark" aria-hidden="true"></span>
+                    <span class="brand-mark" aria-hidden="true"
+                        ><i></i><i></i><i></i><i></i
+                    ></span>
                     FLIXTRIS
                 </a>
                 <nav class="footer-links" aria-label="Footer">
@@ -239,66 +345,16 @@
                     <a href="#story">Our Story</a>
                     <a href="#values">Values</a>
                     <a href="#wall-of-fame">Wall of Fame</a>
-                    <a href="https://github.com/ra9" target="_blank" rel="noopener">
-                        GitHub
-                    </a>
+                    <a href="https://github.com/ra9" target="_blank" rel="noopener"
+                        >GitHub</a
+                    >
                 </nav>
                 <p class="footer-copy">
-                    © 2024 Flixtris. Made with ♥ for puzzle lovers everywhere. ·
-                    Version 1.0
+                    Flixtris · Open source · Made for puzzle lovers everywhere.
                 </p>
             </div>
         </footer>
 
-        <script>
-            function createFallingBlocks() {
-                const container = document.getElementById("fallingBlocks");
-                if (!container) return;
-                const colors = [
-                    "#22d3ee",
-                    "#a78bfa",
-                    "#f43f5e",
-                    "#4ade80",
-                    "#facc15",
-                    "#fb923c",
-                    "#3b82f6",
-                ];
-
-                for (let i = 0; i < 18; i++) {
-                    const block = document.createElement("div");
-                    block.className = "block";
-                    block.style.left = Math.random() * 94 + "%";
-                    block.style.backgroundColor =
-                        colors[Math.floor(Math.random() * colors.length)];
-                    block.style.animationDuration =
-                        10 + Math.random() * 20 + "s";
-                    block.style.animationDelay = Math.random() * 20 + "s";
-                    container.appendChild(block);
-                }
-            }
-
-            function handleScrollAnimations() {
-                const elements = document.querySelectorAll(".fade-in");
-                if (!("IntersectionObserver" in window)) {
-                    elements.forEach((el) => el.classList.add("visible"));
-                    return;
-                }
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        entries.forEach((entry) => {
-                            if (entry.isIntersecting) {
-                                entry.target.classList.add("visible");
-                                observer.unobserve(entry.target);
-                            }
-                        });
-                    },
-                    { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
-                );
-                elements.forEach((el) => observer.observe(el));
-            }
-
-            createFallingBlocks();
-            handleScrollAnimations();
-        </script>
+        <script src="js/site.js"></script>
     </body>
 </html>

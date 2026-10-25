@@ -16,7 +16,7 @@
             sizes="192x192"
             href="icons/icon-192.png"
         />
-        <link rel="stylesheet" href="css/landing.css" />
+        <link rel="stylesheet" href="css/site.css" />
         <script>
             // Mark JS as available before first paint so the reveal styles
             // apply without a flash — and never apply if JS is dead.
@@ -922,16 +922,6 @@
                     sync();
                 }
 
-                // ---------- Decorative glyphs ----------
-                document.querySelectorAll(".piece[data-shape]").forEach((el) => {
-                    el.setAttribute("aria-hidden", "true");
-                    for (const ch of el.dataset.shape.replace(/\s/g, "")) {
-                        const i = document.createElement("i");
-                        if (ch !== "1") i.style.background = "transparent";
-                        el.appendChild(i);
-                    }
-                });
-
                 // Closing stack: three nearly-full rows with the Tetris well
                 // left open in the last column.
                 const stack = document.getElementById("finaleStack");
@@ -1039,26 +1029,8 @@
                 }
 
                 loadLeaderboard();
-
-                // ---------- Scroll reveal ----------
-                const reveals = document.querySelectorAll(".reveal");
-                if (!("IntersectionObserver" in window)) {
-                    reveals.forEach((el) => el.classList.add("visible"));
-                } else {
-                    const observer = new IntersectionObserver(
-                        (entries) => {
-                            entries.forEach((entry) => {
-                                if (entry.isIntersecting) {
-                                    entry.target.classList.add("visible");
-                                    observer.unobserve(entry.target);
-                                }
-                            });
-                        },
-                        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
-                    );
-                    reveals.forEach((el) => observer.observe(el));
-                }
             })();
         </script>
+        <script src="js/site.js"></script>
     </body>
 </html>
