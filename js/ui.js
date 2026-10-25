@@ -2785,7 +2785,7 @@
   // Play a replay on the real game board, with a small bar to stop it.
   // When it ends (or is stopped) the player lands back on the replay list.
   function playReplay(replay, label) {
-    if (!api.game?.startReplayPlayback) return;
+    if (!api.game?.canPlayReplay?.(replay)) return;
     document.getElementById("replayViewer")?.classList.remove("active");
     hideOpponentBoard();
     screens.game.classList.remove("battle");
@@ -2858,6 +2858,19 @@
             <button class="replay-delete">Delete</button>
           </div>
         `;
+
+        // Replays from before full recording only kept key presses, which
+        // can't rebuild the game. Say so instead of playing nonsense.
+        if (!api.game?.canPlayReplay?.(r)) {
+          const play = item.querySelector(".replay-play");
+          play.disabled = true;
+          play.title = "Not playable";
+          const note = document.createElement("p");
+          note.className = "replay-note";
+          note.textContent =
+            "This game was recorded before replays were fully tracked, so it can't be played back.";
+          item.querySelector(".replay-actions").before(note);
+        }
 
         const playBtn = item.querySelector(".replay-play");
         const delBtn = item.querySelector(".replay-delete");

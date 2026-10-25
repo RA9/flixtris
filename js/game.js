@@ -609,15 +609,16 @@
       // Show action indicator
       showActionIndicator(linesCleared, state.combo, wasTSpin, isBackToBack);
 
-      // Send garbage to opponent in multiplayer
+      // Send garbage to opponent in multiplayer (never from a replay)
       const mp = window.Flixtris.api.multiplayer;
-      if (mp && mp.isConnected()) {
+      if (!state.isReplay && mp && mp.isConnected()) {
         mp.sendGarbage(linesCleared);
       }
 
       // Send garbage to bot in bot battle mode
       const bot = window.Flixtris.api.bot;
       if (
+        !state.isReplay &&
         bot &&
         bot.getBotState &&
         bot.getBotState().active &&
@@ -900,8 +901,17 @@
   function gameLoop(timestamp) {
     if (!state.running) return;
 
+    // Game clock: time spent unpaused. Replay events are stamped with it.
+    // (A second loop in the same frame adds nothing.)
+    if (state.lastFrame != null && !state.paused) {
+      state.clock += Math.max(0, timestamp - state.lastFrame);
+    }
+    state.lastFrame = timestamp;
+
     if (!state.paused) {
-      if (timestamp - state.lastDrop > getDropSpeed()) {
+      // A replay applies its recorded gravity steps instead of live ones.
+      if (!state.isReplay && timestamp - state.lastDrop > getDropSpeed()) {
+        recordEvent("G");
         if (!moveDown()) {
           lockPiece();
         }
@@ -910,7 +920,10 @@
       render();
 
       // Send multiplayer updates every 100ms for smooth opponent view
-      if (timestamp - state.lastMultiplayerUpdate > 100) {
+      if (
+        !state.isReplay &&
+        timestamp - state.lastMultiplayerUpdate > 100
+      ) {
         sendMultiplayerUpdate();
         state.lastMultiplayerUpdate = timestamp;
       }
@@ -919,9 +932,43 @@
     requestAnimationFrame(gameLoop);
   }
 
+  // Every move goes through here so a replay can re-run the exact game:
+  // L/R move, D soft drop, U rotate, H hard drop, C hold, G gravity step.
+  const ACTIONS = {
+    L: moveLeft,
+    R: moveRight,
+    D: moveDown,
+    U: tryRotate,
+    H: hardDrop,
+    C: holdPiece,
+  };
+  const KEY_ACTIONS = {
+    ArrowLeft: "L",
+    ArrowRight: "R",
+    ArrowDown: "D",
+    ArrowUp: "U",
+    " ": "H",
+    c: "C",
+    C: "C",
+  };
+
+  function recordEvent(a, extra) {
+    if (state.isReplay || !state.events) return;
+    state.events.push({ t: Math.round(state.clock), a, ...extra });
+    if (a !== "G" && a !== "X") state.actions = (state.actions || 0) + 1;
+  }
+
+  function doAction(a) {
+    if (!state.running || state.paused || state.isReplay) return;
+    // Record first: a hard drop can end the game, which saves the replay.
+    recordEvent(a);
+    ACTIONS[a]();
+    render();
+  }
+
   function handleKeyDown(e) {
-    // During replay playback only the replay's own (synthetic) inputs count.
-    if (state.isReplay && e.isTrusted) return;
+    // The viewer's keys must not steer a replay.
+    if (state.isReplay) return;
     if (!state.running) return;
 
     // Pause toggle (not allowed in hardcore or online play)
@@ -941,42 +988,19 @@
 
     if (state.paused) return;
 
-    switch (e.key) {
-      case "ArrowLeft":
-        moveLeft();
-        e.preventDefault();
-        break;
-      case "ArrowRight":
-        moveRight();
-        e.preventDefault();
-        break;
-      case "ArrowDown":
-        moveDown();
-        e.preventDefault();
-        break;
-      case "ArrowUp":
-        tryRotate();
-        e.preventDefault();
-        break;
-      case " ":
-        hardDrop();
-        e.preventDefault();
-        break;
-      case "c":
-      case "C":
-        holdPiece();
-        e.preventDefault();
-        break;
-    }
-    // Telemetry: record input for replay (Phase 2)
-    if (state.inputs) {
-      state.inputs.push({
-        key: e.key,
-        timestamp: performance.now(),
-      });
-      state.actions = (state.actions || 0) + 1;
-    }
-    render();
+    const a = KEY_ACTIONS[e.key];
+    if (!a) return;
+    e.preventDefault();
+    doAction(a);
+  }
+
+  // Shared reset for every new game (recording starts here too).
+  function resetRecording() {
+    state.events = [];
+    state.actions = 0;
+    state.clock = 0;
+    state.lastFrame = null;
+    state.startTime = performance.now();
   }
 
   function startGame(mode = "classic") {
@@ -1002,18 +1026,18 @@
     state.lastClearWasTetris = false;
     state.backToBack = false;
     state.lastMoveWasRotation = false;
-    // Telemetry & replay (Phase 2)
-    state.inputs = [];
-    state.actions = 0;
-    state.startTime = performance.now();
+    resetRecording();
 
+    // Every game draws from a seeded generator so its replay gets the
+    // same pieces; only daily games show their seed.
     if (mode === "daily") {
       state.seed = generateDailySeed();
-      state.rng = seededRandom(state.seed);
+      state.rngSeed = state.seed;
     } else {
       state.seed = null;
-      state.rng = Math.random;
+      state.rngSeed = `R-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
     }
+    state.rng = seededRandom(state.rngSeed);
 
     initCanvas();
     initBoard();
@@ -1048,7 +1072,9 @@
     state.backToBack = false;
     state.lastMoveWasRotation = false;
     state.seed = customSeed;
+    state.rngSeed = customSeed;
     state.rng = seededRandom(customSeed);
+    resetRecording();
 
     initCanvas();
     initBoard();
@@ -1096,7 +1122,7 @@
     const endTime = performance.now();
     const durationMs = Math.max(0, endTime - (state.startTime || endTime));
     const minutes = durationMs > 0 ? durationMs / 60000 : 0;
-    const actions = state.actions || (state.inputs ? state.inputs.length : 0);
+    const actions = state.actions || 0;
     const apm = minutes > 0 ? Math.round(actions / minutes) : actions;
     const lpm = minutes > 0 ? Math.round(state.lines / minutes) : state.lines;
 
@@ -1143,10 +1169,13 @@
 
     if (window.Flixtris.api?.db?.addReplay) {
       window.Flixtris.api.db.addReplay({
+        version: REPLAY_VERSION,
         mode: state.mode,
         seed: state.seed,
-        inputs: state.inputs || [],
-        durationMs,
+        rngSeed: state.rngSeed,
+        startLevel: state.startLevel || 1,
+        events: state.events || [],
+        durationMs: Math.round(state.clock || durationMs),
         score: state.score,
         level: state.level,
         lines: state.lines,
@@ -1166,67 +1195,77 @@
   document.addEventListener("keydown", handleKeyDown);
   window.addEventListener("resize", resizeCanvas);
 
-  // Replay playback runner (basic): replays input timeline by invoking key handlers
+  // Replay playback. A replay is the seed plus every recorded event (moves,
+  // gravity steps, garbage) stamped with the game clock, so re-applying the
+  // events in order rebuilds the game exactly. Replays saved before this
+  // format only kept key presses, which can't be replayed faithfully.
+  const REPLAY_VERSION = 2;
   let replayTimer = null;
   let replayIndex = 0;
-  let replayInputs = null;
-  let replayStartTs = 0;
+  let replayEvents = null;
   let replayOnEnd = null;
   let replayRun = 0;
 
-  function startReplayPlayback(replay, { onEnd } = {}) {
-    // replay: { inputs: [{key, timestamp}, ...], seed, mode }
-    stopReplayPlayback();
-    if (!replay || !Array.isArray(replay.inputs) || replay.inputs.length === 0)
-      return;
+  function canPlayReplay(replay) {
+    return (
+      !!replay &&
+      replay.version === REPLAY_VERSION &&
+      !!replay.rngSeed &&
+      Array.isArray(replay.events) &&
+      replay.events.length > 0
+    );
+  }
 
-    // Start a fresh game with the same seed/mode if provided
-    const mode = replay.mode || "classic";
-    if (replay.seed) {
-      startGameWithSeed(replay.seed, 1, mode);
-    } else {
-      startGame(mode);
+  function applyReplayEvent(ev) {
+    if (ev.a === "G") {
+      if (!moveDown()) lockPiece();
+    } else if (ev.a === "X") {
+      addGarbageLines(ev.gaps.length, ev.gaps);
+    } else if (ACTIONS[ev.a]) {
+      ACTIONS[ev.a]();
     }
+  }
+
+  function startReplayPlayback(replay, { onEnd } = {}) {
+    stopReplayPlayback();
+    if (!canPlayReplay(replay)) return false;
+
+    startGameWithSeed(replay.rngSeed, replay.startLevel || 1, replay.mode);
+    state.seed = replay.seed || null;
     state.isReplay = true;
     replayOnEnd = onEnd || null;
     const run = ++replayRun;
 
-    replayInputs = replay.inputs.slice();
+    replayEvents = replay.events;
     replayIndex = 0;
-    replayStartTs = replayInputs[0].timestamp;
 
     function tick() {
-      if (!replayInputs || replayIndex >= replayInputs.length) {
+      if (run !== replayRun) return;
+      // Apply everything due by the game clock (it stops while paused).
+      while (
+        state.running &&
+        replayIndex < replayEvents.length &&
+        replayEvents[replayIndex].t <= state.clock
+      ) {
+        applyReplayEvent(replayEvents[replayIndex]);
+        replayIndex++;
+      }
+      if (!state.isReplay) return; // topped out: gameOver ended it
+      if (replayIndex >= replayEvents.length) {
         stopReplayPlayback();
-        // Inputs are spent; give the last piece a moment, then end.
+        // Events are spent; hold the final board a moment, then end.
         setTimeout(() => {
           if (run === replayRun) finishReplay();
         }, 1500);
         return;
       }
-      const ev = replayInputs[replayIndex];
-      const elapsed =
-        performance.now() - (state.startTime || performance.now());
-      const target = ev.timestamp - replayStartTs;
-
-      if (elapsed >= target) {
-        // Simulate the key event by calling the handlers
-        // handleKeyDown calls preventDefault on move keys; without these
-        // stubs the first replayed move threw and playback silently halted.
-        const fakeEvent = {
-          key: ev.key,
-          preventDefault() {},
-          stopPropagation() {},
-        };
-        handleKeyDown(fakeEvent);
-        replayIndex++;
-      }
       replayTimer = requestAnimationFrame(tick);
     }
     replayTimer = requestAnimationFrame(tick);
+    return true;
   }
 
-  // End a replay (inputs spent, topped out, or stopped by the viewer).
+  // End a replay (events spent, topped out, or stopped by the viewer).
   function finishReplay() {
     if (!state.isReplay) return;
     stopReplayPlayback();
@@ -1242,7 +1281,7 @@
       cancelAnimationFrame(replayTimer);
       replayTimer = null;
     }
-    replayInputs = null;
+    replayEvents = null;
     replayIndex = 0;
   }
 
@@ -1252,21 +1291,26 @@
     gameOver,
     stop,
     resizeCanvas,
-    moveLeft,
-    moveRight,
-    moveDown,
-    rotate: tryRotate,
-    hardDrop,
-    holdPiece,
+    // Touch controls call these; they record like keys do.
+    moveLeft: () => doAction("L"),
+    moveRight: () => doAction("R"),
+    moveDown: () => doAction("D"),
+    rotate: () => doAction("U"),
+    hardDrop: () => doAction("H"),
+    holdPiece: () => doAction("C"),
     render,
     getBoardSnapshot,
     sendMultiplayerUpdate,
-    addGarbageLines,
+    // Live garbage only; a replay brings its own.
+    addGarbageLines: (count) => {
+      if (!state.isReplay) addGarbageLines(count);
+    },
     // Shared piece generator so the bot can draw the player's sequence.
     createRng: seededRandom,
     canPause,
     triggerHaptic,
     // Replay playback API
+    canPlayReplay,
     startReplayPlayback,
     stopReplayPlayback,
     endReplay: finishReplay,
@@ -1283,8 +1327,16 @@
   };
 
   // Add garbage lines to the bottom of the board
-  function addGarbageLines(count) {
+  function addGarbageLines(count, gaps) {
     if (count <= 0 || !state.running) return;
+
+    // Math.random, not state.rng: drawing from the piece generator here
+    // would desync the shared seed with a bot or seeded opponent. The gaps
+    // are recorded so a replay rebuilds the same rows.
+    gaps =
+      gaps ||
+      Array.from({ length: count }, () => Math.floor(Math.random() * COLS));
+    recordEvent("X", { gaps });
 
     const garbageColor = "#6b7280"; // Gray color for garbage
 
@@ -1294,10 +1346,7 @@
 
       // Create garbage row with one random gap
       const garbageRow = new Array(COLS).fill(garbageColor);
-      // Math.random, not state.rng: drawing from the piece generator here
-      // would desync the shared seed with a bot or seeded opponent.
-      const gapIndex = Math.floor(Math.random() * COLS);
-      garbageRow[gapIndex] = null;
+      garbageRow[gaps[i]] = null;
 
       // Add to bottom
       state.board.push(garbageRow);

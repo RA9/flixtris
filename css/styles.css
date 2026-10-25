@@ -2673,6 +2673,19 @@ textarea.form-input {
     color: var(--on-accent);
 }
 
+.replay-actions .replay-play:disabled {
+    background: transparent;
+    border-color: var(--line-strong);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.replay-note {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
 .replay-actions .replay-delete:hover {
     border-color: var(--red);
     color: var(--red);

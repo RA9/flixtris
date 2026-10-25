@@ -1,5 +1,5 @@
 // sw.js - Service Worker for PWA and caching
-const CACHE_VERSION = "v2.2.2";
+const CACHE_VERSION = "v2.2.3";
 const CACHE_NAME = `flixtris-${CACHE_VERSION}`;
 
 // Files to cache

@@ -154,90 +154,78 @@ vm.runInThisContext(gameJsCode, { filename: gameJsPath });
 const gameApi = window.Flixtris.api.game;
 const state = window.Flixtris.state;
 
-// --------- Prepare and run a short replay ----------
-/**
- * We'll create a deterministic replay input stream:
- * - Seeded game to ensure consistent piece sequence
- * - Inputs: move right x3, rotate, soft drop, hard drop
- */
-const baseTimestamp = performance.now();
-const replay = {
-  mode: "classic",
-  seed: "TEST-SEED-REPLAY-001",
-  inputs: [
-    { key: "ArrowRight", timestamp: baseTimestamp + 50 },
-    { key: "ArrowRight", timestamp: baseTimestamp + 100 },
-    { key: "ArrowRight", timestamp: baseTimestamp + 150 },
-    { key: "ArrowUp", timestamp: baseTimestamp + 200 }, // rotate
-    { key: "ArrowDown", timestamp: baseTimestamp + 250 }, // soft drop
-    { key: " ", timestamp: baseTimestamp + 400 }, // hard drop
-  ],
-  durationMs: 800,
-  score: 0,
-  level: 1,
-  lines: 0,
-};
-
-gameApi.startReplayPlayback(replay);
-
-// Let the playback run: wait slightly beyond replay duration
+// --------- Record a game, then replay it ----------
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function boardKey() {
+  return JSON.stringify(state.board);
+}
+
+let saved = null;
+window.Flixtris.api.db.addReplay = (r) => {
+  saved = r;
+};
+window.Flixtris.api.db.getDisplayName = async () => "tester";
+
 (async () => {
-  // Track initial snapshot for comparison
-  const beforeScore = state.score;
-  const beforeLines = state.lines;
-  const beforeLevel = state.level;
-
-  await sleep(replay.durationMs + 200);
-
-  // Stop playback to finalize test
-  gameApi.stopReplayPlayback();
-
-  // Assertions: After the replay, board state should have changed.
-  // Hard drop should lock a piece and clearLines may or may not occur depending on RNG,
-  // but score should be >= initial (NES scoring adds points on locks/clears).
-  const afterScore = state.score;
-  const afterLines = state.lines;
-  const afterLevel = state.level;
-
-  // Even if no lines cleared, hard drop causes a lock and line clear scoring logic runs on any clear.
+  // Old replays (key presses only) must be refused, not played.
+  const legacy = {
+    mode: "classic",
+    inputs: [{ key: " ", timestamp: 1 }],
+  };
+  assert(!gameApi.canPlayReplay(legacy), "Legacy replay should be unplayable");
   assert(
-    afterScore >= beforeScore,
-    `Score should not decrease (before=${beforeScore}, after=${afterScore})`,
+    gameApi.startReplayPlayback(legacy) === false,
+    "Legacy replay should not start",
   );
+  logPass("Legacy replays are refused");
 
-  // Level is derived from lines; either unchanged or increased.
-  assert(afterLevel >= 1, `Level should be at least 1 (after=${afterLevel})`);
+  // Play a classic (unseeded) game with moves, gravity and garbage.
+  gameApi.startGame("classic");
+  const moves = ["moveRight", "rotate", "hardDrop", "moveLeft", "moveLeft",
+    "hardDrop", "holdPiece", "moveRight", "moveDown", "hardDrop"];
+  for (const m of moves) {
+    gameApi[m]();
+    await sleep(120);
+  }
+  gameApi.addGarbageLines(2);
+  await sleep(900); // let gravity act
+  gameApi.rotate();
+  gameApi.hardDrop();
+  await sleep(50);
 
-  // Board should have at least some non-null cells after piece lock.
-  let filledCells = 0;
-  for (let r = 0; r < 20; r++) {
-    for (let c = 0; c < 10; c++) {
-      if (state.board[r][c] !== null) filledCells++;
-    }
-  }
-  // Fallback: if nothing filled (due to RNG/no clear), force a hard drop once and re-check
-  if (filledCells === 0 && window.Flixtris?.api?.game?.hardDrop) {
-    window.Flixtris.api.game.hardDrop();
-    filledCells = 0;
-    for (let r = 0; r < 20; r++) {
-      for (let c = 0; c < 10; c++) {
-        if (state.board[r][c] !== null) filledCells++;
-      }
-    }
-  }
+  await gameApi.gameOver();
+  assert(saved && saved.version === 2, "Replay should be saved in v2 format");
+  assert(gameApi.canPlayReplay(saved), "New replay should be playable");
   assert(
-    filledCells > 0,
-    "Board should contain filled cells after replay (after fallback hard drop)",
+    saved.events.some((e) => e.a === "G") &&
+      saved.events.some((e) => e.a === "X"),
+    "Replay should record gravity and garbage",
   );
+  const recordedBoard = boardKey();
+  const recordedScore = state.score;
+  logPass(`Recorded ${saved.events.length} events`);
 
-  logPass(
-    `Replay playback executed: score ${beforeScore} -> ${afterScore}, lines ${beforeLines} -> ${afterLines}, level ${beforeLevel} -> ${afterLevel}`,
+  let ended = false;
+  assert(
+    gameApi.startReplayPlayback(saved, { onEnd: () => (ended = true) }),
+    "Replay should start",
   );
-  logPass(`Filled cells on board after replay: ${filledCells}`);
+  // Real keys are ignored while it plays.
+  const before = saved.events.length;
+  gameApi.hardDrop();
+  assert(saved.events.length === before, "Replay must not record new events");
+
+  await sleep(saved.durationMs + 400);
+  assert(boardKey() === recordedBoard, "Replay should rebuild the same board");
+  assert(state.score === recordedScore, "Replay should reach the same score");
+  logPass("Replay rebuilt the recorded board and score");
+
+  await sleep(1700);
+  assert(ended, "Replay should end and call onEnd");
+  logPass("Replay ended cleanly");
 
   console.log("All replay tests passed.");
   process.exit(0);
