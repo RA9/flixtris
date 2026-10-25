@@ -1,22 +1,37 @@
 // bot.js - AI Bot for Flixtris
+//
+// The bot plays in real time like a person would: it waits a reaction
+// delay after each spawn, then rotates and shifts one input at a time,
+// and drops. Gravity and lock delay apply to it exactly as they do to
+// the player, it pauses when the player pauses, and it draws pieces from
+// the same seeded generator as the player so both get the same sequence.
 (() => {
   const api = window.Flixtris.api;
   const getState = () => window.Flixtris.state;
 
-  // Bot difficulty configurations
+  // Bot difficulty configurations.
+  //   thinkDelay  reaction time after a piece spawns (ms, ±25% jitter)
+  //   moveDelay   time between individual inputs (ms)
+  //   hardDrop    false = soft-drops the piece down instead
+  //   mistakeRate how noisy its placement judgement is
+  //   lookahead   whether it considers using hold
   const BOT_CONFIGS = {
     beginner: {
       name: "Beginner Bot",
       level: 1,
-      thinkDelay: 800, // ms between moves
-      mistakeRate: 0.3, // 30% chance of suboptimal move
-      lookahead: false, // doesn't consider next piece
+      thinkDelay: 900,
+      moveDelay: 170,
+      hardDrop: false,
+      mistakeRate: 0.3,
+      lookahead: false,
       description: "A slow, learning bot. Makes frequent mistakes.",
     },
     easy: {
       name: "Easy Bot",
       level: 3,
-      thinkDelay: 500,
+      thinkDelay: 750,
+      moveDelay: 130,
+      hardDrop: false,
       mistakeRate: 0.2,
       lookahead: false,
       description: "Takes its time. Occasionally makes poor choices.",
@@ -24,7 +39,9 @@
     medium: {
       name: "Medium Bot",
       level: 5,
-      thinkDelay: 300,
+      thinkDelay: 450,
+      moveDelay: 90,
+      hardDrop: true,
       mistakeRate: 0.1,
       lookahead: true,
       description: "Balanced difficulty. Good for practice.",
@@ -32,7 +49,9 @@
     hard: {
       name: "Hard Bot",
       level: 8,
-      thinkDelay: 150,
+      thinkDelay: 260,
+      moveDelay: 60,
+      hardDrop: true,
       mistakeRate: 0.05,
       lookahead: true,
       description: "Fast and strategic. A worthy opponent.",
@@ -40,7 +59,9 @@
     expert: {
       name: "Expert Bot",
       level: 12,
-      thinkDelay: 80,
+      thinkDelay: 200,
+      moveDelay: 45,
+      hardDrop: true,
       mistakeRate: 0.02,
       lookahead: true,
       description: "Near-perfect play. Only for the brave.",
@@ -48,7 +69,9 @@
     master: {
       name: "Master Bot",
       level: 15,
-      thinkDelay: 50,
+      thinkDelay: 140,
+      moveDelay: 32,
+      hardDrop: true,
       mistakeRate: 0,
       lookahead: true,
       description: "Optimal play. Can you keep up?",
@@ -57,8 +80,17 @@
 
   const COLS = 10;
   const ROWS = 20;
+  const TICK_MS = 16;
+  const LOCK_DELAY = 500;
+  const SOFT_DROP_MS = 45;
+  const MAX_REPLANS = 2;
 
-  // Piece definitions (same as game.js)
+  // Must match game.js: scoring, garbage and gravity are shared rules.
+  const LINE_POINTS = [0, 40, 100, 300, 1200];
+  const GARBAGE_TABLE = [0, 0, 1, 2, 4];
+  const DROP_SPEEDS = [800, 700, 600, 450, 300, 200, 150, 100, 80, 60];
+
+  // Piece definitions (same as game.js, same order)
   const PIECES = {
     I: { shape: [[1, 1, 1, 1]], color: "#22d3ee" },
     O: {
@@ -109,40 +141,16 @@
   // Bot state
   let botState = {
     active: false,
-    difficulty: "medium",
-    config: null,
-    board: [],
-    current: null,
-    next: null,
-    hold: null,
-    canHold: true,
-    score: 0,
-    level: 1,
-    lines: 0,
     gameOver: false,
-    thinkTimeout: null,
-    dropInterval: null,
-    bag: [],
-    rng: Math.random,
-    pendingGarbage: 0,
-    // Callbacks
     onUpdate: null,
     onGameOver: null,
     onGarbage: null,
   };
 
-  // Seeded RNG (same as game.js)
-  function seededRandom(seed) {
-    let s = seed;
-    return function () {
-      s = (s * 9301 + 49297) % 233280;
-      return s / 233280;
-    };
-  }
-
   // Initialize bot game
   function initBot(difficulty = "medium", seed = null) {
     const config = BOT_CONFIGS[difficulty] || BOT_CONFIGS.medium;
+    const createRng = api.game && api.game.createRng;
 
     botState = {
       active: true,
@@ -154,16 +162,26 @@
       hold: null,
       canHold: true,
       score: 0,
+      startLevel: config.level,
       level: config.level,
       lines: 0,
       gameOver: false,
-      thinkTimeout: null,
-      dropInterval: null,
-      bag: [],
-      rng: seed ? seededRandom(seed) : Math.random,
-      pendingGarbage: 0,
       posX: 0,
       posY: 0,
+      // Pieces come from the player's generator; everything else (judgement
+      // noise, garbage holes) uses Math.random so it can't desync the two.
+      rng:
+        seed !== null && createRng ? createRng(String(seed)) : Math.random,
+      timer: null,
+      lastTick: 0,
+      gravityAcc: 0,
+      restMs: 0,
+      phase: "think",
+      thinkLeft: 0,
+      actionAcc: 0,
+      actions: [],
+      replans: 0,
+      softDropping: false,
       onUpdate: botState.onUpdate,
       onGameOver: botState.onGameOver,
       onGarbage: botState.onGarbage,
@@ -176,41 +194,98 @@
   function startBot() {
     if (!botState.active) return;
 
-    // Spawn first pieces
-    botState.next = getNextPiece();
+    botState.next = randomPiece();
     spawnPiece();
+    if (botState.gameOver) return;
 
-    // Start the game loop
-    scheduleThink();
-    startDropLoop();
-
+    botState.lastTick = performance.now();
+    botState.timer = setTimeout(tick, TICK_MS);
     emitUpdate();
   }
 
   // Stop bot
   function stopBot() {
     botState.active = false;
-    if (botState.thinkTimeout) {
-      clearTimeout(botState.thinkTimeout);
-      botState.thinkTimeout = null;
-    }
-    if (botState.dropInterval) {
-      clearInterval(botState.dropInterval);
-      botState.dropInterval = null;
+    if (botState.timer) {
+      clearTimeout(botState.timer);
+      botState.timer = null;
     }
   }
 
-  // Get next piece from 7-bag
-  function getNextPiece() {
-    if (botState.bag.length === 0) {
-      botState.bag = [...PIECE_NAMES];
-      // Shuffle
-      for (let i = botState.bag.length - 1; i > 0; i--) {
-        const j = Math.floor(botState.rng() * (i + 1));
-        [botState.bag[i], botState.bag[j]] = [botState.bag[j], botState.bag[i]];
+  function isPlayerPaused() {
+    const state = getState();
+    return !!(state && state.paused);
+  }
+
+  // ---------- Main loop ----------
+  function tick() {
+    if (!botState.active || botState.gameOver) return;
+
+    const now = performance.now();
+    // Clamp so a backgrounded tab doesn't replay seconds of moves at once.
+    const dt = Math.min(now - botState.lastTick, 100);
+    botState.lastTick = now;
+
+    if (!isPlayerPaused()) update(dt);
+
+    if (botState.active && !botState.gameOver) {
+      botState.timer = setTimeout(tick, TICK_MS);
+    }
+  }
+
+  function update(dt) {
+    if (!botState.current) return;
+
+    // Gravity (soft drop is just faster gravity)
+    const gravity = botState.softDropping
+      ? Math.min(SOFT_DROP_MS, gravityDelay())
+      : gravityDelay();
+    botState.gravityAcc += dt;
+    while (botState.gravityAcc >= gravity) {
+      botState.gravityAcc -= gravity;
+      if (!collides(botState.current.shape, botState.posX, botState.posY + 1)) {
+        botState.posY++;
+        botState.restMs = 0;
+        emitUpdate();
       }
     }
-    const name = botState.bag.pop();
+
+    // Thinking, then one input per moveDelay
+    if (botState.phase === "think") {
+      botState.thinkLeft -= dt;
+      if (botState.thinkLeft <= 0) {
+        planMove();
+      }
+    } else if (botState.phase === "act") {
+      botState.actionAcc += dt;
+      while (
+        botState.phase === "act" &&
+        botState.actionAcc >= botState.config.moveDelay
+      ) {
+        botState.actionAcc -= botState.config.moveDelay;
+        doNextAction();
+        if (!botState.current || botState.gameOver) return;
+      }
+    }
+
+    if (!botState.active || botState.gameOver) return;
+
+    // Lock delay once the piece is resting
+    if (collides(botState.current.shape, botState.posX, botState.posY + 1)) {
+      botState.restMs += dt;
+      if (botState.restMs >= LOCK_DELAY) {
+        lockPiece();
+      }
+    }
+  }
+
+  function gravityDelay() {
+    return DROP_SPEEDS[Math.min(botState.level - 1, DROP_SPEEDS.length - 1)];
+  }
+
+  // ---------- Pieces ----------
+  function randomPiece() {
+    const name = PIECE_NAMES[Math.floor(botState.rng() * PIECE_NAMES.length)];
     return {
       name,
       shape: PIECES[name].shape.map((row) => [...row]),
@@ -218,39 +293,57 @@
     };
   }
 
-  // Spawn a new piece
-  function spawnPiece() {
-    botState.current = botState.next;
-    botState.next = getNextPiece();
-    botState.canHold = true;
+  function freshPiece(name) {
+    return {
+      name,
+      shape: PIECES[name].shape.map((row) => [...row]),
+      color: PIECES[name].color,
+    };
+  }
 
-    // Center the piece
+  function placeAtSpawn() {
     const pieceWidth = botState.current.shape[0].length;
     botState.posX = Math.floor((COLS - pieceWidth) / 2);
     botState.posY = 0;
+    botState.gravityAcc = 0;
+    botState.restMs = 0;
+  }
 
-    // Check for game over
+  // Spawn a new piece and start the reaction delay
+  function spawnPiece() {
+    botState.current = botState.next;
+    botState.next = randomPiece();
+    botState.canHold = true;
+    botState.softDropping = false;
+    botState.replans = 0;
+    placeAtSpawn();
+
     if (collides(botState.current.shape, botState.posX, botState.posY)) {
       botGameOver();
+      return;
     }
+
+    const jitter = 0.75 + Math.random() * 0.5;
+    botState.phase = "think";
+    botState.thinkLeft = botState.config.thinkDelay * jitter;
   }
 
   // Collision detection
-  function collides(shape, x, y) {
+  function collides(shape, x, y, board = botState.board) {
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (shape[r][c]) {
           const newX = x + c;
           const newY = y + r;
           if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
-          if (newY >= 0 && botState.board[newY][newX]) return true;
+          if (newY >= 0 && board[newY][newX]) return true;
         }
       }
     }
     return false;
   }
 
-  // Rotate shape
+  // Rotate shape clockwise (same as game.js)
   function rotate(shape) {
     const rows = shape.length;
     const cols = shape[0].length;
@@ -264,18 +357,220 @@
     return rotated;
   }
 
-  // Get all rotations of a piece
-  function getAllRotations(piece) {
-    const rotations = [piece.shape];
-    let current = piece.shape;
-    for (let i = 0; i < 3; i++) {
-      current = rotate(current);
-      rotations.push(current);
+  // ---------- Planning ----------
+  function planMove() {
+    const move = findBestPlacement();
+    if (!move) {
+      // Nowhere sensible to go: just let it fall.
+      botState.actions = [botState.config.hardDrop ? "hardDrop" : "softDrop"];
+    } else {
+      const actions = [];
+      if (move.useHold) actions.push("hold");
+      for (let i = 0; i < move.rotation; i++) actions.push("rotate");
+      // The shift is resolved against the live position when it runs.
+      actions.push({ shiftTo: move.x });
+      actions.push(botState.config.hardDrop ? "hardDrop" : "softDrop");
+      botState.actions = actions;
     }
-    return rotations;
+    botState.phase = "act";
+    botState.actionAcc = 0;
   }
 
-  // Lock piece to board
+  function replan() {
+    botState.replans++;
+    if (botState.replans > MAX_REPLANS) {
+      botState.actions = [botState.config.hardDrop ? "hardDrop" : "softDrop"];
+      return;
+    }
+    planMove();
+  }
+
+  function doNextAction() {
+    const action = botState.actions[0];
+    if (action === undefined) {
+      botState.phase = "idle";
+      return;
+    }
+
+    if (action === "hold") {
+      botState.actions.shift();
+      doHold();
+      return;
+    }
+
+    if (action === "rotate") {
+      botState.actions.shift();
+      if (!tryRotate()) replan();
+      emitUpdate();
+      return;
+    }
+
+    if (action === "hardDrop") {
+      while (
+        !collides(botState.current.shape, botState.posX, botState.posY + 1)
+      ) {
+        botState.posY++;
+      }
+      lockPiece();
+      return;
+    }
+
+    if (action === "softDrop") {
+      botState.actions.shift();
+      botState.softDropping = true;
+      botState.phase = "idle";
+      return;
+    }
+
+    // { shiftTo }: one column per input until there
+    if (botState.posX === action.shiftTo) {
+      botState.actions.shift();
+      doNextAction();
+      return;
+    }
+    const dx = Math.sign(action.shiftTo - botState.posX);
+    if (collides(botState.current.shape, botState.posX + dx, botState.posY)) {
+      replan();
+    } else {
+      botState.posX += dx;
+      botState.restMs = 0;
+    }
+    emitUpdate();
+  }
+
+  // Rotation with simple wall kicks (same offsets as the old bot)
+  function tryRotate() {
+    const rotated = rotate(botState.current.shape);
+    for (const dx of [0, -1, 1, -2, 2]) {
+      if (!collides(rotated, botState.posX + dx, botState.posY)) {
+        botState.current.shape = rotated;
+        botState.posX += dx;
+        botState.restMs = 0;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Bot AI: find the best reachable placement from where the piece is now
+  function findBestPlacement() {
+    if (!botState.current || botState.gameOver) return null;
+
+    let bestMove = null;
+    let bestScore = -Infinity;
+
+    const candidates = [{ piece: botState.current, useHold: false }];
+    if (botState.canHold && botState.config.lookahead) {
+      const holdName = (botState.hold || botState.next || {}).name;
+      if (holdName) {
+        candidates.push({ piece: freshPiece(holdName), useHold: true });
+      }
+    }
+
+    for (const { piece, useHold } of candidates) {
+      // Holding resets the new piece to the top.
+      const startY = useHold ? 0 : botState.posY;
+      let shape = piece.shape;
+
+      for (let rot = 0; rot < 4; rot++) {
+        if (rot > 0) shape = rotate(shape);
+        const pieceWidth = shape[0].length;
+
+        for (let x = 0; x <= COLS - pieceWidth; x++) {
+          if (collides(shape, x, startY)) continue;
+          let y = startY;
+          while (!collides(shape, x, y + 1)) y++;
+
+          const score = evaluatePlacement(shape, x, y);
+          const noise =
+            botState.config.mistakeRate > 0
+              ? (Math.random() - 0.5) * botState.config.mistakeRate * 100
+              : 0;
+
+          if (score + noise > bestScore) {
+            bestScore = score + noise;
+            bestMove = { x, rotation: rot, useHold };
+          }
+        }
+      }
+    }
+
+    return bestMove;
+  }
+
+  // Evaluate a placement (higher is better)
+  function evaluatePlacement(shape, x, y) {
+    const testBoard = botState.board.map((row) => [...row]);
+    for (let r = 0; r < shape.length; r++) {
+      for (let c = 0; c < shape[r].length; c++) {
+        if (shape[r][c] && y + r >= 0) testBoard[y + r][x + c] = "test";
+      }
+    }
+
+    let linesCleared = 0;
+    for (let r = 0; r < ROWS; r++) {
+      if (testBoard[r].every((cell) => cell !== null)) linesCleared++;
+    }
+
+    const heights = [];
+    let holes = 0;
+    for (let c = 0; c < COLS; c++) {
+      let height = 0;
+      let seen = false;
+      for (let r = 0; r < ROWS; r++) {
+        if (testBoard[r][c]) {
+          if (!seen) height = ROWS - r;
+          seen = true;
+        } else if (seen) {
+          holes++;
+        }
+      }
+      heights.push(height);
+    }
+
+    const aggregateHeight = heights.reduce((a, b) => a + b, 0);
+    let bumpiness = 0;
+    for (let i = 0; i < COLS - 1; i++) {
+      bumpiness += Math.abs(heights[i] - heights[i + 1]);
+    }
+
+    let score = linesCleared * 100;
+    if (linesCleared === 4) score += 200;
+    score -= aggregateHeight * 0.5;
+    score -= holes * 10;
+    score -= bumpiness * 0.5;
+    // Keep a well on the right for I pieces
+    if (heights[COLS - 1] === 0 && heights[COLS - 2] > 0) score += 20;
+    // Placement height (lower is safer)
+    score -= (ROWS - y) * 0.1;
+
+    return score;
+  }
+
+  // ---------- Hold / lock ----------
+  function doHold() {
+    if (!botState.canHold || !botState.current) return;
+
+    const heldName = botState.hold && botState.hold.name;
+    botState.hold = freshPiece(botState.current.name);
+
+    if (heldName) {
+      botState.current = freshPiece(heldName);
+    } else {
+      botState.current = botState.next;
+      botState.next = randomPiece();
+    }
+
+    placeAtSpawn();
+    botState.canHold = false;
+
+    if (collides(botState.current.shape, botState.posX, botState.posY)) {
+      botGameOver();
+      return;
+    }
+    emitUpdate();
+  }
+
   function lockPiece() {
     if (!botState.current) return;
 
@@ -291,29 +586,21 @@
         }
       }
     }
+    botState.current = null;
 
-    // Clear lines
     const linesCleared = clearLines();
+    if (linesCleared > 0) {
+      botState.score += LINE_POINTS[linesCleared] * (botState.level + 1);
+      botState.lines += linesCleared;
+      botState.level =
+        botState.startLevel + Math.floor(botState.lines / 10);
 
-    // Calculate score
-    const lineScores = [0, 100, 300, 500, 800];
-    botState.score += lineScores[linesCleared] * botState.level;
-    botState.lines += linesCleared;
-
-    // Update level (every 10 lines)
-    const newLevel = Math.floor(botState.lines / 10) + botState.config.level;
-    if (newLevel > botState.level) {
-      botState.level = newLevel;
-      updateDropSpeed();
+      const garbage = GARBAGE_TABLE[Math.min(linesCleared, 4)];
+      if (garbage > 0 && botState.onGarbage) {
+        botState.onGarbage(garbage);
+      }
     }
 
-    // Send garbage if lines cleared
-    if (linesCleared > 1 && botState.onGarbage) {
-      const garbage = calculateGarbage(linesCleared);
-      botState.onGarbage(garbage);
-    }
-
-    // Spawn next piece
     spawnPiece();
     emitUpdate();
   }
@@ -332,303 +619,34 @@
     return linesCleared;
   }
 
-  // Calculate garbage to send
-  function calculateGarbage(lines) {
-    const garbageTable = [0, 0, 1, 2, 4];
-    return garbageTable[Math.min(lines, 4)];
-  }
-
-  // Receive garbage
+  // Receive garbage from the player
   function receiveGarbage(lines) {
-    if (lines <= 0) return;
+    if (lines <= 0 || !botState.active || botState.gameOver) return;
 
-    // Add garbage lines from bottom
     for (let i = 0; i < lines; i++) {
-      // Remove top row
       botState.board.shift();
-      // Add garbage row at bottom with one random hole
-      const holePos = Math.floor(botState.rng() * COLS);
-      const garbageRow = Array(COLS).fill("#64748b");
-      garbageRow[holePos] = null;
+      const garbageRow = Array(COLS).fill("#6b7280");
+      garbageRow[Math.floor(Math.random() * COLS)] = null;
       botState.board.push(garbageRow);
     }
 
-    emitUpdate();
-  }
-
-  // Bot AI: Find best placement
-  function findBestPlacement() {
-    if (!botState.current || botState.gameOver) return null;
-
-    const rotations = getAllRotations(botState.current);
-    let bestMove = null;
-    let bestScore = -Infinity;
-
-    // Consider hold piece
-    const piecesToConsider = [
-      { piece: botState.current, useHold: false },
-    ];
-
-    if (botState.canHold && botState.config.lookahead) {
-      const holdPiece = botState.hold || botState.next;
-      if (holdPiece) {
-        piecesToConsider.push({
-          piece: {
-            name: holdPiece.name,
-            shape: PIECES[holdPiece.name].shape.map((row) => [...row]),
-            color: holdPiece.color,
-          },
-          useHold: true,
-        });
+    // Push the falling piece up out of the new rows, as game.js does.
+    if (botState.current) {
+      while (
+        botState.posY > 0 &&
+        collides(botState.current.shape, botState.posX, botState.posY)
+      ) {
+        botState.posY--;
       }
-    }
-
-    for (const { piece, useHold } of piecesToConsider) {
-      const pieceRotations = getAllRotations(piece);
-
-      for (let rot = 0; rot < pieceRotations.length; rot++) {
-        const shape = pieceRotations[rot];
-        const pieceWidth = shape[0].length;
-
-        for (let x = -2; x <= COLS - pieceWidth + 2; x++) {
-          // Find landing position
-          let y = 0;
-          while (!collides(shape, x, y + 1)) {
-            y++;
-            if (y > ROWS) break;
-          }
-
-          if (collides(shape, x, y)) continue;
-
-          // Evaluate this placement
-          const score = evaluatePlacement(shape, x, y);
-
-          // Add small randomness based on mistake rate
-          const noise = botState.config.mistakeRate > 0
-            ? (botState.rng() - 0.5) * botState.config.mistakeRate * 100
-            : 0;
-
-          if (score + noise > bestScore) {
-            bestScore = score + noise;
-            bestMove = { x, y, rotation: rot, useHold };
-          }
-        }
-      }
-    }
-
-    return bestMove;
-  }
-
-  // Evaluate a placement (higher is better)
-  function evaluatePlacement(shape, x, y) {
-    // Simulate placing the piece
-    const testBoard = botState.board.map((row) => [...row]);
-
-    for (let r = 0; r < shape.length; r++) {
-      for (let c = 0; c < shape[r].length; c++) {
-        if (shape[r][c]) {
-          const boardY = y + r;
-          const boardX = x + c;
-          if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
-            testBoard[boardY][boardX] = "test";
-          }
-        }
-      }
-    }
-
-    // Calculate metrics
-    let score = 0;
-
-    // 1. Lines cleared (big bonus)
-    let linesCleared = 0;
-    for (let r = 0; r < ROWS; r++) {
-      if (testBoard[r].every((cell) => cell !== null)) {
-        linesCleared++;
-      }
-    }
-    score += linesCleared * 100;
-
-    // Tetris bonus
-    if (linesCleared === 4) {
-      score += 200;
-    }
-
-    // 2. Aggregate height (lower is better)
-    let aggregateHeight = 0;
-    for (let c = 0; c < COLS; c++) {
-      for (let r = 0; r < ROWS; r++) {
-        if (testBoard[r][c]) {
-          aggregateHeight += ROWS - r;
-          break;
-        }
-      }
-    }
-    score -= aggregateHeight * 0.5;
-
-    // 3. Holes (fewer is better)
-    let holes = 0;
-    for (let c = 0; c < COLS; c++) {
-      let foundBlock = false;
-      for (let r = 0; r < ROWS; r++) {
-        if (testBoard[r][c]) {
-          foundBlock = true;
-        } else if (foundBlock) {
-          holes++;
-        }
-      }
-    }
-    score -= holes * 10;
-
-    // 4. Bumpiness (smoother is better)
-    let bumpiness = 0;
-    const heights = [];
-    for (let c = 0; c < COLS; c++) {
-      let height = 0;
-      for (let r = 0; r < ROWS; r++) {
-        if (testBoard[r][c]) {
-          height = ROWS - r;
-          break;
-        }
-      }
-      heights.push(height);
-    }
-    for (let i = 0; i < heights.length - 1; i++) {
-      bumpiness += Math.abs(heights[i] - heights[i + 1]);
-    }
-    score -= bumpiness * 0.5;
-
-    // 5. Well depth for tetrises (good to keep right column low)
-    const rightHeight = heights[COLS - 1];
-    const leftOfRightHeight = heights[COLS - 2];
-    if (rightHeight === 0 && leftOfRightHeight > 0) {
-      score += 20; // Encourage keeping a well for I pieces
-    }
-
-    // 6. Placement height (lower is safer)
-    score -= y * 0.1;
-
-    return score;
-  }
-
-  // Schedule next think cycle
-  function scheduleThink() {
-    if (!botState.active || botState.gameOver) return;
-
-    botState.thinkTimeout = setTimeout(() => {
-      thinkAndMove();
-      scheduleThink();
-    }, botState.config.thinkDelay);
-  }
-
-  // Think and make a move — executes the full plan in one cycle
-  function thinkAndMove() {
-    if (!botState.active || botState.gameOver || !botState.current) return;
-
-    const bestMove = findBestPlacement();
-    if (!bestMove) return;
-
-    if (bestMove.useHold) {
-      doHold();
-      if (!botState.current || botState.gameOver) return;
-    }
-
-    // Rotate to target with simple wall-kick fallbacks
-    const kickOffsets = [0, -1, 1, -2, 2];
-    for (let i = 0; i < bestMove.rotation; i++) {
-      const rotated = rotate(botState.current.shape);
-      let applied = false;
-      for (const dx of kickOffsets) {
-        if (!collides(rotated, botState.posX + dx, botState.posY)) {
-          botState.current.shape = rotated;
-          botState.posX += dx;
-          applied = true;
-          break;
-        }
-      }
-      if (!applied) {
-        // Rotation blocked — abort and re-plan next cycle
-        emitUpdate();
+      if (collides(botState.current.shape, botState.posX, botState.posY)) {
+        botGameOver();
         return;
       }
+      // Its plan was made for the old board.
+      if (botState.phase === "act") replan();
     }
-
-    // Shift horizontally to target x
-    while (
-      botState.posX < bestMove.x &&
-      !collides(botState.current.shape, botState.posX + 1, botState.posY)
-    ) {
-      botState.posX++;
-    }
-    while (
-      botState.posX > bestMove.x &&
-      !collides(botState.current.shape, botState.posX - 1, botState.posY)
-    ) {
-      botState.posX--;
-    }
-
-    // Hard drop and lock
-    while (!collides(botState.current.shape, botState.posX, botState.posY + 1)) {
-      botState.posY++;
-    }
-    lockPiece();
-  }
-
-  // Hold piece
-  function doHold() {
-    if (!botState.canHold || !botState.current) return;
-
-    const temp = botState.hold;
-    botState.hold = {
-      name: botState.current.name,
-      shape: PIECES[botState.current.name].shape.map((row) => [...row]),
-      color: botState.current.color,
-    };
-
-    if (temp) {
-      botState.current = {
-        name: temp.name,
-        shape: PIECES[temp.name].shape.map((row) => [...row]),
-        color: temp.color,
-      };
-    } else {
-      botState.current = botState.next;
-      botState.next = getNextPiece();
-    }
-
-    // Reset position
-    const pieceWidth = botState.current.shape[0].length;
-    botState.posX = Math.floor((COLS - pieceWidth) / 2);
-    botState.posY = 0;
-    botState.canHold = false;
 
     emitUpdate();
-  }
-
-  // Start drop loop
-  function startDropLoop() {
-    updateDropSpeed();
-  }
-
-  // Update drop speed based on level
-  function updateDropSpeed() {
-    if (botState.dropInterval) {
-      clearInterval(botState.dropInterval);
-    }
-
-    // Speed formula (similar to game.js)
-    const baseSpeed = 1000;
-    const speedFactor = Math.pow(0.85, botState.level - 1);
-    const dropDelay = Math.max(50, baseSpeed * speedFactor);
-
-    botState.dropInterval = setInterval(() => {
-      if (!botState.active || botState.gameOver) return;
-
-      // Move down or lock
-      if (!collides(botState.current.shape, botState.posX, botState.posY + 1)) {
-        botState.posY++;
-        emitUpdate();
-      }
-    }, dropDelay);
   }
 
   // Bot game over

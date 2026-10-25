@@ -39,6 +39,7 @@ function createMockCanvas() {
   return {
     width: 0,
     height: 0,
+    style: {},
     classList: {
       add: () => {},
       remove: () => {},
@@ -49,6 +50,7 @@ function createMockCanvas() {
       strokeStyle: "#000",
       lineWidth: 1,
       clearRect: () => {},
+      setTransform: () => {},
       fillRect: () => {},
       strokeRect: () => {},
       beginPath: () => {},

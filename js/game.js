@@ -103,9 +103,12 @@
   }
 
   function seededRandom(seed) {
+    // Numeric seeds (bot battles use Date.now()) have no .length, which used
+    // to leave the hash at its initial value: the same pieces every game.
+    const str = String(seed);
     let h = 2166136261;
-    for (let i = 0; i < seed.length; i++) {
-      h ^= seed.charCodeAt(i);
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
       h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
     }
     return () => {
@@ -600,7 +603,7 @@
       state.score += basePoints * (state.level + 1);
       state.lines += linesCleared;
       // Level advances every 10 lines
-      state.level = Math.floor(state.lines / 10) + 1;
+      state.level = (state.startLevel || 1) + Math.floor(state.lines / 10);
       window.Flixtris.api.ui.updateStats();
 
       // Show action indicator
@@ -661,6 +664,12 @@
     if (actions.length > 0) {
       ui.showActionIndicator(actions);
     }
+  }
+
+  // Online opponents keep playing, and hardcore forbids it outright.
+  const NO_PAUSE_MODES = ["hardcore", "multiplayer", "royale", "ranked"];
+  function canPause() {
+    return !NO_PAUSE_MODES.includes(state.mode);
   }
 
   function getDropSpeed() {
@@ -911,15 +920,13 @@
   }
 
   function handleKeyDown(e) {
+    // During replay playback only the replay's own (synthetic) inputs count.
+    if (state.isReplay && e.isTrusted) return;
     if (!state.running) return;
 
-    // Pause toggle (not allowed in hardcore or multiplayer)
+    // Pause toggle (not allowed in hardcore or online play)
     if (e.key === "p" || e.key === "P") {
-      if (
-        state.mode !== "hardcore" &&
-        state.mode !== "multiplayer" &&
-        state.mode !== "royale"
-      ) {
+      if (canPause()) {
         state.paused = !state.paused;
         window.Flixtris.api.sound.pause();
         // Show/hide pause overlay
@@ -977,6 +984,8 @@
     state.score = 0;
     state.lines = 0;
     state.level = 1;
+    state.startLevel = 1;
+    state.isReplay = false;
     state.running = true;
     state.paused = false;
     state.lastDrop = 0;
@@ -1015,11 +1024,13 @@
     requestAnimationFrame(gameLoop);
   }
 
-  function startGameWithSeed(customSeed, startLevel = 1) {
-    state.mode = "daily";
+  function startGameWithSeed(customSeed, startLevel = 1, mode = "daily") {
+    state.mode = mode;
     state.score = 0;
     state.lines = 0;
     state.level = startLevel;
+    state.startLevel = startLevel;
+    state.isReplay = false;
     state.running = true;
     state.paused = false;
     state.lastDrop = 0;
@@ -1050,10 +1061,19 @@
 
   function stop() {
     state.running = false;
+    // Leaving the game screen mid-replay ends the replay cleanly.
+    if (state.isReplay) finishReplay();
   }
 
   async function gameOver() {
     state.running = false;
+
+    // A replay re-runs an old game; it must not be saved or scored again.
+    if (state.isReplay) {
+      finishReplay();
+      return;
+    }
+
     window.Flixtris.api.sound.gameOver();
 
     const playerName = await window.Flixtris.api.db.getDisplayName();
@@ -1151,19 +1171,25 @@
   let replayIndex = 0;
   let replayInputs = null;
   let replayStartTs = 0;
+  let replayOnEnd = null;
+  let replayRun = 0;
 
-  function startReplayPlayback(replay) {
+  function startReplayPlayback(replay, { onEnd } = {}) {
     // replay: { inputs: [{key, timestamp}, ...], seed, mode }
     stopReplayPlayback();
     if (!replay || !Array.isArray(replay.inputs) || replay.inputs.length === 0)
       return;
 
     // Start a fresh game with the same seed/mode if provided
+    const mode = replay.mode || "classic";
     if (replay.seed) {
-      startGameWithSeed(replay.seed);
+      startGameWithSeed(replay.seed, 1, mode);
     } else {
-      startGame(replay.mode || "classic");
+      startGame(mode);
     }
+    state.isReplay = true;
+    replayOnEnd = onEnd || null;
+    const run = ++replayRun;
 
     replayInputs = replay.inputs.slice();
     replayIndex = 0;
@@ -1172,6 +1198,10 @@
     function tick() {
       if (!replayInputs || replayIndex >= replayInputs.length) {
         stopReplayPlayback();
+        // Inputs are spent; give the last piece a moment, then end.
+        setTimeout(() => {
+          if (run === replayRun) finishReplay();
+        }, 1500);
         return;
       }
       const ev = replayInputs[replayIndex];
@@ -1181,13 +1211,30 @@
 
       if (elapsed >= target) {
         // Simulate the key event by calling the handlers
-        const fakeEvent = { key: ev.key };
+        // handleKeyDown calls preventDefault on move keys; without these
+        // stubs the first replayed move threw and playback silently halted.
+        const fakeEvent = {
+          key: ev.key,
+          preventDefault() {},
+          stopPropagation() {},
+        };
         handleKeyDown(fakeEvent);
         replayIndex++;
       }
       replayTimer = requestAnimationFrame(tick);
     }
     replayTimer = requestAnimationFrame(tick);
+  }
+
+  // End a replay (inputs spent, topped out, or stopped by the viewer).
+  function finishReplay() {
+    if (!state.isReplay) return;
+    stopReplayPlayback();
+    state.isReplay = false;
+    state.running = false;
+    const done = replayOnEnd;
+    replayOnEnd = null;
+    if (done) done();
   }
 
   function stopReplayPlayback() {
@@ -1215,10 +1262,14 @@
     getBoardSnapshot,
     sendMultiplayerUpdate,
     addGarbageLines,
+    // Shared piece generator so the bot can draw the player's sequence.
+    createRng: seededRandom,
+    canPause,
     triggerHaptic,
     // Replay playback API
     startReplayPlayback,
     stopReplayPlayback,
+    endReplay: finishReplay,
     getPendingGarbage: () => state.pendingGarbage,
     setPendingGarbage: (n) => {
       state.pendingGarbage = n;
@@ -1243,7 +1294,9 @@
 
       // Create garbage row with one random gap
       const garbageRow = new Array(COLS).fill(garbageColor);
-      const gapIndex = Math.floor(state.rng() * COLS);
+      // Math.random, not state.rng: drawing from the piece generator here
+      // would desync the shared seed with a bot or seeded opponent.
+      const gapIndex = Math.floor(Math.random() * COLS);
       garbageRow[gapIndex] = null;
 
       // Add to bottom

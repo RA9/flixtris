@@ -17,6 +17,9 @@
   let gameSeed = null;
   let isHost = false;
   let reconnectToken = null;
+  // True between sending a reconnect request and the server's answer, so a
+  // rejected token can be dropped quietly instead of surfacing as an error.
+  let awaitingReconnect = false;
   let callbacks = {};
   let reconnectAttempts = 0;
   let maxReconnectAttempts = 3;
@@ -122,6 +125,7 @@
       try {
         await connect();
         // Send reconnect request with token
+        awaitingReconnect = true;
         send({ type: "reconnect", token: reconnectToken });
       } catch (err) {
         console.error("Reconnect failed:", err);
@@ -221,6 +225,7 @@
         break;
 
       case "reconnected":
+        awaitingReconnect = false;
         roomCode = message.roomCode;
         playerId = message.playerId;
         gameSeed = message.seed;
@@ -434,6 +439,16 @@
       // ERRORS & SERVER EVENTS
       // ========================
       case "error":
+        if (awaitingReconnect) {
+          // The saved session is gone (server restart, room closed, token
+          // used). Forget it; the player just carries on from the menu.
+          awaitingReconnect = false;
+          log("Reconnect rejected:", message.message);
+          clearReconnectToken();
+          reconnectAttempts = maxReconnectAttempts;
+          if (ws) ws.close();
+          break;
+        }
         if (callbacks.onError) {
           callbacks.onError(message.message);
         }
@@ -574,6 +589,7 @@
 
     try {
       await connect();
+      awaitingReconnect = true;
       send({ type: "reconnect", token: reconnectToken });
       return true;
     } catch (err) {
@@ -682,7 +698,7 @@
     try {
       if (window.Flixtris?.api?.game?.startGameWithSeed) {
         // Start a ranked game with the server-provided seed
-        window.Flixtris.api.game.startGameWithSeed(seed);
+        window.Flixtris.api.game.startGameWithSeed(seed, 1, "ranked");
       }
     } catch (e) {
       // No-op if game module is unavailable

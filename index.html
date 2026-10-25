@@ -824,6 +824,13 @@
                 </button>
             </div>
 
+            <!-- Replay playback bar (shown only while a replay plays) -->
+            <div class="replay-bar" id="replayBar" hidden>
+                <span class="replay-bar-tag">● REPLAY</span>
+                <span class="replay-bar-title" id="replayBarTitle"></span>
+                <button class="btn btn-ghost btn-sm" id="replayBarStop">Stop</button>
+            </div>
+
             <!-- Combo/Action Indicator -->
             <div id="action-indicator" class="action-indicator"></div>
 
@@ -968,14 +975,9 @@
             <div class="overlay-content dialog dialog-wide">
                 <p class="eyebrow">PRO</p>
                 <h2 class="dialog-title">Replays</h2>
-                <div class="replay-controls">
-                    <button class="btn btn-ghost btn-sm" id="replayPlayBtn">Play</button>
-                    <button class="btn btn-ghost btn-sm" id="replayPauseBtn">Pause</button>
-                    <button class="btn btn-ghost btn-sm" id="replayStopBtn">Stop</button>
-                    <input id="replaySeek" type="range" min="0" max="100" value="0" aria-label="Seek" />
-                    <span id="replayProgressLabel">0%</span>
-                </div>
-                <ul id="replayTimeline"></ul>
+                <p class="dialog-text">
+                    Watch any recorded run play back on the board.
+                </p>
                 <div id="replayList" class="panel-section"></div>
                 <div class="actions">
                     <button class="btn btn-ghost" id="replayCloseBtn">Close</button>

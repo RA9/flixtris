@@ -453,7 +453,8 @@
       req.onsuccess = (e) => {
         const cursor = e.target.result;
         if (cursor && res.length < limit) {
-          res.push(cursor.value);
+          // Include the key so the UI can delete this exact record.
+          res.push({ ...cursor.value, id: cursor.primaryKey });
           cursor.continue();
         } else {
           resolve(res);

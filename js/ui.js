@@ -1831,8 +1831,16 @@
 
     // Set up bot callbacks
     api.bot.onUpdate((data) => {
-      // Render bot's board on opponent canvas
-      renderOpponentBoard(data.board);
+      // Render bot's board, including the piece it is moving
+      renderOpponentBoard(
+        data.board,
+        data.current && {
+          shape: data.current.shape,
+          color: data.current.color,
+          x: data.posX,
+          y: data.posY,
+        },
+      );
       updateOpponentScore(data.score);
     });
 
@@ -1848,8 +1856,8 @@
 
     api.bot.onGarbage((lines) => {
       // Bot sends garbage to player
-      if (api.game && api.game.addGarbage) {
-        api.game.addGarbage(lines);
+      if (api.game && api.game.addGarbageLines) {
+        api.game.addGarbageLines(lines);
       }
       showGarbageIndicator(lines);
     });
@@ -1863,7 +1871,7 @@
     // Start with countdown
     runCountdown(3, () => {
       // Start player's game at bot's level
-      api.game.startGameWithSeed(seed, botConfig.level);
+      api.game.startGameWithSeed(seed, botConfig.level, "bot");
       api.bot.startBot();
     });
   }
@@ -2054,7 +2062,7 @@
 
       // Start countdown then game
       runCountdown(data.countdown || 3, () => {
-        api.game.startGameWithSeed(data.seed);
+        api.game.startGameWithSeed(data.seed, 1, "ranked");
       });
     });
 
@@ -2153,8 +2161,8 @@
   // Main menu button during game - show confirmation
   document.getElementById("mainMenuBtn").addEventListener("click", () => {
     const state = getState();
-    // Pause the game while showing confirmation
-    if (state.running && !state.paused) {
+    // Pause the game while showing confirmation (where pausing is allowed)
+    if (state.running && !state.paused && api.game.canPause()) {
       state.paused = true;
     }
     closePanel();
@@ -2404,7 +2412,7 @@
   function openIngameMenu() {
     const state = getState();
     ingameMenuAutoPaused = false;
-    if (state.running && !state.paused) {
+    if (state.running && !state.paused && api.game.canPause()) {
       state.paused = true;
       ingameMenuAutoPaused = true;
     }
@@ -2774,6 +2782,42 @@
     }
   }
 
+  // Play a replay on the real game board, with a small bar to stop it.
+  // When it ends (or is stopped) the player lands back on the replay list.
+  function playReplay(replay, label) {
+    if (!api.game?.startReplayPlayback) return;
+    document.getElementById("replayViewer")?.classList.remove("active");
+    hideOpponentBoard();
+    screens.game.classList.remove("battle");
+    showScreen("game");
+
+    const bar = document.getElementById("replayBar");
+    const title = document.getElementById("replayBarTitle");
+    if (title) {
+      const mode = (replay.mode || "classic").toUpperCase();
+      title.textContent = `${label} · ${mode} · ${(replay.score || 0).toLocaleString()} pts`;
+    }
+    if (bar) bar.hidden = false;
+
+    api.game.startReplayPlayback(replay, { onEnd: endReplayView });
+  }
+
+  function endReplayView() {
+    const bar = document.getElementById("replayBar");
+    if (bar) bar.hidden = true;
+    showScreen("menu");
+    document.getElementById("replayViewer")?.classList.add("active");
+    initReplayViewer();
+  }
+
+  document.getElementById("replayBarStop")?.addEventListener("click", () => {
+    api.game?.endReplay?.();
+  });
+
+  document.getElementById("replayCloseBtn")?.addEventListener("click", () => {
+    document.getElementById("replayViewer")?.classList.remove("active");
+  });
+
   function initReplayViewer() {
     const container = document.getElementById("replayList");
     const viewer = document.getElementById("replayViewer");
@@ -2819,262 +2863,16 @@
         const delBtn = item.querySelector(".replay-delete");
 
         playBtn?.addEventListener("click", () => {
-          if (!viewer) return;
-          viewer.classList.add("active");
-          // Start playback runner for this replay
-          if (window.Flixtris?.api?.game?.startReplayPlayback) {
-            window.Flixtris.api.game.startReplayPlayback(r);
-          }
-          // Basic playback visualization: show an event timeline list
-          const timeline = document.getElementById("replayTimeline");
-          if (timeline) {
-            timeline.innerHTML = "";
-            (r.inputs || []).forEach((ev) => {
-              const li = document.createElement("li");
-              const t = Math.round(
-                ev.timestamp - (r.inputs[0]?.timestamp || ev.timestamp),
-              );
-              li.textContent = `[${t}ms] ${ev.key}`;
-              timeline.appendChild(li);
-            });
-          }
-          // Placeholder for future: drive board state step-by-step
-          const closeBtn = document.getElementById("replayCloseBtn");
-          closeBtn?.addEventListener("click", () => {
-            viewer.classList.remove("active");
-            if (window.Flixtris?.api?.game?.stopReplayPlayback) {
-              window.Flixtris.api.game.stopReplayPlayback();
-            }
-            // Stop progress ticker
-            if (window.__replayProgressTimer) {
-              clearInterval(window.__replayProgressTimer);
-              window.__replayProgressTimer = null;
-            }
-            const progressLabel = document.getElementById(
-              "replayProgressLabel",
-            );
-            const seekCtrl = document.getElementById("replaySeek");
-            if (seekCtrl) seekCtrl.value = "0";
-            if (progressLabel) progressLabel.textContent = "0%";
-          });
-
-          // Playback controls
-          const playBtnCtrl = document.getElementById("replayPlayBtn");
-          const pauseBtnCtrl = document.getElementById("replayPauseBtn");
-          const stopBtnCtrl = document.getElementById("replayStopBtn");
-          const seekCtrl = document.getElementById("replaySeek");
-          const progressLabel = document.getElementById("replayProgressLabel");
-          // Optional step controls and speed selector (if present)
-          const stepFwdBtn = document.getElementById("replayStepFwdBtn");
-          const stepBackBtn = document.getElementById("replayStepBackBtn");
-          const speedSel = document.getElementById("replaySpeed");
-
-          // Reset seek on open
-          if (seekCtrl) seekCtrl.value = "0";
-          if (progressLabel) progressLabel.textContent = "0%";
-
-          // Progress ticker: update every 200ms based on elapsed/duration
-          if (r && typeof r.durationMs === "number") {
-            if (window.__replayProgressTimer) {
-              clearInterval(window.__replayProgressTimer);
-              window.__replayProgressTimer = null;
-            }
-            window.__replayProgressTimer = setInterval(() => {
-              const st = window.Flixtris?.state;
-              if (!st || !st.startTime) return;
-              const elapsed = performance.now() - st.startTime;
-              const pct = Math.max(
-                0,
-                Math.min(100, Math.round((elapsed / r.durationMs) * 100)),
-              );
-              if (seekCtrl && !seekCtrl.matches(":active")) {
-                seekCtrl.value = String(pct);
-              }
-              if (progressLabel) progressLabel.textContent = `${pct}%`;
-            }, 200);
-          }
-
-          playBtnCtrl?.addEventListener("click", () => {
-            if (window.Flixtris?.api?.game?.startReplayPlayback) {
-              window.Flixtris.api.game.startReplayPlayback(r);
-            }
-          });
-
-          // Speed selector: adjust a global speed factor used by the runner (if utilized)
-          speedSel?.addEventListener("change", () => {
-            const val = parseFloat(speedSel.value || "1");
-            window.__replaySpeed = isNaN(val)
-              ? 1
-              : Math.max(0.25, Math.min(3, val));
-          });
-
-          // Step forward: apply the next input in the stream deterministically
-          stepFwdBtn?.addEventListener("click", () => {
-            const inputs = r.inputs || [];
-            if (!inputs.length) return;
-            const baseTs = inputs[0]?.timestamp || 0;
-            // Current target based on seek position
-            const pct = parseInt(seekCtrl?.value || "0", 10);
-            const targetMs = Math.floor(
-              ((pct || 0) / 100) * (r.durationMs || 0),
-            );
-            // Find first input after targetMs
-            const nextIdx = inputs.findIndex(
-              (ev) => ev.timestamp - baseTs > targetMs,
-            );
-            const idx = nextIdx >= 0 ? nextIdx : inputs.length - 1;
-            const ev = inputs[idx];
-            if (!ev) return;
-            // Pause runner then apply single action
-            const state = window.Flixtris?.state;
-            if (state) state.paused = true;
-            switch (ev.key) {
-              case "ArrowLeft":
-                window.Flixtris.api.game.moveLeft &&
-                  window.Flixtris.api.game.moveLeft();
-                break;
-              case "ArrowRight":
-                window.Flixtris.api.game.moveRight &&
-                  window.Flixtris.api.game.moveRight();
-                break;
-              case "ArrowDown":
-                window.Flixtris.api.game.moveDown &&
-                  window.Flixtris.api.game.moveDown();
-                break;
-              case "ArrowUp":
-                window.Flixtris.api.game.rotate &&
-                  window.Flixtris.api.game.rotate();
-                break;
-              case " ":
-                window.Flixtris.api.game.hardDrop &&
-                  window.Flixtris.api.game.hardDrop();
-                break;
-              case "c":
-              case "C":
-                window.Flixtris.api.game.holdPiece &&
-                  window.Flixtris.api.game.holdPiece();
-                break;
-              default:
-                break;
-            }
-            // Advance seek to reflect new position
-            const relTs = ev.timestamp - baseTs;
-            const newPct = r.durationMs
-              ? Math.round((relTs / r.durationMs) * 100)
-              : pct;
-            if (seekCtrl) seekCtrl.value = String(Math.max(pct, newPct));
-            if (progressLabel) progressLabel.textContent = `${seekCtrl.value}%`;
-          });
-
-          // Step backward: apply the previous input (reverse stepping only updates seek visualization)
-          stepBackBtn?.addEventListener("click", () => {
-            const inputs = r.inputs || [];
-            if (!inputs.length) return;
-            const baseTs = inputs[0]?.timestamp || 0;
-            const pct = parseInt(seekCtrl?.value || "0", 10);
-            const targetMs = Math.floor(
-              ((pct || 0) / 100) * (r.durationMs || 0),
-            );
-            // Find last input before targetMs
-            let prevIdx = -1;
-            for (let i = 0; i < inputs.length; i++) {
-              const relTs = inputs[i].timestamp - baseTs;
-              if (relTs < targetMs) prevIdx = i;
-              else break;
-            }
-            if (prevIdx < 0) {
-              if (seekCtrl) seekCtrl.value = "0";
-              if (progressLabel) progressLabel.textContent = "0%";
-              return;
-            }
-            const prevEv = inputs[prevIdx];
-            const relTs = prevEv.timestamp - baseTs;
-            const newPct = r.durationMs
-              ? Math.round((relTs / r.durationMs) * 100)
-              : 0;
-            if (seekCtrl) seekCtrl.value = String(newPct);
-            if (progressLabel) progressLabel.textContent = `${seekCtrl.value}%`;
-          });
-
-          pauseBtnCtrl?.addEventListener("click", () => {
-            // Pausing the runner: simply toggle state.paused so inputs won't execute
-            const state = window.Flixtris?.state;
-            if (state) {
-              state.paused = !state.paused;
-            }
-          });
-
-          stopBtnCtrl?.addEventListener("click", () => {
-            if (window.Flixtris?.api?.game?.stopReplayPlayback) {
-              window.Flixtris.api.game.stopReplayPlayback();
-            }
-            if (seekCtrl) seekCtrl.value = "0";
-            if (progressLabel) progressLabel.textContent = "0%";
-          });
-
-          // Deterministic seek: map slider to target time, fast-forward inputs to that timestamp
-          seekCtrl?.addEventListener("input", () => {
-            const pct = parseInt(seekCtrl.value || "0", 10);
-            if (progressLabel) progressLabel.textContent = `${pct}%`;
-
-            const inputs = r.inputs || [];
-            if (!inputs.length) return;
-
-            const totalDuration = r.durationMs || 0;
-            const targetMs = Math.floor((pct / 100) * totalDuration);
-
-            // Restart playback fresh
-            if (window.Flixtris?.api?.game?.stopReplayPlayback) {
-              window.Flixtris.api.game.stopReplayPlayback();
-            }
-            if (window.Flixtris?.api?.game?.startReplayPlayback) {
-              window.Flixtris.api.game.startReplayPlayback(r);
-            }
-
-            // Fast-forward by applying inputs up to target timestamp deterministically
-            const baseTs = inputs[0]?.timestamp || 0;
-            for (let i = 0; i < inputs.length; i++) {
-              const ev = inputs[i];
-              const relTs = ev.timestamp - baseTs;
-              if (relTs > targetMs) break;
-              switch (ev.key) {
-                case "ArrowLeft":
-                  window.Flixtris.api.game.moveLeft &&
-                    window.Flixtris.api.game.moveLeft();
-                  break;
-                case "ArrowRight":
-                  window.Flixtris.api.game.moveRight &&
-                    window.Flixtris.api.game.moveRight();
-                  break;
-                case "ArrowDown":
-                  window.Flixtris.api.game.moveDown &&
-                    window.Flixtris.api.game.moveDown();
-                  break;
-                case "ArrowUp":
-                  window.Flixtris.api.game.rotate &&
-                    window.Flixtris.api.game.rotate();
-                  break;
-                case " ":
-                  window.Flixtris.api.game.hardDrop &&
-                    window.Flixtris.api.game.hardDrop();
-                  break;
-                case "c":
-                case "C":
-                  window.Flixtris.api.game.holdPiece &&
-                    window.Flixtris.api.game.holdPiece();
-                  break;
-                default:
-                  break;
-              }
-            }
-          });
+          playReplay(r, `Replay #${idx + 1}`);
         });
 
-        delBtn?.addEventListener("click", () => {
-          if (!window.Flixtris?.api?.db?.deleteReplay) return;
-          // We need the record key; since autoIncrement keys aren't exposed, re-render after delete attempt
-          // In a real implementation, store the key with the replay. For now, remove from UI only.
+        delBtn?.addEventListener("click", async () => {
+          const db = window.Flixtris?.api?.db;
+          if (db?.deleteReplay && r.id !== undefined) {
+            await db.deleteReplay(r.id);
+          }
           item.remove();
+          if (!container.querySelector(".replay-item")) initReplayViewer();
         });
 
         container.appendChild(item);
@@ -3773,6 +3571,11 @@
   }
 
   function hideOpponentBoard() {
+    // Every way out of a versus game passes through here; make sure a bot
+    // can't keep playing (and sending garbage) in the background.
+    if (api.bot && api.bot.getBotState().active) {
+      api.bot.stopBot();
+    }
     if (opponentContainer) {
       opponentContainer.classList.remove("active");
     }
@@ -3796,7 +3599,7 @@
     opponentCtx.fillRect(0, 0, opponentCanvas.width, opponentCanvas.height);
   }
 
-  function renderOpponentBoard(board) {
+  function renderOpponentBoard(board, piece) {
     if (!opponentCtx || !opponentCanvas || !board) return;
 
     const cell = OPPONENT_CELL_SIZE;
@@ -3835,6 +3638,22 @@
           );
         }
       }
+    }
+
+    // Falling piece (bot battles pass it; multiplayer snapshots include it)
+    if (piece) {
+      piece.shape.forEach((row, r) =>
+        row.forEach((filled, c) => {
+          if (filled && piece.y + r >= 0) {
+            drawOpponentCell(
+              offsetX + (piece.x + c) * cell,
+              offsetY + (piece.y + r) * cell,
+              cell,
+              piece.color,
+            );
+          }
+        }),
+      );
     }
   }
 
@@ -4200,7 +4019,11 @@
 
       // Start countdown then begin game
       startCountdown(countdown, () => {
-        api.game.startGameWithSeed(seed);
+        api.game.startGameWithSeed(
+          seed,
+          1,
+          isRoyaleMode ? "royale" : "multiplayer",
+        );
       });
     });
 
@@ -4528,9 +4351,10 @@
     try {
       const reconnected = await mp.tryReconnect();
       if (reconnected) {
+        // Only a request so far. onReconnected marks the game as
+        // multiplayer once the server accepts; a rejection is dropped
+        // quietly in multiplayer.js.
         log("Reconnecting to existing game session...");
-        isMultiplayerGame = true;
-        // The server will send game state via callbacks
       }
     } catch (err) {
       log("Failed to reconnect:", err);

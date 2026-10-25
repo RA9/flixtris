@@ -1923,6 +1923,12 @@ textarea.form-input {
     background: var(--surface);
 }
 
+/* Emojis are a Pro entitlement; locked ones stay visible but dimmed. */
+.emoji-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
 /* Combo / clear callouts over the board. */
 .action-indicator {
     position: fixed;
@@ -2569,36 +2575,38 @@ textarea.form-input {
 }
 
 /* Replay viewer */
-.replay-controls {
-    display: grid;
-    grid-template-columns: auto auto auto minmax(0, 1fr) auto;
-    gap: 0.5rem;
+.replay-bar {
+    position: fixed;
+    top: 0.75rem;
+    left: 50%;
+    z-index: 60;
+    translate: -50% 0;
+    display: flex;
     align-items: center;
-    margin-top: 1.25rem;
+    gap: 0.9rem;
+    max-width: calc(100% - 1.5rem);
+    padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+    background: var(--bg);
+    border: 1px solid var(--red);
+    border-radius: 999px;
 }
 
-#replaySeek {
-    width: 100%;
-    accent-color: var(--accent);
-}
-
-#replayProgressLabel {
+.replay-bar-tag {
     font-family: var(--mono);
-    font-size: 0.8rem;
-    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: var(--red);
+    animation: blink 1.1s steps(2, start) infinite;
 }
 
-#replayTimeline {
-    max-height: 120px;
-    overflow-y: auto;
-    margin-top: 0.75rem;
+.replay-bar-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-family: var(--mono);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--muted);
-}
-
-#replayTimeline:empty {
-    display: none;
 }
 
 #replayList {
