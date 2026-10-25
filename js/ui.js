@@ -3792,7 +3792,7 @@
 
   function clearOpponentBoard() {
     if (!opponentCtx || !opponentCanvas) return;
-    opponentCtx.fillStyle = "#0f172a";
+    opponentCtx.fillStyle = "#0b0f18";
     opponentCtx.fillRect(0, 0, opponentCanvas.width, opponentCanvas.height);
   }
 
@@ -3804,11 +3804,11 @@
     const offsetY = (opponentCanvas.height - OPPONENT_ROWS * cell) / 2;
 
     // Clear canvas
-    opponentCtx.fillStyle = "#0f172a";
+    opponentCtx.fillStyle = "#0b0f18";
     opponentCtx.fillRect(0, 0, opponentCanvas.width, opponentCanvas.height);
 
     // Draw grid
-    opponentCtx.strokeStyle = "#1e293b";
+    opponentCtx.strokeStyle = "#141b28";
     opponentCtx.lineWidth = 0.5;
     for (let r = 0; r <= OPPONENT_ROWS; r++) {
       opponentCtx.beginPath();
@@ -4482,7 +4482,7 @@
 
     function drawCountdown() {
       // Clear with game background
-      ctx.fillStyle = "#0f172a";
+      ctx.fillStyle = "#0b0f18";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Draw countdown number

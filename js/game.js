@@ -184,14 +184,11 @@
 
     const dpr = window.devicePixelRatio || 1;
     const wrapper = state.canvas.parentElement;
-    const isMobile =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(max-width: 767px)").matches;
 
-    // On mobile, fit the cell size to the wrapper so the board fills the available
-    // space and stays centered. On desktop, keep the default fixed cell size.
+    // Fit the cell size to the wrapper so the board fills the space the layout
+    // gives it. Until the wrapper has a size, keep the last (or default) cell.
     let cell = state.cellSize || 25;
-    if (isMobile && wrapper) {
+    if (wrapper) {
       const availWidth = wrapper.clientWidth;
       const availHeight = wrapper.clientHeight;
       if (availWidth > 0 && availHeight > 0) {
@@ -690,11 +687,11 @@
     const h = state.canvasCSSHeight;
 
     // Clear
-    ctx.fillStyle = "#0f172a";
+    ctx.fillStyle = "#0b0f18";
     ctx.fillRect(0, 0, w, h);
 
     // ---- GRID ----
-    ctx.strokeStyle = "#1e293b";
+    ctx.strokeStyle = "#141b28";
     ctx.lineWidth = 1;
 
     for (let r = 0; r <= ROWS; r++) {
@@ -765,10 +762,10 @@
 
     // ---- PAUSE ----
     if (state.paused) {
-      ctx.fillStyle = "rgba(0,0,0,0.7)";
+      ctx.fillStyle = "rgba(7,9,15,0.8)";
       ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = "#22d3ee";
-      ctx.font = "bold 24px system-ui";
+      ctx.font = "bold 20px ui-monospace, Menlo, Consolas, monospace";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("PAUSED", w / 2, h / 2);
@@ -786,15 +783,9 @@
       size - padding * 2,
     );
 
-    // Highlight
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.fillRect(x + padding, y + padding, size - padding * 2, 3);
-    ctx.fillRect(x + padding, y + padding, 3, size - padding * 2);
-
-    // Shadow
-    ctx.fillStyle = "rgba(0,0,0,0.3)";
-    ctx.fillRect(x + padding, y + size - padding - 3, size - padding * 2, 3);
-    ctx.fillRect(x + size - padding - 3, y + padding, 3, size - padding * 2);
+    // A thin top lip keeps stacked cells readable without a full bevel.
+    ctx.fillStyle = "rgba(255,255,255,0.22)";
+    ctx.fillRect(x + padding, y + padding, size - padding * 2, Math.max(1, size * 0.08));
   }
 
   function renderNext() {
@@ -841,7 +832,7 @@
   function renderHoldOnCanvas(canvas, ctx, cellSize) {
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = "#1e293b";
+    ctx.fillStyle = "#111724";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     if (!state.hold) return;
@@ -873,7 +864,7 @@
   function renderNextOnCanvas(canvas, ctx, cellSize) {
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = "#1e293b";
+    ctx.fillStyle = "#111724";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     if (!state.next) return;

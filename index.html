@@ -11,7 +11,7 @@
             name="description"
             content="Stack blocks. Send garbage. Crush your friends. A fast-paced multiplayer block-stacking game with Battle Royale mode for up to 16 players."
         />
-        <meta name="theme-color" content="#0f172a" />
+        <meta name="theme-color" content="#07090f" />
         <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
         <link
             rel="icon"
@@ -25,56 +25,39 @@
     </head>
     <body>
         <!-- Audio Enable Screen -->
-        <div id="screen-audio" class="screen active arcade-screen splash-arcade">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="splash-container">
-                <div class="splash-coin" aria-hidden="true">🔊</div>
-                <h1 class="brand-header splash-title" aria-label="FLIXTRIS">
-                    <span class="ltr" aria-hidden="true">F</span
-                    ><span class="ltr" aria-hidden="true">L</span
-                    ><span class="ltr" aria-hidden="true">I</span
-                    ><span class="ltr" aria-hidden="true">X</span
-                    ><span class="ltr" aria-hidden="true">T</span
-                    ><span class="ltr" aria-hidden="true">R</span
-                    ><span class="ltr" aria-hidden="true">I</span
-                    ><span class="ltr" aria-hidden="true">S</span>
-                </h1>
-                <p class="splash-prompt arcade-blink">
-                    ▸ Tap or press any key to enable sound ◂
+        <div id="screen-audio" class="screen boot-screen active">
+            <div class="boot">
+                <div class="piece-parade" aria-hidden="true">
+                    <span class="glyph" data-glyph="i"></span>
+                    <span class="glyph" data-glyph="o"></span>
+                    <span class="glyph" data-glyph="t"></span>
+                    <span class="glyph" data-glyph="s"></span>
+                    <span class="glyph" data-glyph="z"></span>
+                    <span class="glyph" data-glyph="j"></span>
+                    <span class="glyph" data-glyph="l"></span>
+                </div>
+                <h1 class="wordmark">FLIXTRIS</h1>
+                <p class="boot-sub">Best with sound on.</p>
+                <p class="splash-prompt blink-cue">
+                    Tap or press any key to enable sound
                 </p>
             </div>
         </div>
 
         <!-- Splash Screen -->
-        <div id="screen-splash" class="screen arcade-screen splash-arcade">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="splash-container">
-                <div class="splash-coin" aria-hidden="true">◆</div>
-                <h1 class="brand-header splash-title" aria-label="FLIXTRIS">
-                    <span class="ltr" aria-hidden="true">F</span
-                    ><span class="ltr" aria-hidden="true">L</span
-                    ><span class="ltr" aria-hidden="true">I</span
-                    ><span class="ltr" aria-hidden="true">X</span
-                    ><span class="ltr" aria-hidden="true">T</span
-                    ><span class="ltr" aria-hidden="true">R</span
-                    ><span class="ltr" aria-hidden="true">I</span
-                    ><span class="ltr" aria-hidden="true">S</span>
-                </h1>
-                <p class="splash-author">
+        <div id="screen-splash" class="screen boot-screen">
+            <div class="boot">
+                <div class="piece-parade" aria-hidden="true">
+                    <span class="glyph" data-glyph="i"></span>
+                    <span class="glyph" data-glyph="o"></span>
+                    <span class="glyph" data-glyph="t"></span>
+                    <span class="glyph" data-glyph="s"></span>
+                    <span class="glyph" data-glyph="z"></span>
+                    <span class="glyph" data-glyph="j"></span>
+                    <span class="glyph" data-glyph="l"></span>
+                </div>
+                <h1 class="wordmark">FLIXTRIS</h1>
+                <p class="boot-sub">
                     Created by
                     <a
                         href="https://github.com/ra9"
@@ -82,541 +65,253 @@
                         rel="noopener"
                         >Carlos S. Nah</a
                     >
-                    · v1.0
                 </p>
-                <p class="splash-prompt arcade-blink">
-                    ▸ Press any key or tap to start ◂
+                <p class="splash-prompt blink-cue">
+                    Press any key or tap to start
                 </p>
             </div>
         </div>
 
-        <!-- Mode Selection Screen -->
-        <div id="screen-menu" class="screen cabinet-screen">
-            <!-- Cabinet Marquee (topper) -->
-            <div class="cabinet-marquee" aria-hidden="true">
-                <div class="marquee-bulbs marquee-bulbs-left">
-                    <span></span><span></span><span></span><span></span
-                    ><span></span><span></span><span></span><span></span
-                    ><span></span><span></span>
+        <!-- Main Menu -->
+        <div id="screen-menu" class="screen app-screen">
+            <header class="app-bar">
+                <a class="app-brand" href="landing.html" aria-label="Flixtris home">
+                    <span class="brand-mark" aria-hidden="true"
+                        ><i></i><i></i><i></i><i></i
+                    ></span>
+                    <span class="app-brand-name">FLIXTRIS</span>
+                </a>
+                <div class="player-chip" aria-label="Player">
+                    <span class="chip-cell">
+                        <span class="chip-k">1UP</span>
+                        <span class="chip-v" id="landingPlayerName">GUEST</span>
+                    </span>
+                    <span class="chip-cell">
+                        <span class="chip-k">HI</span>
+                        <span class="chip-v" id="landingHighScore">0</span>
+                    </span>
                 </div>
-                <div class="marquee-sign">
-                    <span class="marquee-brand">FLIXTRIS</span>
-                    <span class="marquee-sub">◆ ARCADE EDITION ◆</span>
-                </div>
-                <div class="marquee-bulbs marquee-bulbs-right">
-                    <span></span><span></span><span></span><span></span
-                    ><span></span><span></span><span></span><span></span
-                    ><span></span><span></span>
-                </div>
-            </div>
+                <nav class="app-bar-actions" aria-label="Menu">
+                    <button class="bar-btn" id="leaderboardBtn">
+                        Leaderboards
+                    </button>
+                    <button class="bar-btn" id="tournamentBtn">
+                        Tournaments
+                    </button>
+                    <button class="bar-btn" id="settingsBtn">Settings</button>
+                </nav>
+            </header>
 
-            <!-- Cabinet Screen Bezel -->
-            <div class="cabinet-bezel">
-                <div class="bezel-corner bezel-corner-tl"></div>
-                <div class="bezel-corner bezel-corner-tr"></div>
-                <div class="bezel-corner bezel-corner-bl"></div>
-                <div class="bezel-corner bezel-corner-br"></div>
-
-                <!-- CRT Background -->
-                <div class="crt-bg" aria-hidden="true">
-                    <span class="crt-piece crt-piece-1"></span>
-                    <span class="crt-piece crt-piece-2"></span>
-                    <span class="crt-piece crt-piece-3"></span>
-                    <span class="crt-piece crt-piece-4"></span>
-                    <span class="crt-piece crt-piece-5"></span>
-                    <span class="crt-piece crt-piece-6"></span>
-                </div>
-
-                <!-- LCD Scoreboard Strip -->
-                <div class="lcd-scoreboard">
-                    <div class="lcd-cell">
-                        <span class="lcd-k">1UP</span>
-                        <span class="lcd-v lcd-name" id="landingPlayerName"
-                            >GUEST</span
-                        >
-                    </div>
-                    <div class="lcd-cell lcd-cell-hi">
-                        <span class="lcd-k">HI-SCORE</span>
-                        <span class="lcd-v lcd-number" id="landingHighScore"
-                            >0000000</span
-                        >
-                    </div>
-                    <div class="lcd-cell">
-                        <span class="lcd-k">CREDITS</span>
-                        <span class="lcd-v lcd-credit">FREE PLAY</span>
-                    </div>
+            <main class="app-main">
+                <div class="page-head">
+                    <p class="eyebrow"><b>●</b> FREE PLAY · PLAYER 1 READY</p>
+                    <h1 class="page-title">Pick your game.</h1>
                 </div>
 
-                <!-- Giant Tetromino Title -->
-                <div class="cabinet-title-wrap">
-                    <div class="press-start">
-                        <span class="press-lamp"></span>
-                        <span>PLAYER 1 READY</span>
-                        <span class="press-lamp"></span>
-                    </div>
-                    <h1
-                        class="cabinet-title"
-                        aria-label="FLIXTRIS"
-                        data-text="FLIXTRIS"
-                    >
-                        <span class="cab-ltr" style="--ltr-color:#22d3ee"
-                            >F</span
-                        ><span class="cab-ltr" style="--ltr-color:#facc15"
-                            >L</span
-                        ><span class="cab-ltr" style="--ltr-color:#a78bfa"
-                            >I</span
-                        ><span class="cab-ltr" style="--ltr-color:#4ade80"
-                            >X</span
-                        ><span class="cab-ltr" style="--ltr-color:#f43f5e"
-                            >T</span
-                        ><span class="cab-ltr" style="--ltr-color:#3b82f6"
-                            >R</span
-                        ><span class="cab-ltr" style="--ltr-color:#fb923c"
-                            >I</span
-                        ><span class="cab-ltr" style="--ltr-color:#f472b6"
-                            >S</span
-                        >
-                    </h1>
-                    <div class="insert-coin">
-                        <span class="coin-slot" aria-hidden="true">
-                            <span class="coin"></span>
+                <section class="start-grid" aria-label="Game types">
+                    <button class="start-card" id="singlePlayerBtn" data-piece="t">
+                        <span class="glyph glyph-xl" data-glyph="t" aria-hidden="true"></span>
+                        <span class="start-card-body">
+                            <span class="start-card-kicker">SOLO</span>
+                            <span class="start-card-name">Single Player</span>
+                            <span class="start-card-desc"
+                                >Classic · Daily · Hardcore · Bots · Seeds</span
+                            >
                         </span>
-                        <span class="insert-coin-text">INSERT COIN · SELECT MODE</span>
-                    </div>
-                </div>
-
-                <!-- SELECT YOUR MODE — character select grid -->
-                <section class="mode-select">
-                    <div class="mode-select-header">
-                        <span class="mode-select-chevron">▸</span>
-                        <h2 class="mode-select-title">SELECT MODE</h2>
-                        <span class="mode-select-chevron">◂</span>
-                    </div>
-                    <div class="mode-select-grid">
-                        <button
-                            class="select-card"
-                            id="singlePlayerBtn"
-                            data-piece="t"
-                        >
-                            <span class="select-card-scan"></span>
-                            <div class="select-card-portrait">
-                                <svg
-                                    class="portrait-tetro"
-                                    viewBox="0 0 4 4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <rect x="1" y="0" width="1" height="1" />
-                                    <rect x="0" y="1" width="1" height="1" />
-                                    <rect x="1" y="1" width="1" height="1" />
-                                    <rect x="2" y="1" width="1" height="1" />
-                                </svg>
-                                <span class="portrait-tag">T</span>
-                            </div>
-                            <div class="select-card-meta">
-                                <h3>Single Player</h3>
-                                <p>Classic · Daily · Sprint</p>
-                                <span class="select-card-action">
-                                    PRESS START
-                                </span>
-                            </div>
-                        </button>
-                        <button
-                            class="select-card"
-                            id="multiplayerBtn"
-                            data-piece="z"
-                        >
-                            <span class="select-card-scan"></span>
-                            <div class="select-card-portrait">
-                                <svg
-                                    class="portrait-tetro"
-                                    viewBox="0 0 4 4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <rect x="0" y="0" width="1" height="1" />
-                                    <rect x="1" y="0" width="1" height="1" />
-                                    <rect x="1" y="1" width="1" height="1" />
-                                    <rect x="2" y="1" width="1" height="1" />
-                                </svg>
-                                <span class="portrait-tag">Z</span>
-                            </div>
-                            <div class="select-card-meta">
-                                <h3>Multiplayer</h3>
-                                <p>1v1 · Battle Royale · Co‑op</p>
-                                <span class="select-card-action">
-                                    PRESS START
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-
-                    <!-- Pro row (Replays / Analytics / Ranked) -->
-                    <div
-                        class="mode-select-grid mode-select-grid-pro"
-                        id="proMenuItems"
-                        style="display: none"
-                    >
-                        <button
-                            class="select-card select-card-sm"
-                            id="menuReplaysBtn"
-                            data-piece="l"
-                        >
-                            <span class="select-card-scan"></span>
-                            <div class="select-card-portrait portrait-sm">
-                                <svg
-                                    class="portrait-tetro"
-                                    viewBox="0 0 4 4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <rect x="2" y="0" width="1" height="1" />
-                                    <rect x="0" y="1" width="1" height="1" />
-                                    <rect x="1" y="1" width="1" height="1" />
-                                    <rect x="2" y="1" width="1" height="1" />
-                                </svg>
-                            </div>
-                            <div class="select-card-meta">
-                                <h3>Replays</h3>
-                                <p>Review your runs</p>
-                            </div>
-                        </button>
-                        <button
-                            class="select-card select-card-sm"
-                            id="menuAnalyticsBtn"
-                            data-piece="s"
-                        >
-                            <span class="select-card-scan"></span>
-                            <div class="select-card-portrait portrait-sm">
-                                <svg
-                                    class="portrait-tetro"
-                                    viewBox="0 0 4 4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <rect x="1" y="0" width="1" height="1" />
-                                    <rect x="2" y="0" width="1" height="1" />
-                                    <rect x="0" y="1" width="1" height="1" />
-                                    <rect x="1" y="1" width="1" height="1" />
-                                </svg>
-                            </div>
-                            <div class="select-card-meta">
-                                <h3>Analytics</h3>
-                                <p>Deep performance</p>
-                            </div>
-                        </button>
-                        <button
-                            class="select-card select-card-sm"
-                            id="menuRankedBtn"
-                            data-piece="i"
-                        >
-                            <span class="select-card-scan"></span>
-                            <div class="select-card-portrait portrait-sm">
-                                <svg
-                                    class="portrait-tetro"
-                                    viewBox="0 0 4 4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <rect x="0" y="1" width="1" height="1" />
-                                    <rect x="1" y="1" width="1" height="1" />
-                                    <rect x="2" y="1" width="1" height="1" />
-                                    <rect x="3" y="1" width="1" height="1" />
-                                </svg>
-                            </div>
-                            <div class="select-card-meta">
-                                <h3>Ranked</h3>
-                                <p>Climb the ladder</p>
-                            </div>
-                        </button>
-                    </div>
+                        <span class="start-card-go">PRESS START →</span>
+                    </button>
+                    <button class="start-card" id="multiplayerBtn" data-piece="z">
+                        <span class="glyph glyph-xl" data-glyph="z" aria-hidden="true"></span>
+                        <span class="start-card-body">
+                            <span class="start-card-kicker">VERSUS</span>
+                            <span class="start-card-name">Multiplayer</span>
+                            <span class="start-card-desc"
+                                >1v1 Battle · Battle Royale for 2–16</span
+                            >
+                        </span>
+                        <span class="start-card-go">PRESS START →</span>
+                    </button>
                 </section>
 
-                <!-- Live Ticker Bar -->
-                <div class="cabinet-ticker" aria-hidden="true">
-                    <span class="ticker-tag">
-                        <span class="tag-dot"></span>LIVE
-                    </span>
-                    <div class="ticker-track">
-                        <div class="ticker-marquee">
-                            <span class="ticker-run">
-                                ◆ TIP Use ghost piece to aim hard drops ◆ NEWS
-                                Daily seed resets at midnight UTC ◆ RANK Top 1%
-                                earn the Platinum badge ◆ EVENT Battle Royale
-                                queue open ◆ TIP Keep your stack low and flat ◆
-                                SECRET Hold I-pieces for Tetrises ◆
-                            </span>
-                            <span class="ticker-run" aria-hidden="true">
-                                ◆ TIP Use ghost piece to aim hard drops ◆ NEWS
-                                Daily seed resets at midnight UTC ◆ RANK Top 1%
-                                earn the Platinum badge ◆ EVENT Battle Royale
-                                queue open ◆ TIP Keep your stack low and flat ◆
-                                SECRET Hold I-pieces for Tetrises ◆
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <!-- Pro row (Replays / Analytics / Ranked); JS sets display -->
+                <section
+                    class="pro-grid"
+                    id="proMenuItems"
+                    style="display: none"
+                    aria-label="Pro features"
+                >
+                    <button class="pro-card" id="menuReplaysBtn">
+                        <span class="glyph" data-glyph="l" aria-hidden="true"></span>
+                        <span>
+                            <span class="pro-card-name">Replays</span>
+                            <span class="pro-card-desc">Rewatch your runs</span>
+                        </span>
+                    </button>
+                    <button class="pro-card" id="menuAnalyticsBtn">
+                        <span class="glyph" data-glyph="s" aria-hidden="true"></span>
+                        <span>
+                            <span class="pro-card-name">Analytics</span>
+                            <span class="pro-card-desc">Grade and trends</span>
+                        </span>
+                    </button>
+                    <button class="pro-card" id="menuRankedBtn">
+                        <span class="glyph" data-glyph="i" aria-hidden="true"></span>
+                        <span>
+                            <span class="pro-card-name">Ranked</span>
+                            <span class="pro-card-desc">Climb the ladder</span>
+                        </span>
+                    </button>
+                </section>
 
-            <!-- Cabinet Control Panel (footer) -->
-            <footer class="cabinet-control-panel">
-                <div class="cp-row cp-row-main">
-                    <div class="cp-joystick" aria-hidden="true">
-                        <div class="cp-joy-base"></div>
-                        <div class="cp-joy-shaft"></div>
-                        <div class="cp-joy-ball"></div>
-                    </div>
-                    <div class="cp-keycaps">
-                        <button class="keycap" id="leaderboardBtn">
-                            <span class="keycap-icon" aria-hidden="true">
-                                🏆
-                            </span>
-                            <span class="keycap-label">Leaderboards</span>
-                            <span class="keycap-hint" aria-hidden="true">L</span>
-                        </button>
-                        <button class="keycap" id="tournamentBtn">
-                            <span class="keycap-icon" aria-hidden="true">
-                                ⚔
-                            </span>
-                            <span class="keycap-label">Tournaments</span>
-                            <span class="keycap-hint" aria-hidden="true">T</span>
-                        </button>
-                        <button class="keycap" id="settingsBtn">
-                            <span class="keycap-icon" aria-hidden="true">
-                                ⚙
-                            </span>
-                            <span class="keycap-label">Settings</span>
-                            <span class="keycap-hint" aria-hidden="true">S</span>
-                        </button>
-                    </div>
-                    <div class="cp-action-buttons" aria-hidden="true">
-                        <span class="cp-btn cp-btn-a">A</span>
-                        <span class="cp-btn cp-btn-b">B</span>
-                        <span class="cp-btn cp-btn-c">C</span>
-                    </div>
-                </div>
-                <div class="cp-row cp-row-credits">
-                    <span class="cp-meta">© FLIXTRIS · v1.0</span>
-                    <span class="cp-meta-dot">●</span>
-                    <span class="cp-meta">
-                        Made with ♥ by Carlos S. Nah
-                    </span>
-                </div>
+                <p class="tip-strip">
+                    <span class="tip-tag">TIP</span>
+                    Keep your stack low and flat, and leave one column open for
+                    the I-piece.
+                </p>
+            </main>
+
+            <footer class="app-foot">
+                <span>Made by Carlos S. Nah</span>
+                <a href="about.html">About</a>
+                <a href="landing.html">Home</a>
             </footer>
         </div>
 
         <!-- Tournament Screen -->
-        <div id="screen-tournament" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Tournaments</p>
-                </header>
-                <div class="arcade-panel">
-                    <div class="tournament-container">
-                        <button class="arcade-btn" id="createTournamentBtn">
-                            + Create Tournament
-                        </button>
-                        <div class="tournament-list" id="tournamentList">
-                            <p class="tournament-empty">
-                                No tournaments yet. Create one to get started!
-                            </p>
-                        </div>
-                    </div>
+        <div id="screen-tournament" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="tournamentBackBtn">← Back</button>
+                <span class="app-bar-title">Tournaments</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>T</b> / TOURNAMENTS</p>
+                    <h1 class="page-title">Run a bracket.</h1>
+                    <p class="page-sub">
+                        Single elimination or round robin for 4, 8 or 16
+                        players on this device.
+                    </p>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="tournamentBackBtn">
-                        ← Back
-                    </button>
+                <button class="btn btn-primary btn-block" id="createTournamentBtn">
+                    + Create Tournament
+                </button>
+                <div class="tournament-list" id="tournamentList">
+                    <p class="tournament-empty">
+                        No tournaments yet. Create one to get started!
+                    </p>
                 </div>
-            </div>
+            </main>
         </div>
 
         <!-- Create Tournament Screen -->
-        <div id="screen-create-tournament" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">New Tournament</p>
-                </header>
-                <div class="arcade-panel">
-                    <div class="tournament-create-form">
-                        <div class="form-group">
-                            <label for="tournamentName">Tournament Name</label>
-                            <input
-                                type="text"
-                                id="tournamentName"
-                                class="form-input"
-                                placeholder="My Awesome Tournament"
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label>Tournament Type</label>
-                            <div class="tournament-type-selector">
-                                <button
-                                    class="tournament-type-btn active"
-                                    data-type="single_elimination"
-                                >
-                                    Single Elimination
-                                </button>
-                                <button
-                                    class="tournament-type-btn"
-                                    data-type="round_robin"
-                                >
-                                    Round Robin
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerCount">Number of Players</label>
-                            <select id="playerCount" class="form-select">
-                                <option value="4">4 Players</option>
-                                <option value="8" selected>8 Players</option>
-                                <option value="16">16 Players</option>
-                            </select>
-                        </div>
-                        <div class="arcade-actions">
-                            <button class="arcade-btn" id="startTournamentBtn">
-                                Create &amp; Start
+        <div id="screen-create-tournament" class="screen app-screen">
+            <header class="app-bar">
+                <span class="app-bar-title">New Tournament</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>T</b> / NEW TOURNAMENT</p>
+                    <h1 class="page-title">Set it up.</h1>
+                </div>
+                <div class="panel tournament-create-form">
+                    <div class="form-group">
+                        <label for="tournamentName">Tournament name</label>
+                        <input
+                            type="text"
+                            id="tournamentName"
+                            class="form-input"
+                            placeholder="My Awesome Tournament"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">Format</span>
+                        <div class="segmented tournament-type-selector">
+                            <button
+                                class="tournament-type-btn active"
+                                data-type="single_elimination"
+                            >
+                                Single Elimination
                             </button>
                             <button
-                                class="arcade-btn ghost"
-                                id="cancelTournamentBtn"
+                                class="tournament-type-btn"
+                                data-type="round_robin"
                             >
-                                Cancel
+                                Round Robin
                             </button>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="playerCount">Players</label>
+                        <select id="playerCount" class="form-input">
+                            <option value="4">4 Players</option>
+                            <option value="8" selected>8 Players</option>
+                            <option value="16">16 Players</option>
+                        </select>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" id="startTournamentBtn">
+                            Create &amp; Start
+                        </button>
+                        <button class="btn btn-ghost" id="cancelTournamentBtn">
+                            Cancel
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
 
         <!-- Tournament Bracket Screen -->
-        <div id="screen-tournament-bracket" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline" id="tournamentBracketTitle">
-                        Tournament Bracket
-                    </p>
-                </header>
-                <div class="arcade-panel">
-                    <div class="tournament-bracket-container">
-                        <div class="tournament-status">
-                            <span class="tournament-round"
-                                >Round
-                                <span id="currentRound">1</span></span
-                            >
-                            <span class="tournament-players-remaining"
-                                ><span id="playersRemaining">8</span> players
-                                remaining</span
-                            >
-                        </div>
-                        <div
-                            class="tournament-matches"
-                            id="tournamentMatches"
-                        ></div>
-                        <div class="arcade-actions tournament-actions">
-                            <button class="arcade-btn" id="playNextMatchBtn">
-                                ▶ Play Next Match
-                            </button>
-                            <button
-                                class="arcade-btn ghost"
-                                id="viewStandingsBtn"
-                            >
-                                View Standings
-                            </button>
-                            <button
-                                class="arcade-btn ghost"
-                                id="exitTournamentBtn"
-                            >
-                                Exit Tournament
-                            </button>
-                        </div>
-                    </div>
+        <div id="screen-tournament-bracket" class="screen app-screen">
+            <header class="app-bar">
+                <span class="app-bar-title" id="tournamentBracketTitle"
+                    >Tournament Bracket</span
+                >
+            </header>
+            <main class="app-main">
+                <div class="tournament-status">
+                    <span class="status-pill"
+                        >ROUND <b id="currentRound">1</b></span
+                    >
+                    <span class="status-pill"
+                        ><b id="playersRemaining">8</b> PLAYERS LEFT</span
+                    >
                 </div>
-            </div>
+                <div class="tournament-matches" id="tournamentMatches"></div>
+                <div class="actions">
+                    <button class="btn btn-primary" id="playNextMatchBtn">
+                        ▶ Play Next Match
+                    </button>
+                    <button class="btn btn-ghost" id="viewStandingsBtn">
+                        View Standings
+                    </button>
+                    <button class="btn btn-ghost" id="exitTournamentBtn">
+                        Exit Tournament
+                    </button>
+                </div>
+            </main>
         </div>
 
         <!-- Settings Screen -->
-        <div id="screen-settings" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Settings</p>
-                </header>
-                <div class="settings-container">
-                <div class="settings-section">
-                    <h3>Audio</h3>
+        <div id="screen-settings" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="settingsBackBtn">← Back</button>
+                <span class="app-bar-title">Settings</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>S</b> / SETTINGS</p>
+                    <h1 class="page-title">Your cabinet.</h1>
+                </div>
+
+                <section class="panel settings-section">
+                    <h2 class="panel-title">Audio</h2>
                     <div class="setting-row">
-                        <span class="setting-label">Sound Effects</span>
+                        <span class="setting-label">Sound effects</span>
                         <button
                             class="toggle-btn"
                             id="sfxToggle"
                             data-enabled="true"
+                            aria-label="Sound effects"
                         >
                             <span class="toggle-slider"></span>
                         </button>
@@ -627,16 +322,18 @@
                             class="toggle-btn"
                             id="musicToggle"
                             data-enabled="true"
+                            aria-label="Music"
                         >
                             <span class="toggle-slider"></span>
                         </button>
                     </div>
-                </div>
-                <div class="settings-section">
-                    <h3>Display</h3>
+                </section>
+
+                <section class="panel settings-section">
+                    <h2 class="panel-title">Display</h2>
                     <div class="setting-row">
                         <span class="setting-label">Theme</span>
-                        <div class="theme-selector">
+                        <div class="segmented theme-selector">
                             <button class="theme-btn active" data-theme="dark">
                                 Dark
                             </button>
@@ -649,929 +346,481 @@
                         </div>
                     </div>
                     <div class="setting-row">
-                        <span class="setting-label">Ghost Piece</span>
+                        <span class="setting-label">Ghost piece</span>
                         <button
                             class="toggle-btn"
                             id="ghostToggle"
                             data-enabled="true"
+                            aria-label="Ghost piece"
                         >
                             <span class="toggle-slider"></span>
                         </button>
                     </div>
-                </div>
-                <div class="settings-section">
-                    <h3>Gameplay</h3>
+                </section>
+
+                <section class="panel settings-section">
+                    <h2 class="panel-title">Gameplay</h2>
                     <div class="setting-row">
-                        <span class="setting-label">Haptic Feedback</span>
+                        <span class="setting-label">Haptic feedback</span>
                         <button
                             class="toggle-btn"
                             id="hapticToggle"
                             data-enabled="true"
+                            aria-label="Haptic feedback"
                         >
                             <span class="toggle-slider"></span>
                         </button>
                     </div>
-                </div>
-                <div class="settings-section">
-                    <h3>Controls</h3>
-                    <div class="controls-info">
-                        <div class="control-row">
-                            <span class="key">⬅️➡️</span>
-                            <span>Move</span>
-                        </div>
-                        <div class="control-row">
-                            <span class="key">↑</span>
-                            <span>Rotate</span>
-                        </div>
-                        <div class="control-row">
-                            <span class="key">↓</span>
-                            <span>Soft Drop</span>
-                        </div>
-                        <div class="control-row">
-                            <span class="key">Space</span>
-                            <span>Hard Drop</span>
-                        </div>
-                        <div class="control-row">
-                            <span class="key">C</span>
-                            <span>Hold Piece</span>
-                        </div>
-                        <div class="control-row">
-                            <span class="key">P</span>
-                            <span>Pause</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="settings-section">
-                    <h3>Subscriptions</h3>
-                    <p style="color: var(--text-secondary)">
+                </section>
+
+                <section class="panel settings-section">
+                    <h2 class="panel-title">Controls</h2>
+                    <ul class="keys">
+                        <li>Move <span><kbd class="key">←</kbd><kbd class="key">→</kbd></span></li>
+                        <li>Rotate <span><kbd class="key">↑</kbd></span></li>
+                        <li>Soft drop <span><kbd class="key">↓</kbd></span></li>
+                        <li>Hard drop <span><kbd class="key">Space</kbd></span></li>
+                        <li>Hold piece <span><kbd class="key">C</kbd></span></li>
+                        <li>Pause <span><kbd class="key">P</kbd></span></li>
+                    </ul>
+                </section>
+
+                <section class="panel settings-section">
+                    <h2 class="panel-title">Pro</h2>
+                    <p class="setting-note">
                         Enable Pro to access premium features. This is free in
                         the current build.
                     </p>
-                    <button data-dev-pro-toggle class="btn">Enable Pro</button>
-                </div>
-                <div class="settings-section">
-                    <h3>Profile</h3>
+                    <button data-dev-pro-toggle class="btn btn-primary">
+                        Enable Pro
+                    </button>
+                </section>
+
+                <section class="panel settings-section">
+                    <h2 class="panel-title">Profile</h2>
                     <div class="setting-row">
-                        <span class="setting-label">Player Name</span>
-                        <button class="btn secondary small" id="changeNameBtn">
+                        <span class="setting-label">Player name</span>
+                        <button class="btn btn-ghost btn-sm" id="changeNameBtn">
                             Change
                         </button>
                     </div>
                     <div class="setting-row">
-                        <span class="setting-label">Reset Tutorial</span>
+                        <span class="setting-label">Tutorial</span>
                         <button
-                            class="btn secondary small"
+                            class="btn btn-ghost btn-sm"
                             id="resetTutorialBtn"
                         >
                             Reset
                         </button>
                     </div>
-                </div>
-            </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="settingsBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+                </section>
+            </main>
         </div>
 
         <!-- Analytics Dashboard Screen -->
-        <div id="screen-analytics" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Performance Analytics</p>
-                </header>
-
-            <!-- Performance Grade Section -->
-            <div class="analytics-grade-section">
-                <div class="grade-card">
-                    <h3>Your Performance Grade</h3>
-                    <div class="grade-display">
-                        <span class="grade-letter" id="analytics-grade">-</span>
-                        <span class="grade-label" id="analytics-grade-label"
-                            >Play some games to get graded!</span
-                        >
-                    </div>
-                    <div class="grade-breakdown">
-                        <div class="grade-stat">
-                            <span class="grade-stat-label"
-                                >Efficiency (APM)</span
-                            >
-                            <div class="grade-bar">
-                                <div
-                                    class="grade-bar-fill"
-                                    id="grade-apm-bar"
-                                    style="width: 0%"
-                                ></div>
-                            </div>
-                            <span class="grade-stat-value" id="grade-apm-value"
-                                >0</span
-                            >
-                        </div>
-                        <div class="grade-stat">
-                            <span class="grade-stat-label"
-                                >Line Clears (LPM)</span
-                            >
-                            <div class="grade-bar">
-                                <div
-                                    class="grade-bar-fill"
-                                    id="grade-lpm-bar"
-                                    style="width: 0%"
-                                ></div>
-                            </div>
-                            <span class="grade-stat-value" id="grade-lpm-value"
-                                >0</span
-                            >
-                        </div>
-                        <div class="grade-stat">
-                            <span class="grade-stat-label">Tetris Rate</span>
-                            <div class="grade-bar">
-                                <div
-                                    class="grade-bar-fill"
-                                    id="grade-tetris-bar"
-                                    style="width: 0%"
-                                ></div>
-                            </div>
-                            <span
-                                class="grade-stat-value"
-                                id="grade-tetris-value"
-                                >0%</span
-                            >
-                        </div>
-                        <div class="grade-stat">
-                            <span class="grade-stat-label">Board Control</span>
-                            <div class="grade-bar">
-                                <div
-                                    class="grade-bar-fill"
-                                    id="grade-control-bar"
-                                    style="width: 0%"
-                                ></div>
-                            </div>
-                            <span
-                                class="grade-stat-value"
-                                id="grade-control-value"
-                                >-</span
-                            >
-                        </div>
-                    </div>
+        <div id="screen-analytics" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="analyticsBackBtn">← Back</button>
+                <span class="app-bar-title">Analytics</span>
+            </header>
+            <main class="app-main">
+                <div class="page-head">
+                    <p class="eyebrow"><b>A</b> / PERFORMANCE</p>
+                    <h1 class="page-title">How you play.</h1>
                 </div>
-            </div>
 
-            <!-- Grading Explanation -->
-            <div class="analytics-explanation">
-                <h3>📖 How Grading Works</h3>
-                <div class="explanation-content">
-                    <div class="explanation-item">
-                        <span class="explanation-icon">⚡</span>
-                        <div>
-                            <strong>APM (Actions Per Minute)</strong>
-                            <p>
-                                Measures how quickly you move and rotate pieces.
-                                Higher APM shows faster decision-making and
-                                execution.
+                <section class="analytics-top">
+                    <div class="panel grade-card">
+                        <h2 class="panel-title">Performance grade</h2>
+                        <div class="grade-display">
+                            <span class="grade-letter" id="analytics-grade">-</span>
+                            <span class="grade-label" id="analytics-grade-label"
+                                >Play some games to get graded!</span
+                            >
+                        </div>
+                        <div class="grade-breakdown">
+                            <div class="grade-stat">
+                                <span class="grade-stat-label">Efficiency (APM)</span>
+                                <div class="grade-bar"><div class="grade-bar-fill" id="grade-apm-bar" style="width: 0%"></div></div>
+                                <span class="grade-stat-value" id="grade-apm-value">0</span>
+                            </div>
+                            <div class="grade-stat">
+                                <span class="grade-stat-label">Line clears (LPM)</span>
+                                <div class="grade-bar"><div class="grade-bar-fill" id="grade-lpm-bar" style="width: 0%"></div></div>
+                                <span class="grade-stat-value" id="grade-lpm-value">0</span>
+                            </div>
+                            <div class="grade-stat">
+                                <span class="grade-stat-label">Tetris rate</span>
+                                <div class="grade-bar"><div class="grade-bar-fill" id="grade-tetris-bar" style="width: 0%"></div></div>
+                                <span class="grade-stat-value" id="grade-tetris-value">0%</span>
+                            </div>
+                            <div class="grade-stat">
+                                <span class="grade-stat-label">Board control</span>
+                                <div class="grade-bar"><div class="grade-bar-fill" id="grade-control-bar" style="width: 0%"></div></div>
+                                <span class="grade-stat-value" id="grade-control-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel analytics-tips">
+                        <h2 class="panel-title">Tips to improve</h2>
+                        <div class="tips-list" id="analytics-tips-list">
+                            <div class="tip-item"><span class="tip-icon">01</span><p>Keep your stack low and flat to have more time to react to new pieces.</p></div>
+                            <div class="tip-item"><span class="tip-icon">02</span><p>Build with a well on one side (usually right) to set up Tetrises with the I-piece.</p></div>
+                            <div class="tip-item"><span class="tip-icon">03</span><p>Use the Hold feature to save I-pieces for Tetris opportunities.</p></div>
+                            <div class="tip-item"><span class="tip-icon">04</span><p>Practice looking ahead at the Next piece to plan placements faster.</p></div>
+                            <div class="tip-item"><span class="tip-icon">05</span><p>Avoid creating holes under pieces—they're hard to clear and waste lines.</p></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="analytics-charts-section">
+                    <h2 class="section-label">Performance trends</h2>
+                    <div class="charts-grid">
+                        <div class="panel chart-card">
+                            <h3 class="panel-title">Stack height over time</h3>
+                            <canvas id="dashboardChartHeight" width="280" height="140"></canvas>
+                        </div>
+                        <div class="panel chart-card">
+                            <h3 class="panel-title">Holes created</h3>
+                            <canvas id="dashboardChartHoles" width="280" height="140"></canvas>
+                        </div>
+                        <div class="panel chart-card">
+                            <h3 class="panel-title">Combo streaks</h3>
+                            <canvas id="dashboardChartCombos" width="280" height="140"></canvas>
+                        </div>
+                        <div class="panel chart-card">
+                            <h3 class="panel-title">Score progression</h3>
+                            <canvas id="dashboardChartScores" width="280" height="140"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="analytics-bottom">
+                    <div class="panel analytics-recent">
+                        <h2 class="panel-title">Recent games</h2>
+                        <div id="analytics-recent-list" class="recent-games-list">
+                            <p class="analytics-empty">
+                                No games recorded yet. Play some games to see
+                                your stats!
                             </p>
                         </div>
                     </div>
-                    <div class="explanation-item">
-                        <span class="explanation-icon">📈</span>
-                        <div>
-                            <strong>LPM (Lines Per Minute)</strong>
-                            <p>
-                                How efficiently you clear lines. Skilled players
-                                maintain high LPM by consistently setting up
-                                clears.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="explanation-item">
-                        <span class="explanation-icon">🎯</span>
-                        <div>
-                            <strong>Tetris Rate</strong>
-                            <p>
-                                Percentage of line clears that are Tetrises (4
-                                lines at once). Tetrises score significantly
-                                more points!
-                            </p>
-                        </div>
-                    </div>
-                    <div class="explanation-item">
-                        <span class="explanation-icon">🧱</span>
-                        <div>
-                            <strong>Board Control</strong>
-                            <p>
-                                Based on average stack height and holes created.
-                                Lower heights and fewer holes = better control.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Improvement Tips -->
-            <div class="analytics-tips">
-                <h3>💡 Tips to Improve</h3>
-                <div class="tips-list" id="analytics-tips-list">
-                    <div class="tip-item">
-                        <span class="tip-icon">🎮</span>
-                        <p>
-                            Keep your stack low and flat to have more time to
-                            react to new pieces.
-                        </p>
+                    <div class="panel analytics-explanation">
+                        <h2 class="panel-title">How grading works</h2>
+                        <dl class="explain-list">
+                            <div>
+                                <dt>APM · Actions per minute</dt>
+                                <dd>How quickly you move and rotate pieces. Higher APM shows faster decision-making and execution.</dd>
+                            </div>
+                            <div>
+                                <dt>LPM · Lines per minute</dt>
+                                <dd>How efficiently you clear lines. Skilled players keep LPM high by consistently setting up clears.</dd>
+                            </div>
+                            <div>
+                                <dt>Tetris rate</dt>
+                                <dd>The share of line clears that are Tetrises (4 lines at once). Tetrises score far more points.</dd>
+                            </div>
+                            <div>
+                                <dt>Board control</dt>
+                                <dd>Based on average stack height and holes created. Lower stacks and fewer holes mean better control.</dd>
+                            </div>
+                        </dl>
                     </div>
-                    <div class="tip-item">
-                        <span class="tip-icon">📐</span>
-                        <p>
-                            Build with a well on one side (usually right) to set
-                            up Tetrises with the I-piece.
-                        </p>
-                    </div>
-                    <div class="tip-item">
-                        <span class="tip-icon">🔄</span>
-                        <p>
-                            Use the Hold feature to save I-pieces for Tetris
-                            opportunities.
-                        </p>
-                    </div>
-                    <div class="tip-item">
-                        <span class="tip-icon">⏱️</span>
-                        <p>
-                            Practice looking ahead at the Next piece to plan
-                            placements faster.
-                        </p>
-                    </div>
-                    <div class="tip-item">
-                        <span class="tip-icon">🚫</span>
-                        <p>
-                            Avoid creating holes under pieces—they're hard to
-                            clear and waste lines.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="analytics-charts-section">
-                <h3>📉 Performance Trends</h3>
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h4>Stack Height Over Time</h4>
-                        <canvas
-                            id="dashboardChartHeight"
-                            width="280"
-                            height="140"
-                        ></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h4>Holes Created</h4>
-                        <canvas
-                            id="dashboardChartHoles"
-                            width="280"
-                            height="140"
-                        ></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h4>Combo Streaks</h4>
-                        <canvas
-                            id="dashboardChartCombos"
-                            width="280"
-                            height="140"
-                        ></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h4>Score Progression</h4>
-                        <canvas
-                            id="dashboardChartScores"
-                            width="280"
-                            height="140"
-                        ></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Games -->
-            <div class="analytics-recent">
-                <h3>🕹️ Recent Games</h3>
-                <div id="analytics-recent-list" class="recent-games-list">
-                    <p class="analytics-empty">
-                        No games recorded yet. Play some games to see your
-                        stats!
-                    </p>
-                </div>
-            </div>
-
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="analyticsBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+                </section>
+            </main>
         </div>
 
         <!-- Single Player Mode Selection -->
-        <div id="screen-singleplayer" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Single Player</p>
-                </header>
-                <div class="mode-cards">
-                    <button
-                        class="mode-card classic"
-                        data-mode="classic"
-                        data-piece="i"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                                <rect x="3" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+        <div id="screen-singleplayer" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="singlePlayerBackBtn">← Back</button>
+                <span class="app-bar-title">Single Player</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>01</b> / SINGLE PLAYER</p>
+                    <h1 class="page-title">Choose your run.</h1>
+                </div>
+                <div class="mode-list">
+                    <button class="mode-card" data-mode="classic" data-piece="i">
+                        <span class="glyph" data-glyph="i" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>Classic</h3>
-                            <p>Endless mode. How far can you go?</p>
+                            <span class="mode-card-name">Classic</span>
+                            <span class="mode-card-desc">Endless. How far can you go?</span>
                         </span>
+                        <span class="mode-card-tag">ENDLESS</span>
                     </button>
-                    <button
-                        class="mode-card daily"
-                        data-mode="daily"
-                        data-piece="o"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card" data-mode="daily" data-piece="o">
+                        <span class="glyph" data-glyph="s" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>Daily Challenge</h3>
-                            <p>Same pieces for everyone. Compare your score!</p>
+                            <span class="mode-card-name">Daily Challenge</span>
+                            <span class="mode-card-desc">Same pieces for everyone today. Compare your score.</span>
                         </span>
+                        <span class="mode-card-tag">DAILY SEED</span>
                     </button>
-                    <button
-                        class="mode-card hardcore"
-                        data-mode="hardcore"
-                        data-piece="z"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="0" width="1" height="1" />
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card" data-mode="hardcore" data-piece="z">
+                        <span class="glyph" data-glyph="z" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>Hardcore</h3>
-                            <p>No pause. No ghost piece. No mercy.</p>
+                            <span class="mode-card-name">Hardcore</span>
+                            <span class="mode-card-desc">No pause. No ghost piece. No mercy.</span>
                         </span>
+                        <span class="mode-card-tag">NO PAUSE</span>
                     </button>
-                    <button
-                        class="mode-card bot"
-                        id="botBattleBtn"
-                        data-piece="t"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card" id="botBattleBtn" data-piece="t">
+                        <span class="glyph" data-glyph="l" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>Bot Battle</h3>
-                            <p>Practice against AI bots of varying difficulty.</p>
+                            <span class="mode-card-name">Bot Battle</span>
+                            <span class="mode-card-desc">Spar with AI opponents, from gentle to ruthless.</span>
                         </span>
+                        <span class="mode-card-tag">VS AI</span>
                     </button>
-                    <button
-                        class="mode-card seed"
-                        id="playSeedBtn"
-                        data-piece="j"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card" id="playSeedBtn" data-piece="j">
+                        <span class="glyph" data-glyph="j" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>Play Seed</h3>
-                            <p>Enter a shared seed code to challenge a friend.</p>
+                            <span class="mode-card-name">Play Seed</span>
+                            <span class="mode-card-desc">Enter a shared seed code to challenge a friend.</span>
                         </span>
+                        <span class="mode-card-tag">CODE</span>
                     </button>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="singlePlayerBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+            </main>
         </div>
 
         <!-- Bot Battle Screen -->
-        <div id="screen-bot-select" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Bot Battle</p>
-                </header>
-                <div class="mode-cards bot-cards">
-                    <button
-                        class="mode-card bot-card"
-                        data-bot="beginner"
-                        data-piece="s"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+        <div id="screen-bot-select" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="botSelectBackBtn">← Back</button>
+                <span class="app-bar-title">Bot Battle</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>VS</b> / BOT BATTLE</p>
+                    <h1 class="page-title">Pick your opponent.</h1>
+                    <p class="page-sub">
+                        You start at the bot's level. Clears send garbage both
+                        ways.
+                    </p>
+                </div>
+                <div class="mode-list bot-cards">
+                    <button class="mode-card bot-card" data-bot="beginner" data-piece="s">
+                        <span class="bot-level" style="--lvl: var(--green)">01</span>
                         <span class="mode-card-body">
-                            <h3>Beginner Bot</h3>
-                            <p>Level 1 — Slow and makes mistakes. Great for learning.</p>
+                            <span class="mode-card-name">Beginner Bot</span>
+                            <span class="mode-card-desc">Slow and makes mistakes. Great for learning.</span>
                         </span>
+                        <span class="difficulty" style="--d: 1" aria-label="Difficulty 1 of 6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
                     </button>
-                    <button
-                        class="mode-card bot-card"
-                        data-bot="easy"
-                        data-piece="o"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card bot-card" data-bot="easy" data-piece="o">
+                        <span class="bot-level" style="--lvl: var(--yellow)">03</span>
                         <span class="mode-card-body">
-                            <h3>Easy Bot</h3>
-                            <p>Level 3 — Takes its time. Occasionally slips up.</p>
+                            <span class="mode-card-name">Easy Bot</span>
+                            <span class="mode-card-desc">Takes its time. Occasionally slips up.</span>
                         </span>
+                        <span class="difficulty" style="--d: 2" aria-label="Difficulty 2 of 6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
                     </button>
-                    <button
-                        class="mode-card bot-card"
-                        data-bot="medium"
-                        data-piece="l"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card bot-card" data-bot="medium" data-piece="l">
+                        <span class="bot-level" style="--lvl: var(--orange)">05</span>
                         <span class="mode-card-body">
-                            <h3>Medium Bot</h3>
-                            <p>Level 5 — Balanced play. Good for practice.</p>
+                            <span class="mode-card-name">Medium Bot</span>
+                            <span class="mode-card-desc">Balanced play. Good for practice.</span>
                         </span>
+                        <span class="difficulty" style="--d: 3" aria-label="Difficulty 3 of 6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
                     </button>
-                    <button
-                        class="mode-card bot-card"
-                        data-bot="hard"
-                        data-piece="z"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="0" width="1" height="1" />
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card bot-card" data-bot="hard" data-piece="z">
+                        <span class="bot-level" style="--lvl: var(--red)">08</span>
                         <span class="mode-card-body">
-                            <h3>Hard Bot</h3>
-                            <p>Level 8 — Fast and strategic. A real challenge.</p>
+                            <span class="mode-card-name">Hard Bot</span>
+                            <span class="mode-card-desc">Fast and strategic. A real challenge.</span>
                         </span>
+                        <span class="difficulty" style="--d: 4" aria-label="Difficulty 4 of 6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
                     </button>
-                    <button
-                        class="mode-card bot-card"
-                        data-bot="expert"
-                        data-piece="t"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card bot-card" data-bot="expert" data-piece="t">
+                        <span class="bot-level" style="--lvl: var(--purple)">12</span>
                         <span class="mode-card-body">
-                            <h3>Expert Bot</h3>
-                            <p>Level 12 — Near-perfect play. Only for the brave.</p>
+                            <span class="mode-card-name">Expert Bot</span>
+                            <span class="mode-card-desc">Near-perfect play. Only for the brave.</span>
                         </span>
+                        <span class="difficulty" style="--d: 5" aria-label="Difficulty 5 of 6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
                     </button>
-                    <button
-                        class="mode-card bot-card"
-                        data-bot="master"
-                        data-piece="i"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                                <rect x="3" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card bot-card" data-bot="master" data-piece="i">
+                        <span class="bot-level" style="--lvl: var(--cyan)">15</span>
                         <span class="mode-card-body">
-                            <h3>Master Bot</h3>
-                            <p>Level 15 — Optimal play. Can you survive?</p>
+                            <span class="mode-card-name">Master Bot</span>
+                            <span class="mode-card-desc">Optimal play. Can you survive?</span>
                         </span>
+                        <span class="difficulty" style="--d: 6" aria-label="Difficulty 6 of 6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
                     </button>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="botSelectBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+            </main>
         </div>
 
         <!-- Multiplayer Mode Selection -->
-        <div id="screen-multiplayer-select" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Multiplayer</p>
-                </header>
-                <div class="mode-cards">
-                    <button
-                        class="mode-card multiplayer"
-                        data-mode="multiplayer"
-                        data-piece="s"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="1" y="0" width="1" height="1" />
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+        <div id="screen-multiplayer-select" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="multiplayerBackBtn">← Back</button>
+                <span class="app-bar-title">Multiplayer</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>02</b> / MULTIPLAYER</p>
+                    <h1 class="page-title">Who are you up against?</h1>
+                </div>
+                <div class="mode-list">
+                    <button class="mode-card" data-mode="multiplayer" data-piece="s">
+                        <span class="glyph" data-glyph="j" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>1v1 Battle</h3>
-                            <p>Real-time 1v1 battle. See your opponent live!</p>
+                            <span class="mode-card-name">1v1 Battle</span>
+                            <span class="mode-card-desc">A real-time duel with your opponent's board live beside yours.</span>
                         </span>
+                        <span class="mode-card-tag">2 PLAYERS</span>
                     </button>
-                    <button
-                        class="mode-card royale"
-                        data-mode="royale"
-                        data-piece="l"
-                    >
-                        <span class="mode-card-icon" aria-hidden="true">
-                            <svg
-                                class="tetromino"
-                                viewBox="0 0 4 4"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect x="2" y="0" width="1" height="1" />
-                                <rect x="0" y="1" width="1" height="1" />
-                                <rect x="1" y="1" width="1" height="1" />
-                                <rect x="2" y="1" width="1" height="1" />
-                            </svg>
-                        </span>
+                    <button class="mode-card" data-mode="royale" data-piece="l">
+                        <span class="glyph" data-glyph="t" aria-hidden="true"></span>
                         <span class="mode-card-body">
-                            <h3>Battle Royale</h3>
-                            <p>2-16 players. Last one standing wins!</p>
+                            <span class="mode-card-name">Battle Royale</span>
+                            <span class="mode-card-desc">Up to sixteen stacks in one room. Last one standing wins.</span>
                         </span>
+                        <span class="mode-card-tag">2–16 PLAYERS</span>
                     </button>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="multiplayerBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+            </main>
         </div>
 
         <!-- Leaderboard Screen -->
-        <div id="screen-leaderboard" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Leaderboards</p>
-                </header>
-                <div class="arcade-panel">
-                    <div class="leaderboard-tabs">
-                        <button class="leaderboard-tab active" data-tab="global">
-                            Global
-                        </button>
-                        <button class="leaderboard-tab" data-tab="daily">
-                            Daily
-                        </button>
-                        <button class="leaderboard-tab" data-tab="weekly">
-                            Weekly
-                        </button>
+        <div id="screen-leaderboard" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="leaderboardBackBtn">← Back</button>
+                <span class="app-bar-title">Leaderboards</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>L</b> / LEADERBOARDS</p>
+                    <h1 class="page-title">The names to beat.</h1>
+                </div>
+                <div class="segmented leaderboard-tabs" role="tablist">
+                    <button class="leaderboard-tab active" data-tab="global">Global</button>
+                    <button class="leaderboard-tab" data-tab="daily">Daily</button>
+                    <button class="leaderboard-tab" data-tab="weekly">Weekly</button>
+                </div>
+                <div class="leaderboard-container">
+                    <div class="leaderboard-header">
+                        <span>#</span>
+                        <span>PLAYER</span>
+                        <span>SCORE</span>
                     </div>
-                    <div class="leaderboard-container">
-                        <div class="leaderboard-header">
-                            <span>#</span>
-                            <span>Player</span>
-                            <span>Score</span>
-                        </div>
-                        <div class="leaderboard-list" id="leaderboardList">
-                            <div class="leaderboard-loading">Loading...</div>
-                        </div>
+                    <div class="leaderboard-list" id="leaderboardList">
+                        <div class="leaderboard-loading">Loading...</div>
                     </div>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="leaderboardBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+            </main>
         </div>
 
         <!-- Multiplayer Lobby Screen -->
-        <div id="screen-multiplayer" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Multiplayer Lobby</p>
-                </header>
-                <div class="arcade-panel">
-                    <div class="multiplayer-options">
-                        <button class="arcade-btn" id="createRoomBtn">
+        <div id="screen-multiplayer" class="screen app-screen">
+            <header class="app-bar">
+                <button class="back-btn" id="mpBackBtn">← Back</button>
+                <span class="app-bar-title">Lobby</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="page-head">
+                    <p class="eyebrow"><b>02</b> / LOBBY</p>
+                    <h1 class="page-title">Open a room.</h1>
+                    <p class="page-sub">
+                        Create a room and share its four-letter code, or join a
+                        friend's.
+                    </p>
+                </div>
+                <div class="lobby-grid">
+                    <div class="panel">
+                        <h2 class="panel-title">Host</h2>
+                        <button class="btn btn-primary btn-block" id="createRoomBtn">
                             + Create Room
                         </button>
-                        <div class="or-divider">or</div>
+                    </div>
+                    <div class="panel">
+                        <h2 class="panel-title">Join</h2>
                         <div class="join-room">
                             <input
                                 type="text"
                                 id="roomCodeInput"
-                                class="form-input"
-                                placeholder="Enter room code"
+                                class="form-input code-input"
+                                placeholder="CODE"
                                 maxlength="4"
                                 autocomplete="off"
+                                aria-label="Room code"
                             />
-                            <button class="arcade-btn" id="joinRoomBtn">
+                            <button class="btn btn-ghost" id="joinRoomBtn">
                                 Join Room
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="menu-links">
-                    <button class="menu-link arcade-back" id="mpBackBtn">
-                        ← Back
-                    </button>
-                </div>
-            </div>
+            </main>
         </div>
 
         <!-- Multiplayer Waiting Room -->
-        <div id="screen-waiting" class="screen arcade-screen">
-            <div class="menu-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-o"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="menu-container">
-                <header class="menu-hero">
-                    <h1 class="brand-header" aria-label="FLIXTRIS">
-                        <span class="ltr" aria-hidden="true">F</span
-                        ><span class="ltr" aria-hidden="true">L</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">X</span
-                        ><span class="ltr" aria-hidden="true">T</span
-                        ><span class="ltr" aria-hidden="true">R</span
-                        ><span class="ltr" aria-hidden="true">I</span
-                        ><span class="ltr" aria-hidden="true">S</span>
-                    </h1>
-                    <p class="menu-tagline">Waiting Room</p>
-                </header>
-                <div class="arcade-panel">
-                    <div class="room-info">
-                        <p class="room-code-label">Room Code</p>
-                        <div class="room-code-display" id="roomCodeDisplay">
-                            ----
-                        </div>
-                        <p class="waiting-text arcade-blink" id="waitingText">
-                            ▸ Waiting for opponent... ◂
-                        </p>
-                    </div>
-                    <div class="players-list" id="playersList"></div>
-                    <div class="arcade-actions">
-                        <button
-                            class="arcade-btn"
-                            id="readyBtn"
-                            style="display: none"
-                        >
-                            ▶ Ready!
-                        </button>
-                        <button class="arcade-btn ghost" id="leaveRoomBtn">
-                            Leave Room
-                        </button>
-                    </div>
+        <div id="screen-waiting" class="screen app-screen">
+            <header class="app-bar">
+                <span class="app-bar-title">Waiting Room</span>
+            </header>
+            <main class="app-main app-main-narrow">
+                <div class="room-info">
+                    <p class="eyebrow">ROOM CODE</p>
+                    <div class="room-code-display" id="roomCodeDisplay">----</div>
+                    <p class="waiting-text blink-cue" id="waitingText">
+                        Waiting for opponent...
+                    </p>
                 </div>
-            </div>
+                <div class="players-list" id="playersList"></div>
+                <div class="actions actions-center">
+                    <button class="btn btn-primary" id="readyBtn" style="display: none">
+                        ▶ Ready!
+                    </button>
+                    <button class="btn btn-ghost" id="leaveRoomBtn">
+                        Leave Room
+                    </button>
+                </div>
+            </main>
         </div>
 
         <!-- Game Screen -->
         <div id="screen-game" class="screen">
-            <!-- Desktop navbar -->
+            <!-- Desktop bar -->
             <nav class="game-navbar">
-                <div class="game-navbar-brand">FLIXTRIS</div>
+                <span class="app-brand">
+                    <span class="brand-mark" aria-hidden="true"
+                        ><i></i><i></i><i></i><i></i
+                    ></span>
+                    <span class="app-brand-name">FLIXTRIS</span>
+                </span>
+                <span class="game-navbar-hint">
+                    <kbd class="key key-sm">P</kbd> pause
+                    <kbd class="key key-sm">C</kbd> hold
+                    <kbd class="key key-sm">Space</kbd> drop
+                </span>
             </nav>
 
-            <!-- Mobile header with hamburger -->
+            <!-- Mobile header -->
             <div class="mobile-header">
                 <div class="mobile-stats">
+                    <span class="mobile-stats-label">SCORE</span>
                     <span id="mobile-score">0</span>
-                    <span class="mobile-stats-label">Score</span>
-                    <span
-                        class="mobile-high-score"
-                        id="mobile-high-score"
-                    ></span>
+                    <span class="mobile-high-score" id="mobile-high-score"></span>
                 </div>
                 <div class="mobile-pieces">
                     <div class="mobile-piece-box">
-                        <span class="piece-label">Hold</span>
-                        <canvas
-                            id="hold-mobile"
-                            width="40"
-                            height="40"
-                        ></canvas>
+                        <span class="piece-label">HOLD</span>
+                        <canvas id="hold-mobile" width="40" height="40"></canvas>
                     </div>
                     <div class="mobile-piece-box">
-                        <span class="piece-label">Next</span>
-                        <canvas
-                            id="next-mobile"
-                            width="40"
-                            height="40"
-                        ></canvas>
+                        <span class="piece-label">NEXT</span>
+                        <canvas id="next-mobile" width="40" height="40"></canvas>
                     </div>
                 </div>
                 <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                    <span></span><span></span><span></span>
                 </button>
             </div>
 
@@ -1580,841 +829,509 @@
 
             <div class="panel-overlay" id="panelOverlay"></div>
 
-            <!-- Desktop 3-Column Layout -->
             <div class="game-layout">
-                <!-- Left Sidebar: Player Stats -->
-                <div class="game-sidebar game-sidebar-left">
-                    <div class="sidebar-section">
-                        <h4 class="sidebar-title">Player</h4>
-                        <div
-                            class="player-name-display"
-                            id="player-name-display"
-                        >
-                            Player
-                        </div>
+                <!-- Left: player stats -->
+                <aside class="game-sidebar game-sidebar-left">
+                    <div class="hud-box">
+                        <span class="hud-label">PLAYER</span>
+                        <div class="player-name-display" id="player-name-display">Player</div>
                     </div>
-                    <div class="sidebar-section">
-                        <h4 class="sidebar-title">Stats</h4>
+                    <div class="hud-box">
                         <div class="stat-item">
-                            <span class="stat-label">Score</span>
+                            <span class="stat-label">SCORE</span>
                             <span class="stat-value" id="desktop-score">0</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Level</span>
+                            <span class="stat-label">LEVEL</span>
                             <span class="stat-value" id="desktop-level">1</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Lines</span>
+                            <span class="stat-label">LINES</span>
                             <span class="stat-value" id="desktop-lines">0</span>
                         </div>
                     </div>
-                    <div class="sidebar-section">
-                        <h4 class="sidebar-title">High Score</h4>
-                        <div class="high-score-value" id="desktop-high-score">
-                            0
-                        </div>
+                    <div class="hud-box">
+                        <span class="hud-label">HIGH SCORE</span>
+                        <div class="high-score-value" id="desktop-high-score">0</div>
                     </div>
-                    <div
-                        class="sidebar-section pro-section-sidebar"
-                        id="proSidebarSection"
-                    >
-                        <h4 class="sidebar-title">Pro Features</h4>
-                        <button class="btn-sidebar" id="sidebarReplaysBtn">
-                            🎬 Replays
-                        </button>
-                        <button class="btn-sidebar" id="sidebarAnalyticsBtn">
-                            📊 Analytics
-                        </button>
-                        <button class="btn-sidebar" id="sidebarRankedBtn">
-                            🏅 Ranked
-                        </button>
+                    <div class="hud-box pro-section-sidebar" id="proSidebarSection">
+                        <span class="hud-label">PRO</span>
+                        <button class="btn-sidebar" id="sidebarReplaysBtn">Replays</button>
+                        <button class="btn-sidebar" id="sidebarAnalyticsBtn">Analytics</button>
+                        <button class="btn-sidebar" id="sidebarRankedBtn">Ranked</button>
                     </div>
-                </div>
+                </aside>
 
-                <!-- Center: Game Board -->
+                <!-- Center: the well -->
                 <div class="game-center">
-                    <!-- Garbage indicator -->
-                    <div class="garbage-indicator" id="garbageIndicator">
+                    <div class="garbage-indicator" id="garbageIndicator" aria-label="Incoming garbage">
                         <div class="garbage-bar" id="garbageBar"></div>
                         <span class="garbage-count" id="garbageCount">0</span>
                     </div>
                     <div class="game-board-wrapper">
                         <canvas id="game" width="300" height="600"></canvas>
                     </div>
-                    <!-- Opponent container for multiplayer -->
                     <div class="opponent-container" id="opponentContainer">
-                        <span class="opponent-name" id="opponentName"
-                            >Opponent</span
-                        >
-                        <span class="opponent-score" id="opponentScore">0</span>
-                        <canvas
-                            id="opponent-board"
-                            width="150"
-                            height="300"
-                        ></canvas>
-                        <!-- Emoji panel for multiplayer -->
+                        <div class="opponent-head">
+                            <span class="opponent-name" id="opponentName">Opponent</span>
+                            <span class="opponent-score" id="opponentScore">0</span>
+                        </div>
+                        <canvas id="opponent-board" width="150" height="300"></canvas>
                         <div class="emoji-panel" id="emojiPanel">
-                            <button class="emoji-btn" data-emoji="👍">
-                                👍
-                            </button>
-                            <button class="emoji-btn" data-emoji="🔥">
-                                🔥
-                            </button>
-                            <button class="emoji-btn" data-emoji="😀">
-                                😀
-                            </button>
-                            <button class="emoji-btn" data-emoji="💀">
-                                💀
-                            </button>
+                            <button class="emoji-btn" data-emoji="👍">👍</button>
+                            <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                            <button class="emoji-btn" data-emoji="😀">😀</button>
+                            <button class="emoji-btn" data-emoji="💀">💀</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Sidebar: Hold, Next, Controls -->
-                <div class="game-sidebar game-sidebar-right">
-                    <div class="sidebar-section">
-                        <h4 class="sidebar-title">
-                            Hold <span class="hold-hint">(C)</span>
-                        </h4>
+                <!-- Right: hold, next, controls -->
+                <aside class="game-sidebar game-sidebar-right">
+                    <div class="hud-box">
+                        <span class="hud-label">HOLD <span class="hold-hint">C</span></span>
                         <div class="piece-preview-box">
                             <canvas id="hold" width="80" height="80"></canvas>
                         </div>
                     </div>
-                    <div class="sidebar-section">
-                        <h4 class="sidebar-title">Next</h4>
+                    <div class="hud-box">
+                        <span class="hud-label">NEXT</span>
                         <div class="piece-preview-box">
                             <canvas id="next" width="80" height="80"></canvas>
                         </div>
                     </div>
-                    <div class="sidebar-section sidebar-controls">
-                        <h4 class="sidebar-title">Controls</h4>
-                        <button class="btn-sidebar" id="helpBtn">
-                            ❓ Help
-                        </button>
-                        <button class="btn-sidebar" id="soundBtn">
-                            🔊 Sound: On
-                        </button>
-                        <button class="btn-sidebar btn-menu" id="mainMenuBtn">
-                            🏠 Main Menu
-                        </button>
+                    <div class="hud-box sidebar-controls">
+                        <button class="btn-sidebar" id="helpBtn">Help</button>
+                        <button class="btn-sidebar" id="soundBtn">Sound: On</button>
+                        <button class="btn-sidebar btn-menu" id="mainMenuBtn">Main Menu</button>
                     </div>
-                </div>
+                </aside>
             </div>
 
-            <!-- Hidden side panel for mobile (legacy support) -->
-            <div class="panel" id="sidePanel">
-                <button
-                    class="panel-close"
-                    id="panelCloseBtn"
-                    aria-label="Close"
-                >
-                    &times;
-                </button>
-                <h1>Flixtris</h1>
-                <div style="margin: 0.5rem 0 1rem 0">
-                    <button id="yourReplaysBtn" class="btn secondary">
-                        Your Replays
-                    </button>
-                    <button
-                        id="rankedModeBtn"
-                        class="btn secondary"
-                        style="margin-left: 0.5rem"
-                    >
-                        Ranked Mode
-                    </button>
-                </div>
-                <!-- Store: Themes -->
+            <!-- Legacy side panel: never shown, kept for the listeners and
+                 store/analytics hooks that still reference these IDs. -->
+            <div class="panel-legacy" id="sidePanel" hidden>
+                <button class="panel-close" id="panelCloseBtn" aria-label="Close">&times;</button>
+                <button id="yourReplaysBtn">Your Replays</button>
+                <button id="rankedModeBtn">Ranked Mode</button>
                 <div id="storeThemes">
-                    <h3>Themes</h3>
-                    <div>
-                        <button data-store-theme="light">
-                            Buy Light Theme
-                        </button>
-                        <button data-store-theme="neon">Buy Neon Theme</button>
-                        <button data-store-theme="retro">
-                            Buy Retro Theme
-                        </button>
-                    </div>
+                    <button data-store-theme="light">Buy Light Theme</button>
+                    <button data-store-theme="neon">Buy Neon Theme</button>
+                    <button data-store-theme="retro">Buy Retro Theme</button>
                 </div>
-                <!-- Store: Skins -->
                 <div id="storeSkins">
-                    <h3>Piece Skins</h3>
-                    <div>
-                        <button data-store-skin="outline">
-                            Buy Outline Pieces
-                        </button>
-                        <button data-store-skin="pixel">
-                            Buy Pixel Pieces
-                        </button>
-                    </div>
+                    <button data-store-skin="outline">Buy Outline Pieces</button>
+                    <button data-store-skin="pixel">Buy Pixel Pieces</button>
                 </div>
-                <!-- Store: Emojis -->
                 <div id="storeEmojis">
-                    <h3>Premium Emojis</h3>
-                    <div>
-                        <button data-store-emoji="fire">Buy 🔥</button>
-                        <button data-store-emoji="grin">Buy 😀</button>
-                        <button data-store-emoji="skull">Buy 💀</button>
-                    </div>
+                    <button data-store-emoji="fire">Buy 🔥</button>
+                    <button data-store-emoji="grin">Buy 😀</button>
+                    <button data-store-emoji="skull">Buy 💀</button>
                 </div>
-                <!-- Replay Viewer -->
-                <div id="replayViewer" class="overlay">
-                    <div class="overlay-content">
-                        <h3>Replay Viewer</h3>
-
-                        <!-- Playback Controls -->
-                        <div class="replay-controls">
-                            <button id="replayPlayBtn">Play</button>
-                            <button id="replayPauseBtn">Pause</button>
-                            <button id="replayStopBtn">Stop</button>
-                            <input
-                                id="replaySeek"
-                                type="range"
-                                min="0"
-                                max="100"
-                                value="0"
-                            />
-                            <span id="replayProgressLabel">0%</span>
-                        </div>
-
-                        <!-- Timeline of input events -->
-                        <ul id="replayTimeline"></ul>
-
-                        <button id="replayCloseBtn">Close</button>
-                    </div>
-                </div>
-
-                <div id="replayList" class="panel-section">
-                    <h3>Your Replays</h3>
-                    <!-- Populated by initReplayViewer() -->
-                </div>
-
-                <!-- Analytics Panel -->
-                <div id="analyticsList" class="panel-section">
-                    <h3>Recent Analytics</h3>
-                    <!-- Populated by initAnalyticsPanel() -->
-                </div>
-
-                <!-- Analytics Dashboard (Phase 2 Completion) -->
+                <div id="analyticsList" class="panel-section"></div>
                 <div id="analyticsDashboard" class="panel-section">
-                    <h3>Analytics Dashboard</h3>
-                    <div class="dashboard-row">
-                        <div class="dashboard-chart">
-                            <h4>Height Over Time</h4>
-                            <canvas
-                                id="chartHeightOverTime"
-                                width="320"
-                                height="160"
-                            ></canvas>
-                        </div>
-                        <div class="dashboard-chart">
-                            <h4>Holes Over Time</h4>
-                            <canvas
-                                id="chartHolesOverTime"
-                                width="320"
-                                height="160"
-                            ></canvas>
-                        </div>
-                    </div>
-                    <div class="dashboard-row" style="margin-top: 0.75rem">
-                        <div class="dashboard-chart">
-                            <h4>Combo Streak Timeline</h4>
-                            <canvas
-                                id="chartComboTimeline"
-                                width="320"
-                                height="160"
-                            ></canvas>
-                        </div>
-                        <div class="dashboard-chart">
-                            <h4>Piece Distribution</h4>
-                            <canvas
-                                id="chartPieceDistribution"
-                                width="320"
-                                height="160"
-                            ></canvas>
-                        </div>
-                    </div>
+                    <canvas id="chartHeightOverTime" width="320" height="160"></canvas>
+                    <canvas id="chartHolesOverTime" width="320" height="160"></canvas>
+                    <canvas id="chartComboTimeline" width="320" height="160"></canvas>
+                    <canvas id="chartPieceDistribution" width="320" height="160"></canvas>
                 </div>
-
                 <div id="stats">Score: 0 Level: 1 Lines: 0</div>
-
-                <!-- Pro Entitlement Overlay -->
-                <div id="pro-overlay" class="overlay" style="display: none">
-                    <div class="overlay-content">
-                        <h3>Pro Features</h3>
-                        <p>
-                            Unlock Pro to access premium cosmetics, emojis, and
-                            upcoming advanced features.
-                        </p>
-                        <ul>
-                            <li>Premium Themes and Piece Skins</li>
-                            <li>Premium Emojis in Multiplayer</li>
-                            <li>
-                                Replay Viewer and Advanced Analytics foundations
-                            </li>
-                        </ul>
-                        <div style="margin-top: 1rem">
-                            <button data-dev-pro-toggle class="btn">
-                                Enable Pro
-                            </button>
-                            <button
-                                id="proOverlayCloseBtn"
-                                class="btn secondary"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
                 <div id="high-score-display" class="high-score-display"></div>
-                <h4>Hold <span class="hold-hint">(C)</span></h4>
                 <canvas id="hold-panel" width="80" height="80"></canvas>
-                <h4>Next</h4>
                 <canvas id="next-panel" width="80" height="80"></canvas>
-                <button class="btn secondary" id="helpBtnPanel">Help</button>
-                <button class="btn secondary" id="soundBtnPanel">
-                    Sound: On
-                </button>
-                <button class="btn secondary" id="mainMenuBtnPanel">
-                    Main Menu
-                </button>
+                <button id="helpBtnPanel">Help</button>
+                <button id="soundBtnPanel">Sound: On</button>
+                <button id="mainMenuBtnPanel">Main Menu</button>
             </div>
 
             <!-- Mobile touch controls -->
             <div class="mobile-controls">
-                <div class="controls-row top-row">
-                    <button
-                        class="control-btn"
-                        id="holdBtn"
-                        aria-label="Hold Piece"
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"
-                            />
-                            <path
-                                d="M12 7.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"
-                            />
-                        </svg>
-                    </button>
-                    <button
-                        class="control-btn"
-                        id="rotateBtn"
-                        aria-label="Rotate"
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"
-                            />
-                        </svg>
-                    </button>
+                <button class="control-btn ctl-hold" id="holdBtn" aria-label="Hold Piece">HOLD</button>
+                <button class="control-btn ctl-rotate" id="rotateBtn" aria-label="Rotate">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                </button>
+                <button class="control-btn ctl-left" id="leftBtn" aria-label="Move Left">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <button class="control-btn ctl-down" id="downBtn" aria-label="Soft Drop">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </button>
+                <button class="control-btn ctl-right" id="rightBtn" aria-label="Move Right">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+                </button>
+                <button class="control-btn ctl-drop" id="dropBtn" aria-label="Hard Drop">DROP</button>
+            </div>
+        </div>
+
+        <!-- Replay Viewer (top level so it can show over any screen) -->
+        <div id="replayViewer" class="overlay modal">
+            <div class="overlay-content dialog dialog-wide">
+                <p class="eyebrow">PRO</p>
+                <h2 class="dialog-title">Replays</h2>
+                <div class="replay-controls">
+                    <button class="btn btn-ghost btn-sm" id="replayPlayBtn">Play</button>
+                    <button class="btn btn-ghost btn-sm" id="replayPauseBtn">Pause</button>
+                    <button class="btn btn-ghost btn-sm" id="replayStopBtn">Stop</button>
+                    <input id="replaySeek" type="range" min="0" max="100" value="0" aria-label="Seek" />
+                    <span id="replayProgressLabel">0%</span>
                 </div>
-                <div class="controls-row">
-                    <button
-                        class="control-btn"
-                        id="leftBtn"
-                        aria-label="Move Left"
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                            />
-                        </svg>
-                    </button>
-                    <button
-                        class="control-btn large"
-                        id="dropBtn"
-                        aria-label="Hard Drop"
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
-                            />
-                        </svg>
-                    </button>
-                    <button
-                        class="control-btn"
-                        id="rightBtn"
-                        aria-label="Move Right"
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"
-                            />
-                        </svg>
-                    </button>
+                <ul id="replayTimeline"></ul>
+                <div id="replayList" class="panel-section"></div>
+                <div class="actions">
+                    <button class="btn btn-ghost" id="replayCloseBtn">Close</button>
                 </div>
-                <div class="controls-row">
-                    <button
-                        class="control-btn"
-                        id="downBtn"
-                        aria-label="Soft Drop"
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
-                            />
-                        </svg>
-                    </button>
+            </div>
+        </div>
+
+        <!-- Pro Entitlement Overlay -->
+        <div id="pro-overlay" class="overlay modal" style="display: none">
+            <div class="overlay-content dialog">
+                <p class="eyebrow">PRO</p>
+                <h2 class="dialog-title">Pro features</h2>
+                <p class="dialog-text">
+                    Unlock Pro to access premium cosmetics, emojis, and upcoming
+                    advanced features.
+                </p>
+                <ul class="check-list">
+                    <li>Premium themes and piece skins</li>
+                    <li>Premium emojis in multiplayer</li>
+                    <li>Replay viewer and advanced analytics</li>
+                </ul>
+                <div class="actions">
+                    <button data-dev-pro-toggle class="btn btn-primary">Enable Pro</button>
+                    <button id="proOverlayCloseBtn" class="btn btn-ghost">Close</button>
                 </div>
             </div>
         </div>
 
         <!-- Help Overlay -->
-        <div id="overlay">
-            <div class="overlay-content">
-                <h2>Flixtris — Help</h2>
-                <p>
+        <div id="overlay" class="modal">
+            <div class="overlay-content dialog">
+                <p class="eyebrow">HELP</p>
+                <h2 class="dialog-title">How to play</h2>
+                <p class="dialog-text">
                     Clear lines. Survive infinite speed. After level 3, the game
                     gets brutal.
                 </p>
-                <h3>Controls</h3>
-                <ul>
-                    <li>← → move</li>
-                    <li>↑ rotate</li>
-                    <li>↓ soft drop</li>
-                    <li>Space hard drop</li>
-                    <li>P pause</li>
-                    <li>H help</li>
+                <ul class="keys">
+                    <li>Move <span><kbd class="key">←</kbd><kbd class="key">→</kbd></span></li>
+                    <li>Rotate <span><kbd class="key">↑</kbd></span></li>
+                    <li>Soft drop <span><kbd class="key">↓</kbd></span></li>
+                    <li>Hard drop <span><kbd class="key">Space</kbd></span></li>
+                    <li>Hold <span><kbd class="key">C</kbd></span></li>
+                    <li>Pause <span><kbd class="key">P</kbd></span></li>
+                    <li>Help <span><kbd class="key">H</kbd></span></li>
                 </ul>
-                <h3>Modes</h3>
-                <ul>
-                    <li><b>Classic</b>: endless</li>
-                    <li><b>Daily</b>: same piece order for everyone</li>
-                    <li><b>Hardcore</b>: no pause, no ghost</li>
-                </ul>
-                <button class="btn" id="closeHelp">Close</button>
+                <dl class="explain-list">
+                    <div><dt>Classic</dt><dd>Endless.</dd></div>
+                    <div><dt>Daily</dt><dd>Same piece order for everyone.</dd></div>
+                    <div><dt>Hardcore</dt><dd>No pause, no ghost.</dd></div>
+                </dl>
+                <div class="actions">
+                    <button class="btn btn-primary" id="closeHelp">Close</button>
+                </div>
             </div>
         </div>
 
         <!-- Game Over Overlay -->
-        <div id="gameover-overlay" class="arcade-overlay">
-            <div class="arcade-overlay-bg" aria-hidden="true">
-                <span class="bg-piece piece-z"></span>
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-            </div>
-            <div class="overlay-content gameover-content arcade-dialog">
-                <div class="gameover-banner" aria-hidden="true">
-                    <span class="gameover-pixel"></span>
-                    <span class="gameover-pixel"></span>
-                    <span class="gameover-pixel"></span>
-                </div>
-                <h2 class="gameover-title" aria-label="Game Over">
-                    <span class="gg-ltr" style="--gg-color: #f43f5e">G</span
-                    ><span class="gg-ltr" style="--gg-color: #fb923c">A</span
-                    ><span class="gg-ltr" style="--gg-color: #facc15">M</span
-                    ><span class="gg-ltr" style="--gg-color: #4ade80">E</span
-                    ><span class="gg-gap"></span
-                    ><span class="gg-ltr" style="--gg-color: #22d3ee">O</span
-                    ><span class="gg-ltr" style="--gg-color: #a78bfa">V</span
-                    ><span class="gg-ltr" style="--gg-color: #f472b6">E</span
-                    ><span class="gg-ltr" style="--gg-color: #3b82f6">R</span>
-                </h2>
-
+        <div id="gameover-overlay" class="modal">
+            <div class="overlay-content dialog gameover-content">
+                <p class="eyebrow eyebrow-red">● GAME OVER</p>
                 <div class="gameover-score">
-                    <span class="gameover-score-label">Final Score</span>
+                    <span class="gameover-score-label">FINAL SCORE</span>
                     <span class="gameover-score-value" id="final-score">0</span>
                 </div>
-
-                <div class="gameover-stats">
-                    <div class="gameover-grid primary">
-                        <div class="gameover-stat-card" data-piece="o">
-                            <span class="stat-k">Level</span>
-                            <span class="stat-v" id="final-level">1</span>
-                        </div>
-                        <div class="gameover-stat-card" data-piece="i">
-                            <span class="stat-k">Lines</span>
-                            <span class="stat-v" id="final-lines">0</span>
-                        </div>
+                <div class="gameover-grid">
+                    <div class="gameover-stat">
+                        <span class="stat-k">LEVEL</span>
+                        <span class="stat-v" id="final-level">1</span>
                     </div>
-                    <div class="gameover-breakdown">
-                        <span class="breakdown-label">Line Clears</span>
-                        <div class="gameover-chips">
-                            <span class="chip chip-s">
-                                <span class="chip-k">Singles</span>
-                                <span class="chip-v" id="final-singles">0</span>
-                            </span>
-                            <span class="chip chip-l">
-                                <span class="chip-k">Doubles</span>
-                                <span class="chip-v" id="final-doubles">0</span>
-                            </span>
-                            <span class="chip chip-t">
-                                <span class="chip-k">Triples</span>
-                                <span class="chip-v" id="final-triples">0</span>
-                            </span>
-                            <span class="chip chip-i">
-                                <span class="chip-k">Tetrises</span>
-                                <span class="chip-v" id="final-tetrises">0</span>
-                            </span>
-                        </div>
+                    <div class="gameover-stat">
+                        <span class="stat-k">LINES</span>
+                        <span class="stat-v" id="final-lines">0</span>
+                    </div>
+                </div>
+                <div class="clear-breakdown">
+                    <div class="clear-row" style="--rc: var(--green)">
+                        <span class="clear-bars" aria-hidden="true"><i></i></span>
+                        <span class="clear-k">Singles</span>
+                        <span class="clear-v" id="final-singles">0</span>
+                    </div>
+                    <div class="clear-row" style="--rc: var(--yellow)">
+                        <span class="clear-bars" aria-hidden="true"><i></i><i></i></span>
+                        <span class="clear-k">Doubles</span>
+                        <span class="clear-v" id="final-doubles">0</span>
+                    </div>
+                    <div class="clear-row" style="--rc: var(--orange)">
+                        <span class="clear-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="clear-k">Triples</span>
+                        <span class="clear-v" id="final-triples">0</span>
+                    </div>
+                    <div class="clear-row is-tetris" style="--rc: var(--cyan)">
+                        <span class="clear-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                        <span class="clear-k">Tetrises</span>
+                        <span class="clear-v" id="final-tetrises">0</span>
                     </div>
                 </div>
 
-                <div id="daily-seed-container" style="display: none">
-                    <p class="seed-label">Daily Seed</p>
+                <div id="daily-seed-container" class="seed-box" style="display: none">
+                    <p class="seed-label">DAILY SEED</p>
                     <div class="seed-display" id="seed-display"></div>
-                    <button class="arcade-btn" id="shareBtn">
-                        Share Score
-                    </button>
+                    <button class="btn btn-ghost btn-sm" id="shareBtn">Share Score</button>
                 </div>
 
-                <div class="arcade-actions gameover-actions">
-                    <button class="arcade-btn" id="playAgainBtn">
-                        ▶ Play Again
-                    </button>
-                    <button class="arcade-btn ghost" id="menuBtn">
-                        Main Menu
-                    </button>
+                <div class="actions">
+                    <button class="btn btn-primary" id="playAgainBtn">▶ Play Again</button>
+                    <button class="btn btn-ghost" id="menuBtn">Main Menu</button>
                 </div>
             </div>
         </div>
 
         <!-- Name Prompt Overlay -->
-        <div id="name-overlay">
-            <div class="overlay-content">
-                <h2>What's your name?</h2>
-                <p class="name-hint">
+        <div id="name-overlay" class="modal">
+            <div class="overlay-content dialog">
+                <p class="eyebrow">PLAYER 1</p>
+                <h2 class="dialog-title">What's your name?</h2>
+                <p class="dialog-text name-hint">
                     Enter a name to appear on leaderboards, or keep playing
                     anonymously.
                 </p>
                 <input
                     type="text"
                     id="name-input"
-                    class="name-input"
+                    class="form-input name-input"
                     placeholder="Enter your name"
                     maxlength="16"
                     autocomplete="off"
+                    aria-label="Player name"
                 />
                 <p class="name-preview">
-                    Playing as: <span id="name-preview-text">Player_ABC1</span>
+                    Playing as <span id="name-preview-text">Player_ABC1</span>
                 </p>
-                <button class="btn" id="saveNameBtn">Save Name</button>
-                <button class="btn secondary" id="skipNameBtn">
-                    Stay Anonymous
-                </button>
+                <div class="actions">
+                    <button class="btn btn-primary" id="saveNameBtn">Save Name</button>
+                    <button class="btn btn-ghost" id="skipNameBtn">Stay Anonymous</button>
+                </div>
             </div>
         </div>
 
         <!-- Seed Input Overlay -->
-        <div id="seed-overlay">
-            <div class="overlay-content">
-                <h2>Enter Seed Code</h2>
-                <p class="seed-hint">
+        <div id="seed-overlay" class="modal">
+            <div class="overlay-content dialog">
+                <p class="eyebrow">PLAY SEED</p>
+                <h2 class="dialog-title">Enter a seed code</h2>
+                <p class="dialog-text seed-hint">
                     Paste a seed code shared by a friend to play the same game.
                 </p>
                 <input
                     type="text"
                     id="seed-input"
-                    class="seed-input"
+                    class="form-input seed-input"
                     placeholder="e.g. FLX-2026-1-2"
                     autocomplete="off"
+                    aria-label="Seed code"
                 />
-                <button class="btn" id="startSeedBtn">Play</button>
-                <button class="btn secondary" id="cancelSeedBtn">Cancel</button>
+                <div class="actions">
+                    <button class="btn btn-primary" id="startSeedBtn">Play</button>
+                    <button class="btn btn-ghost" id="cancelSeedBtn">Cancel</button>
+                </div>
             </div>
         </div>
 
         <!-- Wall of Fame Overlay -->
-        <div id="wall-of-fame-overlay" style="display: none">
-            <div class="overlay-content">
-                <div class="wof-banner">
-                    <span class="wof-icon">🏆</span>
-                    <h2>Congratulations, Legend!</h2>
-                </div>
-                <p class="wof-message">
+        <div id="wall-of-fame-overlay" class="modal" style="display: none">
+            <div class="overlay-content dialog">
+                <p class="eyebrow eyebrow-yellow">● WALL OF FAME</p>
+                <h2 class="dialog-title">Congratulations, Legend!</h2>
+                <p class="dialog-text wof-message">
                     You've reached Level 10! You now have a permanent spot on
                     our Wall of Fame. Please submit a message (up to 100
                     characters) that reflects our values of respect, joy, or
                     community spirit to be displayed next to your name.
                 </p>
-                <div class="wof-stats">
-                    <div class="stat-row">
-                        <span>Your Level</span>
-                        <span id="wof-level">10</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Your Score</span>
-                        <span id="wof-score">0</span>
-                    </div>
+                <div class="stat-rows">
+                    <div class="stat-row"><span>Your level</span><span id="wof-level">10</span></div>
+                    <div class="stat-row"><span>Your score</span><span id="wof-score">0</span></div>
                 </div>
                 <textarea
                     id="wof-message-input"
-                    class="wof-input"
+                    class="form-input wof-input"
                     placeholder="Share your words of wisdom..."
                     maxlength="100"
                     rows="3"
+                    aria-label="Your message"
                 ></textarea>
-                <p class="wof-char-count">
-                    <span id="wof-char-current">0</span>/100 characters
-                </p>
-                <button class="btn" id="wofSubmitBtn">
-                    Submit to Wall of Fame
-                </button>
-                <button class="btn secondary" id="wofSkipBtn">
-                    Maybe Later
-                </button>
+                <p class="wof-char-count"><span id="wof-char-current">0</span>/100</p>
+                <div class="actions">
+                    <button class="btn btn-primary" id="wofSubmitBtn">Submit to Wall of Fame</button>
+                    <button class="btn btn-ghost" id="wofSkipBtn">Maybe Later</button>
+                </div>
             </div>
         </div>
 
         <!-- Multiplayer Results Overlay -->
-        <div id="mp-results-overlay">
-            <div class="overlay-content mp-results-content">
+        <div id="mp-results-overlay" class="modal">
+            <div class="overlay-content dialog mp-results-content">
                 <div class="mp-result-banner" id="mpResultBanner">
                     <span class="result-icon" id="mpResultIcon">🏆</span>
                     <h2 id="mpResultTitle">You Win!</h2>
                 </div>
                 <div class="mp-results-players">
                     <div class="mp-player-result" id="mpPlayer1Result">
-                        <div class="mp-player-rank">1st</div>
-                        <div class="mp-player-info">
-                            <span class="mp-player-name" id="mpPlayer1Name"
-                                >Player 1</span
-                            >
-                            <span class="mp-player-score" id="mpPlayer1Score"
-                                >0</span
-                            >
-                        </div>
+                        <span class="mp-player-rank">1ST</span>
+                        <span class="mp-player-name" id="mpPlayer1Name">Player 1</span>
+                        <span class="mp-player-score" id="mpPlayer1Score">0</span>
                     </div>
                     <div class="mp-player-result loser" id="mpPlayer2Result">
-                        <div class="mp-player-rank">2nd</div>
-                        <div class="mp-player-info">
-                            <span class="mp-player-name" id="mpPlayer2Name"
-                                >Player 2</span
-                            >
-                            <span class="mp-player-score" id="mpPlayer2Score"
-                                >0</span
-                            >
-                        </div>
+                        <span class="mp-player-rank">2ND</span>
+                        <span class="mp-player-name" id="mpPlayer2Name">Player 2</span>
+                        <span class="mp-player-score" id="mpPlayer2Score">0</span>
                     </div>
                 </div>
-                <div class="mp-results-stats">
-                    <h4>Your Stats</h4>
-                    <div class="stat-row">
-                        <span>Score</span>
-                        <span id="mpFinalScore">0</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Level</span>
-                        <span id="mpFinalLevel">1</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Lines</span>
-                        <span id="mpFinalLines">0</span>
-                    </div>
+                <div class="stat-rows">
+                    <div class="stat-row"><span>Score</span><span id="mpFinalScore">0</span></div>
+                    <div class="stat-row"><span>Level</span><span id="mpFinalLevel">1</span></div>
+                    <div class="stat-row"><span>Lines</span><span id="mpFinalLines">0</span></div>
                 </div>
                 <div class="mp-rematch-section" id="mpRematchSection">
-                    <button class="btn" id="mpRematchBtn">🔄 Rematch</button>
+                    <button class="btn btn-primary btn-block" id="mpRematchBtn">Rematch</button>
                     <p class="rematch-status" id="rematchStatus"></p>
                 </div>
-                <button class="btn secondary" id="mpPlayAgainBtn">
-                    New Opponent
-                </button>
-                <button class="btn secondary" id="mpMenuBtn">Main Menu</button>
+                <div class="actions">
+                    <button class="btn btn-ghost" id="mpPlayAgainBtn">New Opponent</button>
+                    <button class="btn btn-ghost" id="mpMenuBtn">Main Menu</button>
+                </div>
             </div>
         </div>
 
         <!-- Royale Results Overlay -->
-        <div id="royale-results-overlay">
-            <div class="overlay-content mp-results-content">
+        <div id="royale-results-overlay" class="modal">
+            <div class="overlay-content dialog mp-results-content">
                 <div class="mp-result-banner" id="royaleResultBanner">
                     <span class="result-icon" id="royaleResultIcon">🏆</span>
                     <h2 id="royaleResultTitle">Victory Royale!</h2>
                 </div>
-                <div class="royale-standings" id="royaleStandings">
-                    <!-- Standings populated dynamically -->
-                </div>
+                <div class="royale-standings" id="royaleStandings"></div>
                 <div class="mp-rematch-section" id="royaleRematchSection">
-                    <button class="btn" id="royaleRematchBtn">
-                        🔄 Play Again
-                    </button>
+                    <button class="btn btn-primary btn-block" id="royaleRematchBtn">Play Again</button>
                     <p class="rematch-status" id="royaleRematchStatus"></p>
                 </div>
-                <button class="btn secondary" id="royaleMenuBtn">
-                    Main Menu
-                </button>
+                <div class="actions">
+                    <button class="btn btn-ghost" id="royaleMenuBtn">Main Menu</button>
+                </div>
             </div>
         </div>
 
         <!-- Spectator Indicator (shown when eliminated in royale) -->
-        <div
-            id="spectatorIndicator"
-            class="spectator-indicator"
-            style="display: none"
-        >
-            👁 Spectating
+        <div id="spectatorIndicator" class="spectator-indicator" style="display: none">
+            SPECTATING
         </div>
 
         <!-- Ranked Matchmaking Overlay -->
-        <div id="ranked-overlay" class="overlay" style="display: none">
-            <div class="overlay-content ranked-content">
-                <h2>🏅 Ranked Match</h2>
-                <p class="ranked-description">
+        <div id="ranked-overlay" class="overlay modal" style="display: none">
+            <div class="overlay-content dialog ranked-content">
+                <p class="eyebrow">PRO · RANKED</p>
+                <h2 class="dialog-title">Ranked match</h2>
+                <p class="dialog-text ranked-description">
                     Compete against players of similar skill. Win to gain ELO,
                     lose to drop.
                 </p>
                 <div class="ranked-status-container">
                     <div class="ranked-spinner" id="rankedSpinner"></div>
-                    <p id="rankedStatus">
-                        Click 'Find Match' to start searching...
-                    </p>
+                    <p id="rankedStatus">Click 'Find Match' to start searching...</p>
                 </div>
                 <div class="ranked-elo-display">
-                    <span>Your ELO:</span>
+                    <span>YOUR ELO</span>
                     <span id="playerElo" class="elo-value">1200</span>
                 </div>
-                <div class="ranked-buttons">
-                    <button class="btn" id="rankedFindBtn">Find Match</button>
-                    <button class="btn secondary" id="rankedCancelBtn">
-                        Cancel
-                    </button>
+                <div class="actions">
+                    <button class="btn btn-primary" id="rankedFindBtn">Find Match</button>
+                    <button class="btn btn-ghost" id="rankedCancelBtn">Cancel</button>
                 </div>
             </div>
         </div>
 
         <!-- Pause Overlay -->
-        <div id="pause-overlay">
-            <div class="overlay-content pause-content">
-                <h2>Paused</h2>
-                <p class="pause-hint">Press P or tap Resume to continue</p>
-                <button class="btn" id="resumeBtn">Resume</button>
-                <button class="btn secondary" id="pauseHelpBtn">Help</button>
-                <button class="btn secondary" id="pauseMenuBtn">
-                    Main Menu
-                </button>
+        <div id="pause-overlay" class="modal">
+            <div class="overlay-content dialog pause-content">
+                <p class="eyebrow">● PAUSED</p>
+                <h2 class="dialog-title">Take a breath.</h2>
+                <p class="dialog-text pause-hint">Press P or tap Resume to continue.</p>
+                <div class="actions actions-stack">
+                    <button class="btn btn-primary" id="resumeBtn">Resume</button>
+                    <button class="btn btn-ghost" id="pauseHelpBtn">Help</button>
+                    <button class="btn btn-ghost" id="pauseMenuBtn">Main Menu</button>
+                </div>
             </div>
         </div>
 
         <!-- In-Game Menu (hamburger-triggered) -->
-        <div id="ingame-menu-overlay" class="arcade-overlay ingame-menu-overlay">
-            <div class="arcade-overlay-bg" aria-hidden="true">
-                <span class="bg-piece piece-i"></span>
-                <span class="bg-piece piece-t"></span>
-                <span class="bg-piece piece-s"></span>
-                <span class="bg-piece piece-l"></span>
-            </div>
-            <div class="arcade-dialog ingame-menu-dialog">
-                <button
-                    class="ingame-menu-close"
-                    id="ingameMenuCloseBtn"
-                    aria-label="Close menu"
-                >
-                    &times;
-                </button>
-                <div class="ingame-menu-banner" aria-hidden="true">
-                    <span class="ingame-menu-pixel"></span>
-                    <span class="ingame-menu-pixel"></span>
-                    <span class="ingame-menu-pixel"></span>
-                </div>
-                <h2 class="ingame-menu-title" aria-label="Paused">
-                    <span class="gg-ltr" style="--gg-color: #22d3ee">P</span
-                    ><span class="gg-ltr" style="--gg-color: #a78bfa">A</span
-                    ><span class="gg-ltr" style="--gg-color: #f472b6">U</span
-                    ><span class="gg-ltr" style="--gg-color: #facc15">S</span
-                    ><span class="gg-ltr" style="--gg-color: #4ade80">E</span
-                    ><span class="gg-ltr" style="--gg-color: #fb923c">D</span>
-                </h2>
-                <p class="ingame-menu-subtitle">◆ Press P to resume instantly ◆</p>
+        <div id="ingame-menu-overlay" class="modal ingame-menu-overlay">
+            <div class="dialog ingame-menu-dialog">
+                <button class="dialog-close" id="ingameMenuCloseBtn" aria-label="Close menu">&times;</button>
+                <p class="eyebrow">● PAUSED</p>
+                <h2 class="dialog-title">Menu</h2>
+                <p class="dialog-text">Press P to resume.</p>
                 <div class="ingame-menu-grid">
-                    <button
-                        class="ingame-menu-btn"
-                        id="ingameResumeBtn"
-                        data-piece="i"
-                    >
-                        <span class="ingame-menu-icon">▶</span>
+                    <button class="ingame-menu-btn is-primary" id="ingameResumeBtn">
+                        <span class="ingame-menu-icon" aria-hidden="true">▶</span>
                         <span class="ingame-menu-label">Resume</span>
                     </button>
-                    <button
-                        class="ingame-menu-btn"
-                        id="ingameSoundBtn"
-                        data-piece="t"
-                    >
-                        <span class="ingame-menu-icon" id="ingameSoundIcon"
-                            >🔊</span
-                        >
-                        <span class="ingame-menu-label" id="ingameSoundLabel"
-                            >Sound: On</span
-                        >
+                    <button class="ingame-menu-btn" id="ingameSoundBtn">
+                        <span class="ingame-menu-icon" id="ingameSoundIcon" aria-hidden="true">🔊</span>
+                        <span class="ingame-menu-label" id="ingameSoundLabel">Sound: On</span>
                     </button>
-                    <button
-                        class="ingame-menu-btn"
-                        id="ingameHelpBtn"
-                        data-piece="s"
-                    >
-                        <span class="ingame-menu-icon">?</span>
+                    <button class="ingame-menu-btn" id="ingameHelpBtn">
+                        <span class="ingame-menu-icon" aria-hidden="true">?</span>
                         <span class="ingame-menu-label">Help</span>
                     </button>
-                    <button
-                        class="ingame-menu-btn"
-                        id="ingameRestartBtn"
-                        data-piece="z"
-                    >
-                        <span class="ingame-menu-icon">↻</span>
+                    <button class="ingame-menu-btn" id="ingameRestartBtn">
+                        <span class="ingame-menu-icon" aria-hidden="true">↻</span>
                         <span class="ingame-menu-label">Restart</span>
                     </button>
-                    <button
-                        class="ingame-menu-btn ingame-menu-btn-wide"
-                        id="ingameMainMenuBtn"
-                        data-piece="l"
-                    >
-                        <span class="ingame-menu-icon">🏠</span>
+                    <button class="ingame-menu-btn ingame-menu-btn-wide" id="ingameMainMenuBtn">
+                        <span class="ingame-menu-icon" aria-hidden="true">←</span>
                         <span class="ingame-menu-label">Main Menu</span>
                     </button>
-                </div>
-                <div class="ingame-menu-footer">
-                    <span class="arcade-blink">◆ FLIXTRIS ARCADE ◆</span>
                 </div>
             </div>
         </div>
 
         <!-- Countdown Overlay -->
-        <div id="countdown-overlay">
+        <div id="countdown-overlay" class="modal">
             <div class="countdown-number" id="countdownNumber">3</div>
         </div>
 
         <!-- Confirm Leave Dialog -->
-        <div id="confirm-leave-overlay">
-            <div class="overlay-content confirm-content">
-                <h2>Leave Game?</h2>
-                <p>Your progress will be lost.</p>
-                <div class="confirm-buttons">
-                    <button class="btn secondary" id="cancelLeaveBtn">
-                        Cancel
-                    </button>
-                    <button class="btn danger" id="confirmLeaveBtn">
-                        Leave
-                    </button>
+        <div id="confirm-leave-overlay" class="modal">
+            <div class="overlay-content dialog confirm-content">
+                <h2 class="dialog-title">Leave game?</h2>
+                <p class="dialog-text">Your progress will be lost.</p>
+                <div class="actions">
+                    <button class="btn btn-ghost" id="cancelLeaveBtn">Cancel</button>
+                    <button class="btn btn-danger" id="confirmLeaveBtn">Leave</button>
                 </div>
             </div>
         </div>
 
         <!-- Tutorial Overlay -->
-        <div id="tutorial-overlay">
-            <div class="tutorial-content">
+        <div id="tutorial-overlay" class="modal">
+            <div class="dialog tutorial-content">
                 <div class="tutorial-header">
                     <span class="tutorial-step" id="tutorialStep">1/5</span>
-                    <button class="tutorial-skip" id="tutorialSkip">
-                        Skip
-                    </button>
+                    <button class="tutorial-skip" id="tutorialSkip">Skip</button>
                 </div>
                 <div class="tutorial-body" id="tutorialBody">
                     <div class="tutorial-icon" id="tutorialIcon">🎮</div>
-                    <h2 id="tutorialTitle">Welcome to Flixtris!</h2>
-                    <p id="tutorialText">
+                    <h2 class="dialog-title" id="tutorialTitle">Welcome to Flixtris!</h2>
+                    <p class="dialog-text" id="tutorialText">
                         Stack blocks to clear lines. Don't let them reach the
                         top!
                     </p>
                 </div>
-                <div class="tutorial-nav">
-                    <button
-                        class="btn secondary"
-                        id="tutorialPrev"
-                        style="visibility: hidden"
-                    >
-                        Back
-                    </button>
-                    <button class="btn" id="tutorialNext">Next</button>
+                <div class="actions tutorial-nav">
+                    <button class="btn btn-ghost" id="tutorialPrev" style="visibility: hidden">Back</button>
+                    <button class="btn btn-primary" id="tutorialNext">Next</button>
                 </div>
             </div>
         </div>
@@ -2427,6 +1344,29 @@
 
         <script>
             window.Flixtris = { api: {}, state: {} };
+
+            // Piece glyphs: <span class="glyph" data-glyph="t"> becomes a small
+            // SVG of that tetromino. Colour comes from CSS.
+            (() => {
+                const SHAPES = {
+                    i: [[0, 0.5], [1, 0.5], [2, 0.5], [3, 0.5]],
+                    o: [[1, 0], [2, 0], [1, 1], [2, 1]],
+                    t: [[1.5, 0], [0.5, 1], [1.5, 1], [2.5, 1]],
+                    s: [[1.5, 0], [2.5, 0], [0.5, 1], [1.5, 1]],
+                    z: [[0.5, 0], [1.5, 0], [1.5, 1], [2.5, 1]],
+                    j: [[0.5, 0], [0.5, 1], [1.5, 1], [2.5, 1]],
+                    l: [[2.5, 0], [0.5, 1], [1.5, 1], [2.5, 1]],
+                };
+                document.querySelectorAll(".glyph[data-glyph]").forEach((el) => {
+                    const cells = SHAPES[el.dataset.glyph] || [];
+                    el.innerHTML =
+                        '<svg viewBox="0 0 4 2" aria-hidden="true">' +
+                        cells
+                            .map(([x, y]) => `<rect x="${x + 0.07}" y="${y + 0.07}" width="0.86" height="0.86" rx="0.08"/>`)
+                            .join("") +
+                        "</svg>";
+                });
+            })();
         </script>
         <script src="js/db.js"></script>
         <script src="js/sound.js"></script>
